@@ -32,6 +32,17 @@ class InsumosDao extends DatabaseAccessor<AppDatabase>
   Future<bool> actualizar(Insumo insumo) {
     return update(insumos).replace(insumo);
   }
+  /// Actualizar solamente el stock
+  Future<bool> actualizarStock(int id, double stock) {
+    return (update(insumos)
+      ..where((t) => t.id.equals(id)))
+        .write(
+      InsumosCompanion(
+        stock: Value(stock),
+      ),
+    )
+        .then((cantidad) => cantidad > 0);
+  }
 
   Future<int> eliminar(int id) {
     return (delete(insumos)
