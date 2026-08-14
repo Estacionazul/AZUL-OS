@@ -36,22 +36,22 @@ class ProductosDao extends DatabaseAccessor<AppDatabase>
     return update(productos).replace(producto);
   }
 
-/// Actualizar solamente el stock
-Future<bool> actualizarStock(int id, int stock) {
-return (update(productos)
-..where((t) => t.id.equals(id)))
-.write(
-ProductosCompanion(
-stock: Value(stock),
-),
-)
-.then((cantidad) => cantidad > 0);
-}
+  /// Actualizar solamente el stock
+  Future<bool> actualizarStock(int id, int stock) {
+    return (update(productos)
+      ..where((t) => t.id.equals(id)))
+        .write(
+      ProductosCompanion(
+        stock: Value(stock),
+      ),
+    )
+        .then((cantidad) => cantidad > 0);
+  }
 
-/// Eliminar
-Future<int> eliminar(int id) {
-return (delete(productos)
-..where((t) => t.id.equals(id)))
-.go();
-}
+  /// Eliminar
+  Future<int> eliminar(int id) {
+    return (delete(productos)
+      ..where((t) => t.id.equals(id)))
+        .go();
+  }
 }
