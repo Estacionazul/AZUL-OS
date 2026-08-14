@@ -1,14 +1,31 @@
 import '../models/item_carrito.dart';
-import '../models/producto.dart';
+import '../models/producto_model.dart';
 
-class CarritoService {
+import 'package:flutter/foundation.dart';
+
+class CarritoService extends ChangeNotifier {
   final List<ItemCarrito> _items = [];
 
   List<ItemCarrito> get items => _items;
 
-  void agregarProducto(Producto producto) {
+  void agregarProducto(
+      ProductoModel producto, {
+        String? tamano,
+        String? tipoLeche,
+        String? endulzante,
+        String? infusion,
+        String? observaciones,
+        bool extraShot = false,
+      }) {
     final index = _items.indexWhere(
-          (item) => item.producto.codigo == producto.codigo,
+          (item) =>
+      item.producto.codigo == producto.codigo &&
+          item.tamano == tamano &&
+          item.tipoLeche == tipoLeche &&
+          item.endulzante == endulzante &&
+          item.infusion == infusion &&
+          item.observaciones == observaciones &&
+          item.extraShot == extraShot,
     );
 
     if (index >= 0) {
@@ -17,13 +34,26 @@ class CarritoService {
       _items.add(
         ItemCarrito(
           producto: producto,
+          tamano: tamano,
+          tipoLeche: tipoLeche,
+          endulzante: endulzante,
+          infusion: infusion,
+          observaciones: observaciones,
+          extraShot: extraShot,
         ),
       );
     }
+    debugPrint("Items en carrito: ${_items.length}");
+
+    for (final item in _items) {
+      debugPrint("${item.producto.nombre} - Cantidad: ${item.cantidad}");
+    }
+    notifyListeners();
   }
 
   void aumentarCantidad(ItemCarrito item) {
     item.cantidad++;
+    notifyListeners();
   }
 
   void disminuirCantidad(ItemCarrito item) {
@@ -32,14 +62,18 @@ class CarritoService {
     } else {
       _items.remove(item);
     }
+
+    notifyListeners();
   }
 
   void eliminarProducto(ItemCarrito item) {
     _items.remove(item);
+    notifyListeners();
   }
 
   void vaciarCarrito() {
     _items.clear();
+    notifyListeners();
   }
 
   double get total {

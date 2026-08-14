@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/producto.dart';
-import '../data/productos_data.dart';
+import 'package:provider/provider.dart';
+
+import '../services/carrito_service.dart';
+import '../models/producto_model.dart';
+import '../widgets/dialogs/variantes_producto_dialog.dart';
+import '../widgets/carrito_panel.dart';
+import '../widgets/productos_panel.dart';
 
 class CafeteriaScreen extends StatefulWidget {
   const CafeteriaScreen({super.key});
@@ -10,25 +15,13 @@ class CafeteriaScreen extends StatefulWidget {
 }
 
 class _CafeteriaScreenState extends State<CafeteriaScreen> {
-  final List<Producto> carrito = [];
-
-  void agregarAlCarrito(Producto producto) {
-    setState(() {
-      carrito.add(producto);
-    });
-  }
-
-  double get total {
-    return carrito.fold(0, (suma, producto) => suma + producto.precio);
+  void actualizarPantalla() {
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final cafes =
-    productosData.where((p) => p.categoria == "Cafés").toList();
-
-    final jugos =
-    productosData.where((p) => p.categoria == "Jugos").toList();
+    final carritoService = context.read<CarritoService>();
 
     return Scaffold(
       backgroundColor: const Color(0xffF5F7FA),
@@ -37,123 +30,60 @@ class _CafeteriaScreenState extends State<CafeteriaScreen> {
         centerTitle: true,
         backgroundColor: const Color(0xff0A2E6E),
       ),
-      body: ListView(
+      body: Padding(
         padding: const EdgeInsets.all(20),
-        children: [
-          const Text(
-            "CAFÉS",
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 6,
+              child: ProductosPanel(
+                onAgregarProducto: (producto) async {
+                  final requiereVariantes =
+                      (producto.categoriaId == 1 &&
+                          producto.nombre.toLowerCase() != "espresso") ||
+                          producto.categoriaId == 2 ||
+                          producto.categoriaId == 5;
 
-          const SizedBox(height: 15),
+                  if (requiereVariantes) {
+                    final resultado =
+                    await showDialog<Map<String, dynamic>>(
+                      context: context,
+                      builder: (_) => VariantesProductoDialog(
+                        producto: producto,
+                      ),
+                    );
 
-          ...cafes.map((p) => tarjetaProducto(p)),
+                    if (resultado != null) {
+                      carritoService.agregarProducto(
+                        producto,
+                        tamano: resultado["tamano"],
+                        tipoLeche: resultado["tipoLeche"],
+                        endulzante: resultado["endulzante"],
+                        infusion: resultado["infusion"],
+                        observaciones: resultado["observaciones"],
+                        extraShot: resultado["extraShot"] ?? false,
+                      );
 
-          const SizedBox(height: 30),
+                      actualizarPantalla();
+                    }
+                  } else {
+                    carritoService.agregarProducto(producto);
 
-          const Text(
-            "JUGOS",
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 15),
-
-          ...jugos.map((p) => tarjetaProducto(p)),
-
-          const SizedBox(height: 30),
-
-          const Divider(),
-
-          const Text(
-            "🛒 CARRITO",
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          if (carrito.isEmpty)
-            const Text("No hay productos agregados."),
-
-          ...carrito.map(
-                (p) => ListTile(
-              leading: Text(
-                p.emoji,
-                style: const TextStyle(fontSize: 24),
-              ),
-              title: Text(p.nombre),
-              subtitle: Text("Código: ${p.codigo}"),
-              trailing: Text(
-                "S/. ${p.precio.toStringAsFixed(2)}",
+                    actualizarPantalla();
+                  }
+                },
               ),
             ),
-          ),
-
-          const Divider(),
-
-          ListTile(
-            title: const Text(
-              "TOTAL",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+            const SizedBox(width: 20),
+            Expanded(
+              flex: 4,
+              child: CarritoPanel(
+                carritoService: carritoService,
+                onActualizar: actualizarPantalla,
               ),
             ),
-            trailing: Text(
-              "S/. ${total.toStringAsFixed(2)}",
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          SizedBox(
-            height: 55,
-            child: ElevatedButton(
-              onPressed: carrito.isEmpty ? null : () {},
-              child: const Text(
-                "COBRAR",
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget tarjetaProducto(Producto producto) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: Text(
-          producto.emoji,
-          style: const TextStyle(fontSize: 28),
-        ),
-        title: Text(producto.nombre),
-        subtitle: Text(
-          "S/. ${producto.precio.toStringAsFixed(2)}",
-        ),
-        trailing: IconButton(
-          icon: const Icon(
-            Icons.add_circle,
-            color: Colors.blue,
-          ),
-          onPressed: () {
-            agregarAlCarrito(producto);
-          },
+          ],
         ),
       ),
     );

@@ -1,122 +1,271 @@
 import 'package:flutter/material.dart';
-import 'screens/cafeteria_screen.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(const AzulOSApp());
+import 'core/theme/app_theme.dart';
+import 'database/app_database.dart';
+import 'repositories/producto_repository.dart';
+import 'repositories/ventas_repository.dart';
+import 'services/inventario_automatico_service.dart';
+import 'repositories/recetas_repository.dart';
+import 'repositories/receta_detalle_repository.dart';
+import 'repositories/clientes_repository.dart';
+import 'screens/home_screen.dart';
+
+import 'seed/datos_iniciales.dart';
+
+import 'services/carrito_service.dart';
+import 'services/cobro_service.dart';
+import 'services/insumo_service.dart';
+import 'services/inventario_service.dart';
+import 'services/producto_service.dart';
+import 'services/recetas_service.dart';
+import 'services/receta_detalle_service.dart';
+import 'services/venta_service.dart';
+import 'services/ventas_service.dart';
+import 'services/clientes_service.dart';
+import 'repositories/movimiento_inventario_repository.dart';
+import 'services/movimiento_inventario_service.dart';
+import 'services/produccion_service.dart';
+import 'services/printer_service.dart';
+import 'services/ticket_print_service.dart';
+import 'ticket/esc_pos_renderer.dart';
+import 'printer/windows_printer_adapter.dart';
+import 'screens/ventas/pos_screen.dart';
+import 'screens/inventario/inventario_screen.dart';
+import 'screens/ventas/ventas_screen.dart';
+import 'repositories/empresa_repository.dart';
+import 'services/empresa_service.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final database = AppDatabase();
+
+  await DatosIniciales(database).cargar();
+
+  // ==========================================
+  // IMPRESORA WINDOWS
+  // ==========================================
+
+  final printerAdapter = WindowsPrinterAdapter();
+
+  print('');
+  print('==============================================');
+  print('        INICIALIZANDO IMPRESORA');
+  print('              AZUL OS');
+  print('==============================================');
+
+  final printers = await printerAdapter.discoverPrinters();
+
+  const nombreImpresora = 'POS-58-Series';
+
+  if (printers.contains(nombreImpresora)) {
+    await printerAdapter.selectPrinter(nombreImpresora);
+
+    print('');
+    print('✅ IMPRESORA AUTOMÁTICAMENTE SELECCIONADA');
+    print('🖨️ $nombreImpresora');
+  } else {
+    print('');
+    print('⚠️ NO SE ENCONTRÓ LA IMPRESORA:');
+    print('🖨️ $nombreImpresora');
+  }
+
+  print('==============================================');
+  print('');
+
+  runApp(
+    AzulOSApp(
+      database: database,
+      printerAdapter: printerAdapter,
+    ),
+  );
 }
 
 class AzulOSApp extends StatelessWidget {
-  const AzulOSApp({super.key});
+  final AppDatabase database;
+  final WindowsPrinterAdapter printerAdapter;
+
+  const AzulOSApp({
+    super.key,
+    required this.database,
+    required this.printerAdapter,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'AZUL OS',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const DashboardPage(),
-    );
-  }
-}
-
-class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xffF5F7FA),
-
-      appBar: AppBar(
-        backgroundColor: const Color(0xff0A2E6E),
-        title: const Text("AZUL OS"),
-        centerTitle: true,
-      ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 20,
-          mainAxisSpacing: 20,
-
-          children: [
-
-            boton(
-              Icons.coffee,
-              "Cafetería",
-                  () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const
-                    CafeteriaScreen(),
-                  ),
-                );
-              },
-            ),
-            boton(Icons.print, "Servicios", () {}),
-
-            boton(Icons.point_of_sale, "Caja", () {}),
-
-            boton(Icons.inventory, "Inventario", () {}),
-
-            boton(Icons.people, "Clientes", () {}),
-
-            boton(Icons.bar_chart, "Reportes", () {}),
-
-          ],
+    return MultiProvider(
+      providers: [
+        Provider.value(
+          value: database,
         ),
-      ),
-    );
-  }
 
-  Widget boton(IconData icono, String texto, VoidCallback onTap) {
+        Provider(
+          create: (_) => ProductoRepository(database),
+        ),
 
-    return Card(
-      elevation:6,
+        Provider(
+          create: (_) => ClientesRepository(database),
+        ),
 
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
+        Provider(
+          create: (_) => EmpresaRepository(database),
+        ),
 
-      child: InkWell(
+        ChangeNotifierProvider(
+          create: (context) => ClientesService(
+            context.read<ClientesRepository>(),
+          ),
+        ),
 
-        borderRadius: BorderRadius.circular(18),
+        Provider(
+          create: (_) => EmpresaService(database),
+        ),
 
-        onTap: onTap,
+        Provider(
+          create: (_) => VentasRepository(database),
+        ),
 
-        child: Column(
+        Provider(
+          create: (_) => RecetasRepository(database),
+        ),
 
-          mainAxisAlignment: MainAxisAlignment.center,
+        Provider(
+          create: (_) => RecetaDetalleRepository(
+            database.recetaDetalleDao,
+          ),
+        ),
 
-          children: [
+        ChangeNotifierProvider(
+          create: (context) => ProductoService(
+            context.read<ProductoRepository>(),
+          )..cargarProductos(),
+        ),
 
-            Icon(
-              icono,
-              size:55,
-              color: Color(0xff0A2E6E),
-            ),
+        ChangeNotifierProvider(
+          create: (context) => RecetasService(
+            context.read<RecetasRepository>(),
+          ),
+        ),
 
-            SizedBox(height:15),
+        ChangeNotifierProvider(
+          create: (context) => RecetaDetalleService(
+            context.read<RecetaDetalleRepository>(),
+          ),
+        ),
 
-            Text(
-              texto,
+        ChangeNotifierProvider(
+          create: (_) => CarritoService(),
+        ),
 
-              style: TextStyle(
-                fontSize:20,
-                fontWeight: FontWeight.bold,
+        ChangeNotifierProvider(
+          create: (_) => VentasService(),
+        ),
+
+        Provider(
+          create: (_) => VentaService.instance,
+        ),
+
+        ChangeNotifierProvider(
+          create: (_) => InsumoService(database)..obtenerTodos(),
+        ),
+
+        Provider(
+          create: (_) => InventarioService(),
+        ),
+
+        Provider(
+          create: (_) => MovimientoInventarioRepository(database),
+        ),
+
+        ChangeNotifierProvider(
+          create: (context) => MovimientoInventarioService(
+            context.read<MovimientoInventarioRepository>(),
+          ),
+        ),
+
+        ChangeNotifierProvider(
+          create: (context) => ProduccionService(
+            productoService: context.read<ProductoService>(),
+            insumoService: context.read<InsumoService>(),
+            recetaDetalleService:
+            context.read<RecetaDetalleService>(),
+            movimientoService:
+            context.read<MovimientoInventarioService>(),
+          ),
+        ),
+
+        Provider(
+          create: (_) => InventarioAutomaticoService(database),
+        ),
+
+        // ==========================================
+        // IMPRESORA
+        // ==========================================
+
+        Provider<WindowsPrinterAdapter>.value(
+          value: printerAdapter,
+        ),
+
+        Provider(
+          create: (context) => PrinterService(
+            context.read<WindowsPrinterAdapter>(),
+          ),
+        ),
+
+        Provider(
+          create: (_) => const EscPosRenderer(),
+        ),
+
+        Provider(
+          create: (_) => const TicketPrintService(),
+        ),
+
+        // ==========================================
+        // COBRO
+        // ==========================================
+
+        ProxyProvider5<
+            CarritoService,
+            VentasService,
+            VentaService,
+            VentasRepository,
+            InventarioAutomaticoService,
+            CobroService>(
+          update: (
+              context,
+              carrito,
+              ventas,
+              ventaService,
+              ventasRepository,
+              inventarioAutomaticoService,
+              __,
+              ) =>
+              CobroService(
+                carritoService: carrito,
+                ventasService: ventas,
+                ventaService: ventaService,
+                ventasRepository: ventasRepository,
+                inventarioAutomaticoService:
+                inventarioAutomaticoService,
+
+                ticketPrintService:
+                context.read<TicketPrintService>(),
+
+                escPosRenderer:
+                context.read<EscPosRenderer>(),
+
+                printerService:
+                context.read<PrinterService>(),
               ),
-            ),
-
-          ],
         ),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'AZUL OS',
+        theme: AppTheme.lightTheme,
+        home: const HomeScreen(),
       ),
     );
-
   }
-
 }

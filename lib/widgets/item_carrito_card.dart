@@ -31,15 +31,86 @@ class ItemCarritoCard extends StatelessWidget {
                   style: const TextStyle(fontSize: 30),
                 ),
                 const SizedBox(width: 10),
+
                 Expanded(
-                  child: Text(
-                    item.producto.nombre,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.producto.nombre,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      Builder(
+                        builder: (_) {
+                          final detalles = <String>[];
+
+                          if (item.tamano != null) {
+                            detalles.add(item.tamano!);
+                          }
+
+                          if (item.tipoLeche != null) {
+                            detalles.add(item.tipoLeche!);
+                          }
+
+                          if (item.endulzante != null) {
+                            detalles.add(item.endulzante!);
+                          }
+
+                          if (item.infusion != null) {
+                            detalles.add(item.infusion!);
+                          }
+
+                          if (item.extraShot) {
+                            detalles.add("Extra Shot");
+                          }
+
+                          return Column(
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                            children: [
+
+                              if (detalles.isNotEmpty)
+                                Padding(
+                                  padding:
+                                  const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    detalles.join(" • "),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+
+                              if (item.observaciones != null &&
+                                  item.observaciones!
+                                      .trim()
+                                      .isNotEmpty)
+                                Padding(
+                                  padding:
+                                  const EdgeInsets.only(top: 6),
+                                  child: Text(
+                                    "📝 ${item.observaciones!}",
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.blueGrey,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
+
                 IconButton(
                   onPressed: onEliminar,
                   icon: const Icon(
@@ -59,7 +130,6 @@ class ItemCarritoCard extends StatelessWidget {
                   onPressed: onRestar,
                   icon: const Icon(Icons.remove_circle),
                 ),
-
                 Text(
                   "${item.cantidad}",
                   style: const TextStyle(
@@ -67,7 +137,6 @@ class ItemCarritoCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 IconButton(
                   onPressed: onSumar,
                   icon: const Icon(Icons.add_circle),
@@ -80,7 +149,7 @@ class ItemCarritoCard extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: Text(
-                "Subtotal: S/. ${item.subtotal.toStringAsFixed(2)}",
+                "S/. ${item.subtotal.toStringAsFixed(2)}",
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.green,
