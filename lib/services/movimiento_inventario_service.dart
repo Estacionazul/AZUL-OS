@@ -68,8 +68,9 @@ class MovimientoInventarioService extends ChangeNotifier {
   // ==========================================================
   // REGISTRAR VARIOS MOVIMIENTOS
   //
-  // IMPORTANTE:
-  // Todos se procesan como una sola operación.
+  // Método normal.
+  //
+  // El repositorio controla su propia transacción.
   // ==========================================================
 
   Future<void> registrarMovimientos(
@@ -89,10 +90,45 @@ class MovimientoInventarioService extends ChangeNotifier {
       nuevosStocksInsumo: stocks.insumos,
     );
 
-    // ========================================================
-    // REFRESCAR ESTADO DE LA APLICACIÓN
-    // ========================================================
+    await _refrescarEstado();
+  }
 
+  // ==========================================================
+  // REGISTRAR VARIOS MOVIMIENTOS SIN TRANSACCIÓN
+  //
+  // IMPORTANTE:
+  //
+  // Este método NO abre una transacción.
+  //
+  // Está pensado para ser llamado desde una transacción superior
+  // que también incluya la venta.
+  // ==========================================================
+
+  Future<void> registrarMovimientosSinTransaccion(
+      List<MovimientoInventarioModel> movimientos,
+      ) async {
+    if (movimientos.isEmpty) {
+      return;
+    }
+
+    final stocks = await _calcularNuevosStocks(
+      movimientos,
+    );
+
+    await _repository.registrarMovimientosSinTransaccion(
+      movimientos: movimientos,
+      nuevosStocksProducto: stocks.productos,
+      nuevosStocksInsumo: stocks.insumos,
+    );
+
+    await _refrescarEstado();
+  }
+
+  // ==========================================================
+  // REFRESCAR ESTADO
+  // ==========================================================
+
+  Future<void> _refrescarEstado() async {
     await _productoService.cargarProductos();
     await _insumoService.obtenerTodos();
     await cargarMovimientos();
@@ -219,7 +255,8 @@ class MovimientoInventarioService extends ChangeNotifier {
         if (nuevoStock < -0.000001) {
           throw StateError(
             'Stock insuficiente de ${insumo.nombre}. '
-                'Stock actual: ${insumo.stock.toStringAsFixed(3)} '
+                'Stock actual: '
+                '${insumo.stock.toStringAsFixed(3)} '
                 '${insumo.unidadMedida}.',
           );
         }
@@ -238,10 +275,8 @@ class MovimientoInventarioService extends ChangeNotifier {
   // ==========================================================
   // ELIMINAR
   //
-  // POR AHORA NO PERMITIMOS ELIMINAR MOVIMIENTOS.
-  //
   // El Kardex es auditoría.
-  // Después implementaremos reversión formal.
+  // No se eliminan movimientos.
   // ==========================================================
 
   Future<void> eliminarMovimiento(int id) async {

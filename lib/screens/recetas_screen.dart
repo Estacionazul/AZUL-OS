@@ -5,7 +5,6 @@ import '../core/widgets/app_search_field.dart';
 import '../core/widgets/dashboard_stat_card.dart';
 import '../services/recetas_service.dart';
 import '../screens/receta_detalle_screen.dart';
-import '../models/receta_model.dart';
 import '../widgets/dialogs/nueva_receta_dialog.dart';
 
 class RecetasScreen extends StatefulWidget {

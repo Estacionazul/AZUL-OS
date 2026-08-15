@@ -7,7 +7,6 @@ import '../database/dao/ventas_dao.dart';
 import '../models/venta.dart' as model;
 import '../models/item_carrito.dart';
 import '../models/dashboard_resumen.dart';
-import '../models/producto_model.dart';
 
 import '../repositories/producto_repository.dart';
 
@@ -19,12 +18,72 @@ class VentasRepository {
       : _dao = VentasDao(database),
         _productoRepository = ProductoRepository(database);
 
-  //=========================================================
+  // ==========================================================
   // GUARDAR VENTA COMPLETA
-  //=========================================================
+  //
+  // Método normal.
+  //
+  // Mantiene la compatibilidad con las partes del sistema que
+  // necesiten guardar una venta de forma independiente.
+  // ==========================================================
 
   Future<int> guardarVenta(model.Venta venta) async {
-    final ventaCompanion = VentasCompanion.insert(
+    final ventaCompanion = _crearVentaCompanion(venta);
+
+    final detalles = venta.items
+        .map(_crearDetalle)
+        .toList();
+
+    return _dao.guardarVentaCompleta(
+      venta: ventaCompanion,
+      detalles: detalles,
+    );
+  }
+
+  // ==========================================================
+  // GUARDAR VENTA SIN TRANSACCIÓN
+  //
+  // IMPORTANTE:
+  //
+  // Este método NO abre una transacción.
+  //
+  // Será utilizado posteriormente por CobroService dentro de
+  // una única transacción que incluirá:
+  //
+  // VENTA
+  // +
+  // DETALLES
+  // +
+  // STOCK
+  // +
+  // KARDEX
+  //
+  // Si cualquier parte falla, todo podrá revertirse.
+  // ==========================================================
+
+  Future<int> guardarVentaSinTransaccion(
+      model.Venta venta,
+      ) async {
+    final ventaCompanion = _crearVentaCompanion(venta);
+
+    final detalles = venta.items
+        .map(_crearDetalle)
+        .toList();
+
+    return _dao.guardarVentaCompletaSinTransaccion(
+      venta: ventaCompanion,
+      detalles: detalles,
+    );
+  }
+
+  // ==========================================================
+  // CREAR COMPANION DE VENTA
+  // ==========================================================
+
+  VentasCompanion _crearVentaCompanion(
+      model.Venta venta,
+      ) {
+    return VentasCompanion.insert(
       numero: venta.numero,
       fecha: Value(venta.fecha),
       tipoDocumento: Value(venta.tipoDocumento),
@@ -40,31 +99,22 @@ class VentasRepository {
       metodoPago: Value(venta.metodoPago),
       observaciones: Value(venta.observaciones),
     );
-
-    final detalles = venta.items
-        .map(_crearDetalle)
-        .toList();
-
-    return await _dao.guardarVentaCompleta(
-      venta: ventaCompanion,
-      detalles: detalles,
-    );
   }
 
-  //=========================================================
+  // ==========================================================
   // CONVERTIR ITEM -> DETALLE SQLITE
-  //=========================================================
+  // ==========================================================
 
-  DetalleVentasCompanion _crearDetalle(ItemCarrito item) {
+  DetalleVentasCompanion _crearDetalle(
+      ItemCarrito item,
+      ) {
     return DetalleVentasCompanion.insert(
       ventaId: 0,
       productoId: item.producto.id!,
       nombreProducto: item.producto.nombre,
-
       cantidad: Value(item.cantidad),
       precioUnitario: Value(item.precioUnitario),
       subtotal: Value(item.subtotal),
-
       tamano: Value(item.tamano),
       tipoLeche: Value(item.tipoLeche),
       endulzante: Value(item.endulzante),
@@ -74,22 +124,24 @@ class VentasRepository {
     );
   }
 
-  //=========================================================
+  // ==========================================================
   // CONVERTIR DETALLE SQLITE -> ITEM CARRITO
-  //=========================================================
+  // ==========================================================
 
   Future<ItemCarrito?> _crearItemDesdeDetalle(
       dynamic detalle,
       ) async {
-    final producto = await _productoRepository.obtenerPorId(
+    final producto =
+    await _productoRepository.obtenerPorId(
       detalle.productoId,
     );
 
     if (producto == null) {
       debugPrint(
-        '⚠️ No se encontró el producto ${detalle.productoId} '
-            'para la reimpresión.',
+        '⚠️ No se encontró el producto '
+            '${detalle.productoId} para la reimpresión.',
       );
+
       return null;
     }
 
@@ -105,23 +157,21 @@ class VentasRepository {
     );
   }
 
-  //=========================================================
+  // ==========================================================
   // CONVERTIR VENTA DB -> MODELO COMPLETO
-  //=========================================================
+  // ==========================================================
 
   Future<model.Venta> _crearVentaCompleta(
       dynamic venta,
       ) async {
-    final detalles = await _dao.obtenerDetalleVenta(
-      venta.id,
-    );
+    final detalles =
+    await _dao.obtenerDetalleVenta(venta.id);
 
     final items = <ItemCarrito>[];
 
     for (final detalle in detalles) {
-      final item = await _crearItemDesdeDetalle(
-        detalle,
-      );
+      final item =
+      await _crearItemDesdeDetalle(detalle);
 
       if (item != null) {
         items.add(item);
@@ -132,33 +182,28 @@ class VentasRepository {
       numero: venta.numero,
       fecha: venta.fecha,
       items: items,
-
       subtotal: venta.subtotal,
       igv: venta.igv,
       total: venta.total,
-
       metodoPago: venta.metodoPago,
-
       tipoDocumento: venta.tipoDocumento,
-
       dni: venta.dni,
       ruc: venta.ruc,
       nombreCliente: venta.nombreCliente,
       razonSocial: venta.razonSocial,
       direccionFiscal: venta.direccionFiscal,
-
       descuento: venta.descuento,
-
       observaciones: venta.observaciones,
     );
   }
 
-  //=========================================================
+  // ==========================================================
   // CONSULTAS
-  //=========================================================
+  // ==========================================================
 
   Future<List<model.Venta>> obtenerVentas() async {
-    final ventasDb = await _dao.obtenerVentas();
+    final ventasDb =
+    await _dao.obtenerVentas();
 
     final ventas = <model.Venta>[];
 
@@ -172,11 +217,13 @@ class VentasRepository {
     return ventas;
   }
 
-  //=========================================================
+  // ==========================================================
   // OBTENER UNA VENTA COMPLETA
-  //=========================================================
+  // ==========================================================
 
-  Future<model.Venta?> obtenerVenta(int id) async {
+  Future<model.Venta?> obtenerVenta(
+      int id,
+      ) async {
     final ventaDb =
     await _dao.obtenerVenta(id);
 
@@ -187,12 +234,13 @@ class VentasRepository {
     return _crearVentaCompleta(ventaDb);
   }
 
-  //=========================================================
+  // ==========================================================
   // DASHBOARD
-  //=========================================================
+  // ==========================================================
 
   Future<double> obtenerTotalVentasHoy() async {
-    final ventas = await obtenerVentas();
+    final ventas =
+    await obtenerVentas();
 
     final hoy = DateTime.now();
 
@@ -205,13 +253,13 @@ class VentasRepository {
 
     return ventasHoy.fold<double>(
       0.0,
-          (double total, model.Venta venta) =>
-      total + venta.total,
+          (total, venta) => total + venta.total,
     );
   }
 
   Future<int> obtenerCantidadVentasHoy() async {
-    final ventas = await obtenerVentas();
+    final ventas =
+    await obtenerVentas();
 
     final hoy = DateTime.now();
 
@@ -224,7 +272,8 @@ class VentasRepository {
   }
 
   Future<int> obtenerCantidadClientesHoy() async {
-    final ventas = await obtenerVentas();
+    final ventas =
+    await obtenerVentas();
 
     final hoy = DateTime.now();
 
@@ -237,7 +286,8 @@ class VentasRepository {
     )
         .map(
           (v) =>
-      v.nombreCliente ?? 'Cliente General',
+      v.nombreCliente ??
+          'Cliente General',
     )
         .toSet()
         .length;
@@ -256,9 +306,9 @@ class VentasRepository {
     );
   }
 
-  //=========================================================
+  // ==========================================================
   // SIGUIENTE NÚMERO DE VENTA
-  //=========================================================
+  // ==========================================================
 
   Future<String> obtenerSiguienteNumeroVenta() async {
     final ultimoNumero =

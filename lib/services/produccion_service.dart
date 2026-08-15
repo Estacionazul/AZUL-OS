@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-import '../models/produccion_model.dart';
 import '../models/receta_model.dart';
 import '../models/movimiento_inventario_model.dart';
 

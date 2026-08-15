@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../services/carrito_service.dart';
-import '../models/producto_model.dart';
 import '../widgets/dialogs/variantes_producto_dialog.dart';
 import '../widgets/carrito_panel.dart';
 import '../widgets/productos_panel.dart';

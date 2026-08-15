@@ -1,9 +1,9 @@
 import '../models/venta.dart';
 import '../models/movimiento_inventario_model.dart';
 import '../repositories/recetas_repository.dart';
-import '../services/insumo_service.dart';
-import '../services/movimiento_inventario_service.dart';
-import '../services/producto_service.dart';
+import 'insumo_service.dart';
+import 'movimiento_inventario_service.dart';
+import 'producto_service.dart';
 
 class InventarioAutomaticoService {
   final RecetasRepository _recetasRepository;
@@ -24,6 +24,11 @@ class InventarioAutomaticoService {
 
   // ==========================================================
   // VALIDAR UNA VENTA
+  //
+  // NO modifica stock.
+  //
+  // Solo comprueba que todos los movimientos de la venta
+  // puedan realizarse correctamente.
   // ==========================================================
 
   Future<void> validarVenta(Venta venta) async {
@@ -37,6 +42,8 @@ class InventarioAutomaticoService {
 
   // ==========================================================
   // DESCONTAR INVENTARIO DE UNA VENTA
+  //
+  // Todos los movimientos de la venta se registran juntos.
   // ==========================================================
 
   Future<void> descontarInventario(Venta venta) async {
@@ -186,6 +193,10 @@ class InventarioAutomaticoService {
 
         continue;
       }
+
+      // ======================================================
+      // TIPO DESCONOCIDO
+      // ======================================================
 
       throw StateError(
         'Tipo de inventario desconocido '

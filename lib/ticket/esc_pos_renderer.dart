@@ -6,12 +6,9 @@ import 'package:image/image.dart' as img;
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 
 import '../models/ticket.dart';
-import 'builders/empresa_builder.dart';
 
 class EscPosRenderer {
   const EscPosRenderer();
-
-  final EmpresaBuilder _empresaBuilder = const EmpresaBuilder();
 
   //====================================================
   // CONFIGURACIÓN DE CARACTERES ESPAÑOLES

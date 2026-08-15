@@ -32,9 +32,6 @@ import 'services/printer_service.dart';
 import 'services/ticket_print_service.dart';
 import 'ticket/esc_pos_renderer.dart';
 import 'printer/windows_printer_adapter.dart';
-import 'screens/ventas/pos_screen.dart';
-import 'screens/inventario/inventario_screen.dart';
-import 'screens/ventas/ventas_screen.dart';
 import 'repositories/empresa_repository.dart';
 import 'services/empresa_service.dart';
 

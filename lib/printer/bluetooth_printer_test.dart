@@ -115,10 +115,7 @@ class BluetoothPrinterTest {
         await _central.stopDiscovery();
       } catch (_) {}
 
-      if (subscription != null) {
-        await subscription.cancel();
-        subscription = null;
-      }
+      await subscription.cancel();
 
       // =====================================================
       // 5. IMPRESORA ENCONTRADA

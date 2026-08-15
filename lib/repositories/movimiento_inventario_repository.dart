@@ -49,7 +49,9 @@ class MovimientoInventarioRepository {
   // OBTENER POR ID
   // ==========================================================
 
-  Future<MovimientoInventarioModel?> obtenerPorId(int id) async {
+  Future<MovimientoInventarioModel?> obtenerPorId(
+      int id,
+      ) async {
     final movimiento = await _dao.obtenerPorId(id);
 
     if (movimiento == null) {
@@ -73,14 +75,11 @@ class MovimientoInventarioRepository {
   }
 
   // ==========================================================
-  // REGISTRAR MOVIMIENTOS + ACTUALIZAR STOCK
+  // REGISTRAR MOVIMIENTOS
   //
-  // TODO ocurre dentro de UNA transacción.
+  // Método público normal.
   //
-  // Si algo falla:
-  //
-  // STOCK NO CAMBIA
-  // KARDEX NO CAMBIA
+  // Cuando se utiliza directamente, crea su propia transacción.
   // ==========================================================
 
   Future<List<int>> registrarMovimientos({
@@ -93,90 +92,125 @@ class MovimientoInventarioRepository {
     }
 
     return _database.transaction(() async {
-      final ids = <int>[];
+      return registrarMovimientosSinTransaccion(
+        movimientos: movimientos,
+        nuevosStocksProducto: nuevosStocksProducto,
+        nuevosStocksInsumo: nuevosStocksInsumo,
+      );
+    });
+  }
 
-      for (final movimiento in movimientos) {
-        // ================================================
-        // PRODUCTO
-        // ================================================
+  // ==========================================================
+  // REGISTRAR MOVIMIENTOS SIN TRANSACCIÓN
+  //
+  // IMPORTANTE:
+  //
+  // Este método NO abre una transacción.
+  //
+  // Se utiliza cuando una operación superior ya controla una
+  // transacción que incluye:
+  //
+  // VENTA
+  // +
+  // STOCK
+  // +
+  // KARDEX
+  //
+  // Si la operación superior falla, todo se revierte.
+  // ==========================================================
 
-        if (movimiento.productoId != null) {
-          final nuevoStock =
-          nuevosStocksProducto[movimiento.productoId!];
+  Future<List<int>> registrarMovimientosSinTransaccion({
+    required List<MovimientoInventarioModel> movimientos,
+    required Map<int, int> nuevosStocksProducto,
+    required Map<int, double> nuevosStocksInsumo,
+  }) async {
+    if (movimientos.isEmpty) {
+      return [];
+    }
 
-          if (nuevoStock == null) {
-            throw StateError(
-              'No se calculó el nuevo stock del producto '
-                  '${movimiento.productoId}.',
-            );
-          }
+    final ids = <int>[];
 
-          final actualizado =
-          await _productosDao.actualizarStock(
-            movimiento.productoId!,
-            nuevoStock,
+    for (final movimiento in movimientos) {
+      // ======================================================
+      // PRODUCTO
+      // ======================================================
+
+      if (movimiento.productoId != null) {
+        final nuevoStock =
+        nuevosStocksProducto[movimiento.productoId!];
+
+        if (nuevoStock == null) {
+          throw StateError(
+            'No se calculó el nuevo stock del producto '
+                '${movimiento.productoId}.',
           );
-
-          if (!actualizado) {
-            throw StateError(
-              'No se pudo actualizar el stock del producto.',
-            );
-          }
         }
 
-        // ================================================
-        // INSUMO
-        // ================================================
-
-        if (movimiento.insumoId != null) {
-          final nuevoStock =
-          nuevosStocksInsumo[movimiento.insumoId!];
-
-          if (nuevoStock == null) {
-            throw StateError(
-              'No se calculó el nuevo stock del insumo '
-                  '${movimiento.insumoId}.',
-            );
-          }
-
-          final actualizado =
-          await _insumosDao.actualizarStock(
-            movimiento.insumoId!,
-            nuevoStock,
-          );
-
-          if (!actualizado) {
-            throw StateError(
-              'No se pudo actualizar el stock del insumo.',
-            );
-          }
-        }
-
-        // ================================================
-        // KARDEX
-        // ================================================
-
-        final id = await _dao.insertar(
-          MovimientosInventarioCompanion.insert(
-            fecha: Value(movimiento.fecha),
-            tipo: movimiento.tipo,
-            nombreItem: Value(movimiento.nombreItem),
-            emoji: Value(movimiento.emoji),
-            unidad: Value(movimiento.unidad),
-            referenciaId: Value(movimiento.referenciaId),
-            insumoId: Value(movimiento.insumoId),
-            productoId: Value(movimiento.productoId),
-            cantidad: movimiento.cantidad,
-            signo: movimiento.signo,
-            observacion: Value(movimiento.observacion),
-          ),
+        final actualizado =
+        await _productosDao.actualizarStock(
+          movimiento.productoId!,
+          nuevoStock,
         );
 
-        ids.add(id);
+        if (!actualizado) {
+          throw StateError(
+            'No se pudo actualizar el stock del producto.',
+          );
+        }
       }
 
-      return ids;
-    });
+      // ======================================================
+      // INSUMO
+      // ======================================================
+
+      if (movimiento.insumoId != null) {
+        final nuevoStock =
+        nuevosStocksInsumo[movimiento.insumoId!];
+
+        if (nuevoStock == null) {
+          throw StateError(
+            'No se calculó el nuevo stock del insumo '
+                '${movimiento.insumoId}.',
+          );
+        }
+
+        final actualizado =
+        await _insumosDao.actualizarStock(
+          movimiento.insumoId!,
+          nuevoStock,
+        );
+
+        if (!actualizado) {
+          throw StateError(
+            'No se pudo actualizar el stock del insumo.',
+          );
+        }
+      }
+
+      // ======================================================
+      // KARDEX
+      // ======================================================
+
+      final id = await _dao.insertar(
+        MovimientosInventarioCompanion.insert(
+          fecha: Value(movimiento.fecha),
+          tipo: movimiento.tipo,
+          nombreItem: Value(movimiento.nombreItem),
+          emoji: Value(movimiento.emoji),
+          unidad: Value(movimiento.unidad),
+          referenciaId: Value(movimiento.referenciaId),
+          insumoId: Value(movimiento.insumoId),
+          productoId: Value(movimiento.productoId),
+          cantidad: movimiento.cantidad,
+          signo: movimiento.signo,
+          observacion: Value(movimiento.observacion),
+        ),
+      );
+
+      ids.add(id);
+    }
+
+    return ids;
   }
 
   // ==========================================================
