@@ -25,7 +25,6 @@ class ResumenPago extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             const Row(
               children: [
                 Icon(
@@ -46,45 +45,17 @@ class ResumenPago extends StatelessWidget {
 
             const SizedBox(height: 25),
 
-            const Text(
-              "Tipo de documento",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+            _fila(
+              "Subtotal",
+              subtotal,
             ),
 
             const SizedBox(height: 12),
 
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: const [
-
-                Chip(
-                  avatar: Icon(Icons.note_alt_outlined),
-                  label: Text("Nota de Venta"),
-                ),
-
-                Chip(
-                  avatar: Icon(Icons.receipt),
-                  label: Text("Boleta"),
-                ),
-
-                Chip(
-                  avatar: Icon(Icons.business),
-                  label: Text("Factura"),
-                ),
-              ],
+            _fila(
+              "IGV (18%)",
+              igv,
             ),
-
-            const SizedBox(height: 25),
-
-            _fila("Subtotal", subtotal),
-
-            const SizedBox(height: 12),
-
-            _fila("IGV (18%)", igv),
 
             const Divider(height: 30),
 
@@ -120,7 +91,7 @@ class ResumenPago extends StatelessWidget {
           style: TextStyle(
             fontSize: grande ? 26 : 18,
             fontWeight: FontWeight.bold,
-            color: Colors.green.shade700,
+            color: Colors.green,
           ),
         ),
       ],

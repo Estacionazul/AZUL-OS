@@ -34,38 +34,38 @@ class ProductoRepository {
     );
   }
 
-  /// Actualizar producto
-  Future<bool> actualizar(ProductoModel producto) {
-    return _dao.actualizar(
-        Producto(
-          id: producto.id!,
-          codigo: producto.codigo,
-          codigoBarras: producto.codigoBarras.isEmpty
-              ? null
-              : producto.codigoBarras,
-          nombre: producto.nombre,
-          descripcion: producto.descripcion,
-          categoriaId: producto.categoriaId,
-          costo: producto.costo,
-          precioVenta: producto.precioVenta,
-          stock: producto.stock,
-          stockMinimo: producto.stockMinimo,
-          tipoInventario: producto.tipoInventario,
-          emoji: producto.emoji,
-          imagen: producto.imagen,
-          activo: producto.activo,
-          fechaCreacion: DateTime.now(),
-        )
-    );
-  }
+/// Actualizar producto
+Future<bool> actualizar(ProductoModel producto) {
+return _dao.actualizar(
+Producto(
+id: producto.id!,
+codigo: producto.codigo,
+codigoBarras: producto.codigoBarras.isEmpty
+? null
+: producto.codigoBarras,
+nombre: producto.nombre,
+descripcion: producto.descripcion,
+categoriaId: producto.categoriaId,
+costo: producto.costo,
+precioVenta: producto.precioVenta,
+stock: producto.stock,
+stockMinimo: producto.stockMinimo,
+tipoInventario: producto.tipoInventario,
+emoji: producto.emoji,
+imagen: producto.imagen,
+activo: producto.activo,
+fechaCreacion: DateTime.now(),
+),
+);
+}
 
-  /// Actualizar solamente el stock
-  Future<bool> actualizarStock(int id, int stock) {
-    return _dao.actualizarStock(id, stock);
-  }
+/// Actualizar solamente el stock
+Future<bool> actualizarStock(int id, int stock) {
+return _dao.actualizarStock(id, stock);
+}
 
-  /// Eliminar
-  Future<int> eliminar(int id) {
-    return _dao.eliminar(id);
-  }
+/// Eliminar
+Future<int> eliminar(int id) {
+return _dao.eliminar(id);
+}
 }

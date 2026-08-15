@@ -1,355 +1,638 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/widgets/app_confirm_dialog.dart';
 import '../../core/widgets/app_empty_state.dart';
 import '../../core/widgets/app_search_field.dart';
 import '../../core/widgets/dashboard_stat_card.dart';
-import '../../models/insumo_model.dart';
 import '../../services/insumo_service.dart';
+import '../../services/producto_service.dart';
+import '../../services/disponibilidad_producto_service.dart';
 import '../../widgets/dialogs/nuevo_insumo_dialog.dart';
 import 'kardex_screen.dart';
 
-class InventarioScreen extends StatelessWidget {
-const InventarioScreen({super.key});
+class InventarioScreen extends StatefulWidget {
+  const InventarioScreen({super.key});
 
-@override
-Widget build(BuildContext context) {
-final insumoService = context.watch<InsumoService>();
-final insumos = insumoService.insumos;
+  @override
+  State<InventarioScreen> createState() => _InventarioScreenState();
+}
 
-final totalInsumos = insumos.length;
+class _InventarioScreenState extends State<InventarioScreen> {
+  String _busqueda = '';
 
-final stockBajo = insumos.where(
-(i) =>
-i.stock > 0 &&
-i.stock <= i.stockMinimo,
-).length;
+  @override
+  Widget build(BuildContext context) {
+    final insumoService = context.watch<InsumoService>();
+    final productoService = context.watch<ProductoService>();
+    final disponibilidadService =
+    context.read<DisponibilidadProductoService>();
 
-final agotados = insumos.where(
-(i) => i.stock <= 0,
-).length;
+    final insumos = insumoService.insumos;
+    final productos = productoService.todosProductos;
 
-return Scaffold(
-backgroundColor: const Color(0xffF5F7FA),
-appBar: AppBar(
-title: const Text("INVENTARIO"),
-centerTitle: true,
-backgroundColor: const Color(0xff0A2E6E),
-),
-floatingActionButton: FloatingActionButton.extended(
-backgroundColor: const Color(0xff0A2E6E),
-icon: const Icon(
-Icons.add,
-color: Colors.white,
-),
-label: const Text(
-"Nuevo Insumo",
-style: TextStyle(
-color: Colors.white,
-),
-),
-onPressed: () async {
-await showDialog(
-context: context,
-builder: (_) => const NuevoInsumoDialog(),
-);
-},
-),
-body: Padding(
-padding: const EdgeInsets.all(20),
-child: Column(
-children: [
+    void buscar(String texto) {
+      setState(() {
+        _busqueda = texto.toLowerCase().trim();
+      });
 
-Row(
-children: [
+      insumoService.buscarInsumos(texto);
+      productoService.buscarProductos(texto);
+    }
 
-DashboardStatCard(
-icon: Icons.inventory_2,
-titulo: "Total",
-valor: totalInsumos.toString(),
-color: Colors.blue,
-),
+    final insumosFiltrados = insumos.where((insumo) {
+      if (_busqueda.isEmpty) return true;
 
-const SizedBox(width: 12),
+      return insumo.nombre.toLowerCase().contains(_busqueda) ||
+          insumo.codigo.toLowerCase().contains(_busqueda);
+    }).toList();
 
-DashboardStatCard(
-icon: Icons.warning_amber_rounded,
-titulo: "Stock Bajo",
-valor: stockBajo.toString(),
-color: Colors.orange,
-),
+    final productosFiltrados = productos.where((producto) {
+      if (_busqueda.isEmpty) return true;
 
-const SizedBox(width: 12),
+      return producto.nombre.toLowerCase().contains(_busqueda) ||
+          producto.codigo.toLowerCase().contains(_busqueda);
+    }).toList();
 
-DashboardStatCard(
-icon: Icons.cancel,
-titulo: "Agotados",
-valor: agotados.toString(),
-color: Colors.red,
-),
+    return Scaffold(
+      backgroundColor: const Color(0xffF5F7FA),
 
-],
-),
-
-const SizedBox(height: 20),
-
-AppSearchField(
-hintText: "Buscar insumo...",
-onChanged: (texto) {
-insumoService.buscarInsumos(texto);
-},
-),
-
-const SizedBox(height: 20),
-
-  SizedBox(
-    width: double.infinity,
-    child: ElevatedButton.icon(
-      icon: const Icon(Icons.receipt_long),
-      label: const Text("Ver Kardex"),
-      style: ElevatedButton.styleFrom(
+      appBar: AppBar(
+        title: const Text("INVENTARIO"),
+        centerTitle: true,
         backgroundColor: const Color(0xff0A2E6E),
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(
-          vertical: 16,
-        ),
       ),
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const KardexScreen(),
+
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color(0xff0A2E6E),
+        icon: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
+        label: const Text(
+          "Nuevo Insumo",
+          style: TextStyle(
+            color: Colors.white,
           ),
-        );
-      },
-    ),
-  ),
-
-  const SizedBox(height: 20),
-
-Expanded(
-child: insumos.isEmpty
-? const AppEmptyState(
-icon: Icons.inventory_2_outlined,
-titulo: "No hay insumos",
-mensaje:
-"Presiona 'Nuevo Insumo' para comenzar.",
-)
-: ListView.builder(
-itemCount: insumos.length,
-itemBuilder: (context, index) {
-final insumo = insumos[index];
-
-return Card(
-elevation: 2,
-margin: const EdgeInsets.only(
-bottom: 12,
-),
-shape: RoundedRectangleBorder(
-borderRadius:
-BorderRadius.circular(14),
-),
-child: ListTile(
-contentPadding:
-const EdgeInsets.all(16),
-leading: CircleAvatar(
-radius: 28,
-backgroundColor:
-const Color(0xffEAF1FF),
-child: Text(
-insumo.emoji,
-style: const TextStyle(
-fontSize: 24,
-),
-),
-),
-title: Text(
-insumo.nombre,
-style: const TextStyle(
-fontWeight: FontWeight.bold,
-fontSize: 17,
-),
-),
-subtitle: Padding(
-padding:
-const EdgeInsets.only(top: 8),
-child: Column(
-crossAxisAlignment:
-CrossAxisAlignment.start,
-children: [
-Text(
-"Código: ${insumo.codigo}",
-),
-const SizedBox(height: 4),
-Text(
-"Stock: ${insumo.stock} ${insumo.unidadMedida}",
-),
-const SizedBox(height: 4),
-Text(
-"Costo: S/ ${insumo.costoCompra.toStringAsFixed(2)}",
-),
-const SizedBox(height: 8),
-
-Builder(
-builder: (_) {
-if (insumo.stock <= 0) {
-return Container(
-padding:
-const EdgeInsets.symmetric(
-horizontal: 10,
-vertical: 5,
-),
-decoration:
-BoxDecoration(
-color:
-Colors.red.shade100,
-borderRadius:
-BorderRadius.circular(
-20),
-),
-child: const Text(
-"🔴 Agotado",
-style: TextStyle(
-color:
-Colors.red,
-fontWeight:
-FontWeight.bold,
-),
-),
-);
-}
-
-if (insumo.stock <=
-insumo.stockMinimo) {
-return Container(
-padding:
-const EdgeInsets.symmetric(
-horizontal: 10,
-vertical: 5,
-),
-decoration:
-BoxDecoration(
-color: Colors.orange
-.shade100,
-borderRadius:
-BorderRadius.circular(
-20),
-),
-child: const Text(
-"🟠 Stock Bajo",
-style: TextStyle(
-color:
-Colors.orange,
-fontWeight:
-FontWeight.bold,
-),
-),
-);
-}
-
-return Container(
-padding:
-const EdgeInsets.symmetric(
-horizontal: 10,
-vertical: 5,
-),
-decoration:
-BoxDecoration(
-color:
-Colors.green.shade100,
-borderRadius:
-BorderRadius.circular(
-20),
-),
-child: const Text(
-"🟢 Stock Normal",
-style: TextStyle(
-color:
-Colors.green,
-fontWeight:
-FontWeight.bold,
-),
-),
-);
-},
-),
-],
-),
-),
-  trailing: PopupMenuButton<String>(
-    onSelected: (value) async {
-      switch (value) {
-        case 'editar':
+        ),
+        onPressed: () async {
           await showDialog(
             context: context,
-            builder: (_) => NuevoInsumoDialog(
-              insumo: insumo,
-            ),
+            builder: (_) => const NuevoInsumoDialog(),
           );
-          break;
-
-        case 'eliminar':
-          final confirmar =
-          await showDialog<bool>(
-            context: context,
-            builder: (_) => AppConfirmDialog(
-              titulo: "Eliminar insumo",
-              mensaje:
-              "¿Deseas eliminar '${insumo.nombre}'?",
-              textoConfirmar: "Eliminar",
-              colorConfirmar: Colors.red,
-            ),
-          );
-
-          if (confirmar == true &&
-              insumo.id != null) {
-            await insumoService.eliminar(
-              insumo.id!,
-            );
-          }
-          break;
-      }
-    },
-    itemBuilder: (_) => const [
-      PopupMenuItem(
-        value: 'editar',
-        child: Row(
-          children: [
-            Icon(Icons.edit),
-            SizedBox(width: 8),
-            Text("Editar"),
-          ],
-        ),
+        },
       ),
-      PopupMenuItem(
-        value: 'eliminar',
-        child: Row(
+
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+
+        child: Column(
           children: [
-            Icon(
-              Icons.delete,
-              color: Colors.red,
+
+            // ==========================================
+            // ESTADÍSTICAS
+            // ==========================================
+
+            FutureBuilder<List<int>>(
+              future: _calcularEstadisticas(
+                insumosFiltrados,
+                productosFiltrados,
+                disponibilidadService,
+              ),
+              builder: (context, snapshot) {
+                final estadisticas =
+                    snapshot.data ?? [0, 0, 0];
+
+                final total = estadisticas[0];
+                final stockBajo = estadisticas[1];
+                final agotados = estadisticas[2];
+
+                return Row(
+                  children: [
+
+                    Expanded(
+                      child: DashboardStatCard(
+                        icon: Icons.inventory_2,
+                        titulo: "Total",
+                        valor: total.toString(),
+                        color: Colors.blue,
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: DashboardStatCard(
+                        icon: Icons.warning_amber_rounded,
+                        titulo: "Stock Bajo",
+                        valor: stockBajo.toString(),
+                        color: Colors.orange,
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: DashboardStatCard(
+                        icon: Icons.cancel,
+                        titulo: "Agotados",
+                        valor: agotados.toString(),
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
-            SizedBox(width: 8),
-            Text(
-              "Eliminar",
-              style: TextStyle(
-                color: Colors.red,
+
+            const SizedBox(height: 20),
+
+            // ==========================================
+            // BUSCADOR
+            // ==========================================
+
+            AppSearchField(
+              hintText: "Buscar producto o insumo...",
+              onChanged: buscar,
+            ),
+
+            const SizedBox(height: 20),
+
+            // ==========================================
+            // KARDEX
+            // ==========================================
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(
+                  Icons.receipt_long,
+                ),
+                label: const Text(
+                  "Ver Kardex",
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                  const Color(0xff0A2E6E),
+                  foregroundColor: Colors.white,
+                  padding:
+                  const EdgeInsets.symmetric(
+                    vertical: 16,
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                      const KardexScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // ==========================================
+            // LISTA
+            // ==========================================
+
+            Expanded(
+              child:
+              insumosFiltrados.isEmpty &&
+                  productosFiltrados.isEmpty
+                  ? const AppEmptyState(
+                icon:
+                Icons.inventory_2_outlined,
+                titulo:
+                "No hay productos ni insumos",
+                mensaje:
+                "Agrega productos o insumos para comenzar.",
+              )
+                  : ListView(
+                children: [
+
+                  // ==================================
+                  // INSUMOS
+                  // ==================================
+
+                  if (insumosFiltrados.isNotEmpty) ...[
+                    const Padding(
+                      padding:
+                      EdgeInsets.only(
+                        bottom: 12,
+                      ),
+                      child: Text(
+                        "INSUMOS",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight:
+                          FontWeight.bold,
+                          color:
+                          Color(0xff0A2E6E),
+                        ),
+                      ),
+                    ),
+
+                    ...insumosFiltrados.map(
+                          (insumo) {
+                        return Card(
+                          elevation: 2,
+                          margin:
+                          const EdgeInsets.only(
+                            bottom: 12,
+                          ),
+                          shape:
+                          RoundedRectangleBorder(
+                            borderRadius:
+                            BorderRadius.circular(
+                              14,
+                            ),
+                          ),
+                          child: ListTile(
+                            contentPadding:
+                            const EdgeInsets.all(
+                              16,
+                            ),
+
+                            leading:
+                            CircleAvatar(
+                              radius: 28,
+                              backgroundColor:
+                              const Color(
+                                0xffEAF1FF,
+                              ),
+                              child: Text(
+                                insumo.emoji,
+                                style:
+                                const TextStyle(
+                                  fontSize: 24,
+                                ),
+                              ),
+                            ),
+
+                            title: Text(
+                              insumo.nombre,
+                              style:
+                              const TextStyle(
+                                fontWeight:
+                                FontWeight.bold,
+                                fontSize: 17,
+                              ),
+                            ),
+
+                            subtitle: Padding(
+                              padding:
+                              const EdgeInsets.only(
+                                top: 8,
+                              ),
+                              child: Column(
+                                crossAxisAlignment:
+                                CrossAxisAlignment
+                                    .start,
+                                children: [
+
+                                  const Text(
+                                    "Tipo: Insumo",
+                                  ),
+
+                                  const SizedBox(
+                                    height: 4,
+                                  ),
+
+                                  Text(
+                                    "Código: ${insumo.codigo}",
+                                  ),
+
+                                  const SizedBox(
+                                    height: 4,
+                                  ),
+
+                                  Text(
+                                    "Stock: ${insumo.stock} ${insumo.unidadMedida}",
+                                  ),
+
+                                  const SizedBox(
+                                    height: 4,
+                                  ),
+
+                                  Text(
+                                    "Stock mínimo: ${insumo.stockMinimo} ${insumo.unidadMedida}",
+                                  ),
+
+                                  const SizedBox(
+                                    height: 8,
+                                  ),
+
+                                  _EstadoStock(
+                                    stock:
+                                    insumo.stock,
+                                    stockMinimo:
+                                    insumo.stockMinimo,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+
+                  // ==================================
+                  // PRODUCTOS
+                  // ==================================
+
+                  if (productosFiltrados.isNotEmpty) ...[
+                    const SizedBox(
+                      height: 8,
+                    ),
+
+                    const Padding(
+                      padding:
+                      EdgeInsets.only(
+                        bottom: 12,
+                      ),
+                      child: Text(
+                        "PRODUCTOS",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight:
+                          FontWeight.bold,
+                          color:
+                          Color(0xff0A2E6E),
+                        ),
+                      ),
+                    ),
+
+                    ...productosFiltrados.map(
+                          (producto) {
+                        return FutureBuilder<int>(
+                          future:
+                          disponibilidadService
+                              .calcularDisponibilidad(
+                            producto,
+                          ),
+                          builder:
+                              (context, snapshot) {
+                            final stock =
+                                snapshot.data ?? 0;
+
+                            return Card(
+                              elevation: 2,
+                              margin:
+                              const EdgeInsets.only(
+                                bottom: 12,
+                              ),
+                              shape:
+                              RoundedRectangleBorder(
+                                borderRadius:
+                                BorderRadius.circular(
+                                  14,
+                                ),
+                              ),
+                              child: ListTile(
+                                contentPadding:
+                                const EdgeInsets.all(
+                                  16,
+                                ),
+
+                                leading:
+                                CircleAvatar(
+                                  radius: 28,
+                                  backgroundColor:
+                                  const Color(
+                                    0xffEAF1FF,
+                                  ),
+                                  child: Text(
+                                    producto.emoji,
+                                    style:
+                                    const TextStyle(
+                                      fontSize: 24,
+                                    ),
+                                  ),
+                                ),
+
+                                title: Text(
+                                  producto.nombre,
+                                  style:
+                                  const TextStyle(
+                                    fontWeight:
+                                    FontWeight.bold,
+                                    fontSize: 17,
+                                  ),
+                                ),
+
+                                subtitle: Padding(
+                                  padding:
+                                  const EdgeInsets.only(
+                                    top: 8,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment
+                                        .start,
+                                    children: [
+
+                                      Text(
+                                        producto.tipoInventario ==
+                                            'receta'
+                                            ? "Tipo: Producto preparado"
+                                            : "Tipo: Producto",
+                                      ),
+
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
+
+                                      Text(
+                                        "Código: ${producto.codigo}",
+                                      ),
+
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
+
+                                      Text(
+                                        "Categoría: ${_nombreCategoria(producto.categoriaId)}",
+                                      ),
+
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
+
+                                      Text(
+                                        snapshot.connectionState ==
+                                            ConnectionState
+                                                .waiting
+                                            ? "Stock: Calculando..."
+                                            : "Stock: $stock und",
+                                      ),
+
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
+
+                                      Text(
+                                        "Stock mínimo: ${producto.stockMinimo} und",
+                                      ),
+
+                                      const SizedBox(
+                                        height: 8,
+                                      ),
+
+                                      _EstadoStock(
+                                        stock: stock,
+                                        stockMinimo:
+                                        producto
+                                            .stockMinimo,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
         ),
       ),
-    ],
-  ),
-),
-);
-},
-),
-),
-],
-),
-),
-);
+    );
+  }
+
+  Future<List<int>> _calcularEstadisticas(
+      List<dynamic> insumos,
+      List<dynamic> productos,
+      DisponibilidadProductoService service,
+      ) async {
+    int total = insumos.length + productos.length;
+    int stockBajo = 0;
+    int agotados = 0;
+
+    for (final insumo in insumos) {
+      if (insumo.stock <= 0) {
+        agotados++;
+      } else if (insumo.stock <= insumo.stockMinimo) {
+        stockBajo++;
+      }
+    }
+
+    for (final producto in productos) {
+      final stock =
+      await service.calcularDisponibilidad(producto);
+
+      if (stock <= 0) {
+        agotados++;
+      } else if (stock <= producto.stockMinimo) {
+        stockBajo++;
+      }
+    }
+
+    return [
+      total,
+      stockBajo,
+      agotados,
+    ];
+  }
+
+  String _nombreCategoria(int id) {
+    switch (id) {
+      case 1:
+        return "Cafés";
+      case 2:
+        return "Jugos";
+      case 3:
+        return "Snacks";
+      case 4:
+        return "Postres";
+      case 5:
+        return "Bebidas";
+      default:
+        return "General";
+    }
+  }
 }
+
+// ======================================================
+// ESTADO DEL STOCK
+// ======================================================
+
+class _EstadoStock extends StatelessWidget {
+  final num stock;
+  final num stockMinimo;
+
+  const _EstadoStock({
+    required this.stock,
+    required this.stockMinimo,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (stock <= 0) {
+      return Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 5,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.red.shade100,
+          borderRadius:
+          BorderRadius.circular(20),
+        ),
+        child: const Text(
+          "🔴 Agotado",
+          style: TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    if (stock <= stockMinimo) {
+      return Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 5,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.orange.shade100,
+          borderRadius:
+          BorderRadius.circular(20),
+        ),
+        child: const Text(
+          "🟠 Stock Bajo",
+          style: TextStyle(
+            color: Colors.orange,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 5,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.green.shade100,
+        borderRadius:
+        BorderRadius.circular(20),
+      ),
+      child: const Text(
+        "🟢 Stock Normal",
+        style: TextStyle(
+          color: Colors.green,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
 }

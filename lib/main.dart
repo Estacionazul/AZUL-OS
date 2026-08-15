@@ -6,9 +6,11 @@ import 'database/app_database.dart';
 import 'repositories/producto_repository.dart';
 import 'repositories/ventas_repository.dart';
 import 'services/inventario_automatico_service.dart';
+import 'services/disponibilidad_producto_service.dart';
 import 'repositories/recetas_repository.dart';
 import 'repositories/receta_detalle_repository.dart';
 import 'repositories/clientes_repository.dart';
+import 'repositories/insumo_repository.dart';
 import 'screens/home_screen.dart';
 
 import 'seed/datos_iniciales.dart';
@@ -136,6 +138,18 @@ class AzulOSApp extends StatelessWidget {
           ),
         ),
 
+        Provider(
+          create: (_) => InsumoRepository(database),
+        ),
+
+        Provider(
+          create: (context) => DisponibilidadProductoService(
+            recetasRepository: context.read<RecetasRepository>(),
+            detalleRepository: context.read<RecetaDetalleRepository>(),
+            insumoRepository: context.read<InsumoRepository>(),
+          ),
+        ),
+
         ChangeNotifierProvider(
           create: (context) => ProductoService(
             context.read<ProductoRepository>(),
@@ -180,7 +194,9 @@ class AzulOSApp extends StatelessWidget {
 
         ChangeNotifierProvider(
           create: (context) => MovimientoInventarioService(
-            context.read<MovimientoInventarioRepository>(),
+            repository: context.read<MovimientoInventarioRepository>(),
+            productoRepository: ProductoRepository(database),
+            insumoRepository: InsumoRepository(database),
           ),
         ),
 

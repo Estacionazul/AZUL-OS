@@ -54,6 +54,17 @@ class RecetasRepository {
     return _recetasDao.eliminar(id);
   }
 
+  /// Obtener receta por producto
+  Future<RecetaModel?> obtenerPorProducto(int productoId) async {
+    final receta = await _recetasDao.obtenerPorProducto(productoId);
+
+    if (receta == null) {
+      return null;
+    }
+
+    return RecetaMapper.toModel(receta);
+  }
+
   // ==========================
   // DETALLE
   // ==========================

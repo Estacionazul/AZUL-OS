@@ -46,7 +46,7 @@ class _ProductosPanelState extends State<ProductosPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final productos = context.watch<ProductoService>().productos;
+    final productos = context.watch<ProductoService>().todosProductos;
 
     return Card(
       elevation: 3,

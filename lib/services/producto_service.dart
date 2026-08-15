@@ -14,6 +14,9 @@ class ProductoService extends ChangeNotifier {
   List<ProductoModel> get productos =>
       List.unmodifiable(_productosFiltrados);
 
+  List<ProductoModel> get todosProductos =>
+      List.unmodifiable(_productos);
+
   Future<void> cargarProductos() async {
     _productos = await _repository.obtenerTodos();
     _productosFiltrados = List.from(_productos);
