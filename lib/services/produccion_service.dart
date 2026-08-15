@@ -10,7 +10,6 @@ import 'producto_service.dart';
 import 'receta_detalle_service.dart';
 
 class ProduccionService extends ChangeNotifier {
-
   final ProductoService productoService;
   final InsumoService insumoService;
   final RecetaDetalleService recetaDetalleService;
@@ -27,96 +26,158 @@ class ProduccionService extends ChangeNotifier {
     required RecetaModel receta,
     required double cantidad,
   }) async {
-
-    // 1. Cargar ingredientes de la receta
-    await recetaDetalleService.cargarIngredientes(receta.id!);
-
-    final ingredientes = recetaDetalleService.ingredientes;
-    debugPrint("TOTAL INGREDIENTES: ${ingredientes.length}");
-
-    for (final i in ingredientes) {
-      debugPrint(
-        "Insumo: ${i.insumoId} - Cantidad: ${i.cantidad}",
-      );
+    if (cantidad <= 0) {
+      return "La cantidad debe ser mayor a 0.";
     }
+
+    if (receta.id == null) {
+      return "La receta no tiene un ID válido.";
+    }
+
+    // ========================================================
+    // 1. CARGAR INGREDIENTES
+    // ========================================================
+
+    await recetaDetalleService.cargarIngredientes(
+      receta.id!,
+    );
+
+    final ingredientes =
+        recetaDetalleService.ingredientes;
 
     if (ingredientes.isEmpty) {
       return "La receta no tiene ingredientes.";
     }
 
-    // 2. Verificar stock de todos los ingredientes
-    for (final ingrediente in ingredientes) {
+    // ========================================================
+    // 2. VALIDAR STOCK
+    // ========================================================
 
-      final insumo = await insumoService.obtenerPorId(
+    for (final ingrediente in ingredientes) {
+      final insumo =
+      await insumoService.obtenerPorId(
         ingrediente.insumoId,
       );
 
       if (insumo == null) {
-        return "No existe el insumo ID ${ingrediente.insumoId}.";
+        return "No existe el insumo "
+            "ID ${ingrediente.insumoId}.";
       }
 
       final requerido =
           ingrediente.cantidad * cantidad;
 
       if (insumo.stock < requerido) {
-        return "Stock insuficiente de ${insumo.nombre}.";
+        return "Stock insuficiente de "
+            "${insumo.nombre}. "
+            "Disponible: "
+            "${insumo.stock.toStringAsFixed(2)} "
+            "${insumo.unidadMedida}.";
       }
     }
 
-    // 3. Descontar todos los ingredientes
-    for (final ingrediente in ingredientes) {
+    // ========================================================
+    // 3. CONSTRUIR MOVIMIENTOS
+    // ========================================================
 
-      final insumo = await insumoService.obtenerPorId(
+    final movimientos =
+    <MovimientoInventarioModel>[];
+
+    for (final ingrediente in ingredientes) {
+      final insumo =
+      await insumoService.obtenerPorId(
         ingrediente.insumoId,
       );
 
-      if (insumo == null) continue;
+      if (insumo == null) {
+        return "No existe el insumo.";
+      }
 
       final requerido =
           ingrediente.cantidad * cantidad;
 
-      await insumoService.disminuirStock(
-        insumo,
-        requerido,
+      // ------------------------------------------------------
+      // CONSUMO DEL INSUMO
+      // ------------------------------------------------------
+
+      movimientos.add(
+        MovimientoInventarioModel(
+          fecha: DateTime.now(),
+          tipo: "PRODUCCION",
+          nombreItem: insumo.nombre,
+          emoji: insumo.emoji,
+          unidad: insumo.unidadMedida,
+          referenciaId: receta.id,
+          insumoId: insumo.id,
+          productoId: null,
+          cantidad: requerido,
+          signo: -1,
+          observacion:
+          "Consumo para producir "
+              "${receta.nombre}",
+        ),
       );
-
-          await movimientoService.registrarMovimiento(
-            MovimientoInventarioModel(
-              fecha: DateTime.now(),
-              tipo: "PRODUCCION",
-
-              nombreItem: insumo.nombre,
-              emoji: insumo.emoji,
-              unidad: insumo.unidadMedida,
-
-              referenciaId: receta.id,
-              insumoId: insumo.id,
-              productoId: receta.productoId,
-
-              cantidad: requerido,
-              signo: -1,
-
-              observacion:
-              "Consumo para producir ${receta.nombre}",
-            ),
-          );
     }
 
-    // 4. Aumentar stock del producto terminado
+    // ========================================================
+    // 4. AUMENTAR PRODUCTO TERMINADO
+    // ========================================================
+
     final producto =
     productoService.obtenerProducto(
       receta.productoId,
     );
 
     if (producto == null) {
-      return "No existe el producto.";
+      return "No existe el producto terminado.";
     }
 
-    await productoService.aumentarStock(
-      receta.productoId,
-      cantidad,
+    if (cantidad != cantidad.roundToDouble()) {
+      return "La producción del producto "
+          "terminado debe ser en unidades enteras.";
+    }
+
+    movimientos.add(
+      MovimientoInventarioModel(
+        fecha: DateTime.now(),
+        tipo: "PRODUCCION",
+        nombreItem: producto.nombre,
+        emoji: producto.emoji,
+        unidad: "unidad",
+        referenciaId: receta.id,
+        insumoId: null,
+        productoId: producto.id,
+        cantidad: cantidad,
+        signo: 1,
+        observacion:
+        "Producto terminado de "
+            "${receta.nombre}",
+      ),
     );
 
-    return "Producción realizada correctamente.";
+    // ========================================================
+    // 5. VALIDAR TODO
+    // ========================================================
+
+    try {
+      await movimientoService.validarDisponibilidad(
+        movimientos,
+      );
+
+      // ======================================================
+      // 6. EJECUTAR TODO EN UNA SOLA TRANSACCIÓN
+      // ======================================================
+
+      await movimientoService.registrarMovimientos(
+        movimientos,
+      );
+
+      return "Producción realizada correctamente.";
+    } catch (e) {
+      return e.toString().replaceFirst(
+        'Bad state: ',
+        '',
+      );
+    }
   }
 }

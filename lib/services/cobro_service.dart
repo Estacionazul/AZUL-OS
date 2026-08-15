@@ -66,16 +66,33 @@ class CobroService {
       observaciones: ventaActual.observaciones,
     );
 
-    await ventasRepository.guardarVenta(venta);
+    // ==========================================================
+// VALIDAR INVENTARIO ANTES DE REGISTRAR LA VENTA
+// ==========================================================
 
-// Mantener temporalmente la lista en memoria para las estadísticas
-    ventasService.registrarVenta(venta);
+    await inventarioAutomaticoService.validarVenta(
+      venta,
+    );
 
-// Preparado para el Sprint 2.
-// Cuando el servicio descuente stock realmente,
-// simplemente descomentaremos esta línea.
-//
-    await inventarioAutomaticoService.descontarInventario(venta);
+// ==========================================================
+// GUARDAR VENTA
+// ==========================================================
+
+    await ventasRepository.guardarVenta(
+      venta,
+    );
+
+    ventasService.registrarVenta(
+      venta,
+    );
+
+// ==========================================================
+// DESCONTAR INVENTARIO
+// ==========================================================
+
+    await inventarioAutomaticoService.descontarInventario(
+      venta,
+    );
 
 //==============================
 // Generar Ticket

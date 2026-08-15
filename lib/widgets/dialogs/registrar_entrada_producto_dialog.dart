@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../models/producto_model.dart';
 import '../../services/movimiento_inventario_service.dart';
-import '../../services/producto_service.dart';
 import '../../models/movimiento_inventario_model.dart';
 
 class RegistrarEntradaProductoDialog extends StatefulWidget {
@@ -71,20 +70,27 @@ class _RegistrarEntradaProductoDialogState
     });
 
     try {
-      final productoService = context.read<ProductoService>();
       final movimientoService =
       context.read<MovimientoInventarioService>();
 
       final stockAnterior = widget.producto.stock;
 
-      final actualizado = await productoService.aumentarStock(
-        widget.producto.id!,
-        cantidad.toDouble(),
+      await movimientoService.registrarMovimiento(
+        MovimientoInventarioModel(
+          fecha: DateTime.now(),
+          tipo: "ENTRADA",
+          nombreItem: widget.producto.nombre,
+          emoji: widget.producto.emoji,
+          unidad: "unidad",
+          referenciaId: null,
+          insumoId: null,
+          productoId: widget.producto.id,
+          cantidad: cantidad.toDouble(),
+          signo: 1,
+          observacion:
+          "$motivo - Stock anterior: $stockAnterior",
+        ),
       );
-
-      if (!actualizado) {
-        throw Exception("No se pudo actualizar el stock.");
-      }
 
       await movimientoService.registrarMovimiento(
         MovimientoInventarioModel(
