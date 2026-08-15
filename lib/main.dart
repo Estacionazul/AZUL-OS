@@ -194,9 +194,16 @@ class AzulOSApp extends StatelessWidget {
 
         ChangeNotifierProvider(
           create: (context) => MovimientoInventarioService(
-            repository: context.read<MovimientoInventarioRepository>(),
-            productoRepository: ProductoRepository(database),
-            insumoRepository: InsumoRepository(database),
+            repository:
+            context.read<MovimientoInventarioRepository>(),
+            productoRepository:
+            context.read<ProductoRepository>(),
+            insumoRepository:
+            context.read<InsumoRepository>(),
+            productoService:
+            context.read<ProductoService>(),
+            insumoService:
+            context.read<InsumoService>(),
           ),
         ),
 
@@ -212,7 +219,16 @@ class AzulOSApp extends StatelessWidget {
         ),
 
         Provider(
-          create: (_) => InventarioAutomaticoService(database),
+          create: (context) => InventarioAutomaticoService(
+            recetasRepository:
+            context.read<RecetasRepository>(),
+            productoService:
+            context.read<ProductoService>(),
+            insumoService:
+            context.read<InsumoService>(),
+            movimientoService:
+            context.read<MovimientoInventarioService>(),
+          ),
         ),
 
         // ==========================================

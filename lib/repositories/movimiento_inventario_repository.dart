@@ -1,14 +1,28 @@
-import '../database/app_database.dart';
-import '../database/dao/movimientos_inventario_dao.dart';
-import '../models/movimiento_inventario_model.dart';
 import 'package:drift/drift.dart';
 
+import '../database/app_database.dart';
+import '../database/dao/movimientos_inventario_dao.dart';
+import '../database/dao/productos_dao.dart';
+import '../database/dao/insumos_dao.dart';
+import '../models/movimiento_inventario_model.dart';
+
 class MovimientoInventarioRepository {
+  final AppDatabase _database;
+
   final MovimientosInventarioDao _dao;
+  final ProductosDao _productosDao;
+  final InsumosDao _insumosDao;
 
   MovimientoInventarioRepository(
       AppDatabase database,
-      ) : _dao = MovimientosInventarioDao(database);
+      )   : _database = database,
+        _dao = MovimientosInventarioDao(database),
+        _productosDao = ProductosDao(database),
+        _insumosDao = InsumosDao(database);
+
+  // ==========================================================
+  // OBTENER MOVIMIENTOS
+  // ==========================================================
 
   Future<List<MovimientoInventarioModel>> obtenerTodos() async {
     final lista = await _dao.obtenerTodos();
@@ -31,25 +45,143 @@ class MovimientoInventarioRepository {
     }).toList();
   }
 
-  Future<int> insertar(
-      MovimientoInventarioModel movimiento,
-      ) {
-    return _dao.insertar(
-      MovimientosInventarioCompanion.insert(
-        tipo: movimiento.tipo,
-        nombreItem: Value(movimiento.nombreItem),
-        emoji: Value(movimiento.emoji),
-        unidad: Value(movimiento.unidad),
-        cantidad: movimiento.cantidad,
-        signo: movimiento.signo,
-        fecha: Value(movimiento.fecha),
-        referenciaId: Value(movimiento.referenciaId),
-        insumoId: Value(movimiento.insumoId),
-        productoId: Value(movimiento.productoId),
-        observacion: Value(movimiento.observacion),
-      ),
+  // ==========================================================
+  // OBTENER POR ID
+  // ==========================================================
+
+  Future<MovimientoInventarioModel?> obtenerPorId(int id) async {
+    final movimiento = await _dao.obtenerPorId(id);
+
+    if (movimiento == null) {
+      return null;
+    }
+
+    return MovimientoInventarioModel(
+      id: movimiento.id,
+      fecha: movimiento.fecha,
+      tipo: movimiento.tipo,
+      nombreItem: movimiento.nombreItem,
+      emoji: movimiento.emoji,
+      unidad: movimiento.unidad,
+      referenciaId: movimiento.referenciaId,
+      insumoId: movimiento.insumoId,
+      productoId: movimiento.productoId,
+      cantidad: movimiento.cantidad,
+      signo: movimiento.signo,
+      observacion: movimiento.observacion,
     );
   }
+
+  // ==========================================================
+  // REGISTRAR MOVIMIENTOS + ACTUALIZAR STOCK
+  //
+  // TODO ocurre dentro de UNA transacción.
+  //
+  // Si algo falla:
+  //
+  // STOCK NO CAMBIA
+  // KARDEX NO CAMBIA
+  // ==========================================================
+
+  Future<List<int>> registrarMovimientos({
+    required List<MovimientoInventarioModel> movimientos,
+    required Map<int, int> nuevosStocksProducto,
+    required Map<int, double> nuevosStocksInsumo,
+  }) async {
+    if (movimientos.isEmpty) {
+      return [];
+    }
+
+    return _database.transaction(() async {
+      final ids = <int>[];
+
+      for (final movimiento in movimientos) {
+        // ================================================
+        // PRODUCTO
+        // ================================================
+
+        if (movimiento.productoId != null) {
+          final nuevoStock =
+          nuevosStocksProducto[movimiento.productoId!];
+
+          if (nuevoStock == null) {
+            throw StateError(
+              'No se calculó el nuevo stock del producto '
+                  '${movimiento.productoId}.',
+            );
+          }
+
+          final actualizado =
+          await _productosDao.actualizarStock(
+            movimiento.productoId!,
+            nuevoStock,
+          );
+
+          if (!actualizado) {
+            throw StateError(
+              'No se pudo actualizar el stock del producto.',
+            );
+          }
+        }
+
+        // ================================================
+        // INSUMO
+        // ================================================
+
+        if (movimiento.insumoId != null) {
+          final nuevoStock =
+          nuevosStocksInsumo[movimiento.insumoId!];
+
+          if (nuevoStock == null) {
+            throw StateError(
+              'No se calculó el nuevo stock del insumo '
+                  '${movimiento.insumoId}.',
+            );
+          }
+
+          final actualizado =
+          await _insumosDao.actualizarStock(
+            movimiento.insumoId!,
+            nuevoStock,
+          );
+
+          if (!actualizado) {
+            throw StateError(
+              'No se pudo actualizar el stock del insumo.',
+            );
+          }
+        }
+
+        // ================================================
+        // KARDEX
+        // ================================================
+
+        final id = await _dao.insertar(
+          MovimientosInventarioCompanion.insert(
+            fecha: Value(movimiento.fecha),
+            tipo: movimiento.tipo,
+            nombreItem: Value(movimiento.nombreItem),
+            emoji: Value(movimiento.emoji),
+            unidad: Value(movimiento.unidad),
+            referenciaId: Value(movimiento.referenciaId),
+            insumoId: Value(movimiento.insumoId),
+            productoId: Value(movimiento.productoId),
+            cantidad: movimiento.cantidad,
+            signo: movimiento.signo,
+            observacion: Value(movimiento.observacion),
+          ),
+        );
+
+        ids.add(id);
+      }
+
+      return ids;
+    });
+  }
+
+  // ==========================================================
+  // ELIMINAR
+  // ==========================================================
 
   Future<int> eliminar(int id) {
     return _dao.eliminar(id);
