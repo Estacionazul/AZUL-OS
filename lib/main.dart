@@ -33,6 +33,7 @@ import 'services/ticket_print_service.dart';
 import 'ticket/esc_pos_renderer.dart';
 import 'printer/windows_printer_adapter.dart';
 import 'repositories/empresa_repository.dart';
+import 'repositories/cajas_repository.dart';
 import 'services/empresa_service.dart';
 
 Future<void> main() async {
@@ -109,6 +110,10 @@ class AzulOSApp extends StatelessWidget {
 
         Provider(
           create: (_) => EmpresaRepository(database),
+        ),
+
+        Provider(
+          create: (_) => CajasRepository(database),
         ),
 
         ChangeNotifierProvider(
@@ -277,6 +282,8 @@ class AzulOSApp extends StatelessWidget {
                 ventasRepository: ventasRepository,
                 inventarioAutomaticoService:
                 inventarioAutomaticoService,
+                cajasRepository:
+                context.read<CajasRepository>(),
 
                 ticketPrintService:
                 context.read<TicketPrintService>(),

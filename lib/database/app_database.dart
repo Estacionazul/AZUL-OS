@@ -21,12 +21,14 @@ import 'tables/detalle_ventas_table.dart';
 import 'tables/clientes_table.dart';
 import 'tables/movimientos_inventario_table.dart';
 import 'tables/empresa_table.dart';
+import 'tables/cajas_table.dart';
+import 'tables/movimientos_caja_table.dart';
 
 import 'dao/ventas_dao.dart';
 import 'dao/clientes_dao.dart';
 import 'dao/movimientos_inventario_dao.dart';
 import 'dao/empresa_dao.dart';
-
+import 'dao/cajas_dao.dart';
 part 'app_database.g.dart';
 
 @DriftDatabase(
@@ -41,6 +43,8 @@ part 'app_database.g.dart';
     Clientes,
     MovimientosInventario,
     Empresa,
+    Cajas,
+    MovimientosCaja,
   ],
   daos: [
     ProductosDao,
@@ -51,21 +55,26 @@ part 'app_database.g.dart';
     ClientesDao,
     MovimientosInventarioDao,
     EmpresaDao,
+    CajasDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) async {
       await m.createAll();
     },
+
     onUpgrade: (Migrator m, int from, int to) async {
-      // Aquí agregaremos migraciones en el futuro.
+      if (from < 11) {
+        await m.createTable(cajas);
+        await m.createTable(movimientosCaja);
+      }
     },
   );
 }
@@ -79,9 +88,9 @@ LazyDatabase _openConnection() {
     );
 
     // SOLO PARA DESARROLLO
-// if (await file.exists()) {
-//   await file.delete();
-// }
+    // if (await file.exists()) {
+    //   await file.delete();
+    // }
 
     return NativeDatabase(file);
   });

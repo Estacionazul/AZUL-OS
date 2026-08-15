@@ -11,6 +11,7 @@ import 'recetas_screen.dart';
 import 'ventas/ventas_screen.dart';
 import 'produccion/produccion_screen.dart';
 import 'configuracion/configuracion_screen.dart';
+import 'caja/caja_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,13 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const VentasScreen(),
       const ClientesScreen(),
 
-      const Center(
-        child: Text(
-          "Caja\n(Próximamente)",
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 22),
-        ),
-      ),
+      const CajaScreen(),
 
       const Center(
         child: Text(

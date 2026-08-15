@@ -6543,6 +6543,1036 @@ class EmpresaCompanion extends UpdateCompanion<EmpresaData> {
   }
 }
 
+class $CajasTable extends Cajas with TableInfo<$CajasTable, Caja> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CajasTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _fechaAperturaMeta = const VerificationMeta(
+    'fechaApertura',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fechaApertura =
+      GeneratedColumn<DateTime>(
+        'fecha_apertura',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: currentDateAndTime,
+      );
+  static const VerificationMeta _montoInicialMeta = const VerificationMeta(
+    'montoInicial',
+  );
+  @override
+  late final GeneratedColumn<double> montoInicial = GeneratedColumn<double>(
+    'monto_inicial',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _fechaCierreMeta = const VerificationMeta(
+    'fechaCierre',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fechaCierre = GeneratedColumn<DateTime>(
+    'fecha_cierre',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _montoCierreMeta = const VerificationMeta(
+    'montoCierre',
+  );
+  @override
+  late final GeneratedColumn<double> montoCierre = GeneratedColumn<double>(
+    'monto_cierre',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _estadoMeta = const VerificationMeta('estado');
+  @override
+  late final GeneratedColumn<String> estado = GeneratedColumn<String>(
+    'estado',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('ABIERTA'),
+  );
+  static const VerificationMeta _observacionesMeta = const VerificationMeta(
+    'observaciones',
+  );
+  @override
+  late final GeneratedColumn<String> observaciones = GeneratedColumn<String>(
+    'observaciones',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    fechaApertura,
+    montoInicial,
+    fechaCierre,
+    montoCierre,
+    estado,
+    observaciones,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cajas';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Caja> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('fecha_apertura')) {
+      context.handle(
+        _fechaAperturaMeta,
+        fechaApertura.isAcceptableOrUnknown(
+          data['fecha_apertura']!,
+          _fechaAperturaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('monto_inicial')) {
+      context.handle(
+        _montoInicialMeta,
+        montoInicial.isAcceptableOrUnknown(
+          data['monto_inicial']!,
+          _montoInicialMeta,
+        ),
+      );
+    }
+    if (data.containsKey('fecha_cierre')) {
+      context.handle(
+        _fechaCierreMeta,
+        fechaCierre.isAcceptableOrUnknown(
+          data['fecha_cierre']!,
+          _fechaCierreMeta,
+        ),
+      );
+    }
+    if (data.containsKey('monto_cierre')) {
+      context.handle(
+        _montoCierreMeta,
+        montoCierre.isAcceptableOrUnknown(
+          data['monto_cierre']!,
+          _montoCierreMeta,
+        ),
+      );
+    }
+    if (data.containsKey('estado')) {
+      context.handle(
+        _estadoMeta,
+        estado.isAcceptableOrUnknown(data['estado']!, _estadoMeta),
+      );
+    }
+    if (data.containsKey('observaciones')) {
+      context.handle(
+        _observacionesMeta,
+        observaciones.isAcceptableOrUnknown(
+          data['observaciones']!,
+          _observacionesMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Caja map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Caja(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      fechaApertura: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_apertura'],
+      )!,
+      montoInicial: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}monto_inicial'],
+      )!,
+      fechaCierre: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_cierre'],
+      ),
+      montoCierre: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}monto_cierre'],
+      ),
+      estado: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}estado'],
+      )!,
+      observaciones: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}observaciones'],
+      ),
+    );
+  }
+
+  @override
+  $CajasTable createAlias(String alias) {
+    return $CajasTable(attachedDatabase, alias);
+  }
+}
+
+class Caja extends DataClass implements Insertable<Caja> {
+  final int id;
+  final DateTime fechaApertura;
+  final double montoInicial;
+  final DateTime? fechaCierre;
+  final double? montoCierre;
+  final String estado;
+  final String? observaciones;
+  const Caja({
+    required this.id,
+    required this.fechaApertura,
+    required this.montoInicial,
+    this.fechaCierre,
+    this.montoCierre,
+    required this.estado,
+    this.observaciones,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['fecha_apertura'] = Variable<DateTime>(fechaApertura);
+    map['monto_inicial'] = Variable<double>(montoInicial);
+    if (!nullToAbsent || fechaCierre != null) {
+      map['fecha_cierre'] = Variable<DateTime>(fechaCierre);
+    }
+    if (!nullToAbsent || montoCierre != null) {
+      map['monto_cierre'] = Variable<double>(montoCierre);
+    }
+    map['estado'] = Variable<String>(estado);
+    if (!nullToAbsent || observaciones != null) {
+      map['observaciones'] = Variable<String>(observaciones);
+    }
+    return map;
+  }
+
+  CajasCompanion toCompanion(bool nullToAbsent) {
+    return CajasCompanion(
+      id: Value(id),
+      fechaApertura: Value(fechaApertura),
+      montoInicial: Value(montoInicial),
+      fechaCierre: fechaCierre == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fechaCierre),
+      montoCierre: montoCierre == null && nullToAbsent
+          ? const Value.absent()
+          : Value(montoCierre),
+      estado: Value(estado),
+      observaciones: observaciones == null && nullToAbsent
+          ? const Value.absent()
+          : Value(observaciones),
+    );
+  }
+
+  factory Caja.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Caja(
+      id: serializer.fromJson<int>(json['id']),
+      fechaApertura: serializer.fromJson<DateTime>(json['fechaApertura']),
+      montoInicial: serializer.fromJson<double>(json['montoInicial']),
+      fechaCierre: serializer.fromJson<DateTime?>(json['fechaCierre']),
+      montoCierre: serializer.fromJson<double?>(json['montoCierre']),
+      estado: serializer.fromJson<String>(json['estado']),
+      observaciones: serializer.fromJson<String?>(json['observaciones']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'fechaApertura': serializer.toJson<DateTime>(fechaApertura),
+      'montoInicial': serializer.toJson<double>(montoInicial),
+      'fechaCierre': serializer.toJson<DateTime?>(fechaCierre),
+      'montoCierre': serializer.toJson<double?>(montoCierre),
+      'estado': serializer.toJson<String>(estado),
+      'observaciones': serializer.toJson<String?>(observaciones),
+    };
+  }
+
+  Caja copyWith({
+    int? id,
+    DateTime? fechaApertura,
+    double? montoInicial,
+    Value<DateTime?> fechaCierre = const Value.absent(),
+    Value<double?> montoCierre = const Value.absent(),
+    String? estado,
+    Value<String?> observaciones = const Value.absent(),
+  }) => Caja(
+    id: id ?? this.id,
+    fechaApertura: fechaApertura ?? this.fechaApertura,
+    montoInicial: montoInicial ?? this.montoInicial,
+    fechaCierre: fechaCierre.present ? fechaCierre.value : this.fechaCierre,
+    montoCierre: montoCierre.present ? montoCierre.value : this.montoCierre,
+    estado: estado ?? this.estado,
+    observaciones: observaciones.present
+        ? observaciones.value
+        : this.observaciones,
+  );
+  Caja copyWithCompanion(CajasCompanion data) {
+    return Caja(
+      id: data.id.present ? data.id.value : this.id,
+      fechaApertura: data.fechaApertura.present
+          ? data.fechaApertura.value
+          : this.fechaApertura,
+      montoInicial: data.montoInicial.present
+          ? data.montoInicial.value
+          : this.montoInicial,
+      fechaCierre: data.fechaCierre.present
+          ? data.fechaCierre.value
+          : this.fechaCierre,
+      montoCierre: data.montoCierre.present
+          ? data.montoCierre.value
+          : this.montoCierre,
+      estado: data.estado.present ? data.estado.value : this.estado,
+      observaciones: data.observaciones.present
+          ? data.observaciones.value
+          : this.observaciones,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Caja(')
+          ..write('id: $id, ')
+          ..write('fechaApertura: $fechaApertura, ')
+          ..write('montoInicial: $montoInicial, ')
+          ..write('fechaCierre: $fechaCierre, ')
+          ..write('montoCierre: $montoCierre, ')
+          ..write('estado: $estado, ')
+          ..write('observaciones: $observaciones')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    fechaApertura,
+    montoInicial,
+    fechaCierre,
+    montoCierre,
+    estado,
+    observaciones,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Caja &&
+          other.id == this.id &&
+          other.fechaApertura == this.fechaApertura &&
+          other.montoInicial == this.montoInicial &&
+          other.fechaCierre == this.fechaCierre &&
+          other.montoCierre == this.montoCierre &&
+          other.estado == this.estado &&
+          other.observaciones == this.observaciones);
+}
+
+class CajasCompanion extends UpdateCompanion<Caja> {
+  final Value<int> id;
+  final Value<DateTime> fechaApertura;
+  final Value<double> montoInicial;
+  final Value<DateTime?> fechaCierre;
+  final Value<double?> montoCierre;
+  final Value<String> estado;
+  final Value<String?> observaciones;
+  const CajasCompanion({
+    this.id = const Value.absent(),
+    this.fechaApertura = const Value.absent(),
+    this.montoInicial = const Value.absent(),
+    this.fechaCierre = const Value.absent(),
+    this.montoCierre = const Value.absent(),
+    this.estado = const Value.absent(),
+    this.observaciones = const Value.absent(),
+  });
+  CajasCompanion.insert({
+    this.id = const Value.absent(),
+    this.fechaApertura = const Value.absent(),
+    this.montoInicial = const Value.absent(),
+    this.fechaCierre = const Value.absent(),
+    this.montoCierre = const Value.absent(),
+    this.estado = const Value.absent(),
+    this.observaciones = const Value.absent(),
+  });
+  static Insertable<Caja> custom({
+    Expression<int>? id,
+    Expression<DateTime>? fechaApertura,
+    Expression<double>? montoInicial,
+    Expression<DateTime>? fechaCierre,
+    Expression<double>? montoCierre,
+    Expression<String>? estado,
+    Expression<String>? observaciones,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (fechaApertura != null) 'fecha_apertura': fechaApertura,
+      if (montoInicial != null) 'monto_inicial': montoInicial,
+      if (fechaCierre != null) 'fecha_cierre': fechaCierre,
+      if (montoCierre != null) 'monto_cierre': montoCierre,
+      if (estado != null) 'estado': estado,
+      if (observaciones != null) 'observaciones': observaciones,
+    });
+  }
+
+  CajasCompanion copyWith({
+    Value<int>? id,
+    Value<DateTime>? fechaApertura,
+    Value<double>? montoInicial,
+    Value<DateTime?>? fechaCierre,
+    Value<double?>? montoCierre,
+    Value<String>? estado,
+    Value<String?>? observaciones,
+  }) {
+    return CajasCompanion(
+      id: id ?? this.id,
+      fechaApertura: fechaApertura ?? this.fechaApertura,
+      montoInicial: montoInicial ?? this.montoInicial,
+      fechaCierre: fechaCierre ?? this.fechaCierre,
+      montoCierre: montoCierre ?? this.montoCierre,
+      estado: estado ?? this.estado,
+      observaciones: observaciones ?? this.observaciones,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (fechaApertura.present) {
+      map['fecha_apertura'] = Variable<DateTime>(fechaApertura.value);
+    }
+    if (montoInicial.present) {
+      map['monto_inicial'] = Variable<double>(montoInicial.value);
+    }
+    if (fechaCierre.present) {
+      map['fecha_cierre'] = Variable<DateTime>(fechaCierre.value);
+    }
+    if (montoCierre.present) {
+      map['monto_cierre'] = Variable<double>(montoCierre.value);
+    }
+    if (estado.present) {
+      map['estado'] = Variable<String>(estado.value);
+    }
+    if (observaciones.present) {
+      map['observaciones'] = Variable<String>(observaciones.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CajasCompanion(')
+          ..write('id: $id, ')
+          ..write('fechaApertura: $fechaApertura, ')
+          ..write('montoInicial: $montoInicial, ')
+          ..write('fechaCierre: $fechaCierre, ')
+          ..write('montoCierre: $montoCierre, ')
+          ..write('estado: $estado, ')
+          ..write('observaciones: $observaciones')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $MovimientosCajaTable extends MovimientosCaja
+    with TableInfo<$MovimientosCajaTable, MovimientosCajaData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MovimientosCajaTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _cajaIdMeta = const VerificationMeta('cajaId');
+  @override
+  late final GeneratedColumn<int> cajaId = GeneratedColumn<int>(
+    'caja_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fechaMeta = const VerificationMeta('fecha');
+  @override
+  late final GeneratedColumn<DateTime> fecha = GeneratedColumn<DateTime>(
+    'fecha',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _tipoMeta = const VerificationMeta('tipo');
+  @override
+  late final GeneratedColumn<String> tipo = GeneratedColumn<String>(
+    'tipo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _conceptoMeta = const VerificationMeta(
+    'concepto',
+  );
+  @override
+  late final GeneratedColumn<String> concepto = GeneratedColumn<String>(
+    'concepto',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _montoMeta = const VerificationMeta('monto');
+  @override
+  late final GeneratedColumn<double> monto = GeneratedColumn<double>(
+    'monto',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _metodoPagoMeta = const VerificationMeta(
+    'metodoPago',
+  );
+  @override
+  late final GeneratedColumn<String> metodoPago = GeneratedColumn<String>(
+    'metodo_pago',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _referenciaMeta = const VerificationMeta(
+    'referencia',
+  );
+  @override
+  late final GeneratedColumn<String> referencia = GeneratedColumn<String>(
+    'referencia',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _observacionMeta = const VerificationMeta(
+    'observacion',
+  );
+  @override
+  late final GeneratedColumn<String> observacion = GeneratedColumn<String>(
+    'observacion',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    cajaId,
+    fecha,
+    tipo,
+    concepto,
+    monto,
+    metodoPago,
+    referencia,
+    observacion,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'movimientos_caja';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MovimientosCajaData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('caja_id')) {
+      context.handle(
+        _cajaIdMeta,
+        cajaId.isAcceptableOrUnknown(data['caja_id']!, _cajaIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cajaIdMeta);
+    }
+    if (data.containsKey('fecha')) {
+      context.handle(
+        _fechaMeta,
+        fecha.isAcceptableOrUnknown(data['fecha']!, _fechaMeta),
+      );
+    }
+    if (data.containsKey('tipo')) {
+      context.handle(
+        _tipoMeta,
+        tipo.isAcceptableOrUnknown(data['tipo']!, _tipoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tipoMeta);
+    }
+    if (data.containsKey('concepto')) {
+      context.handle(
+        _conceptoMeta,
+        concepto.isAcceptableOrUnknown(data['concepto']!, _conceptoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_conceptoMeta);
+    }
+    if (data.containsKey('monto')) {
+      context.handle(
+        _montoMeta,
+        monto.isAcceptableOrUnknown(data['monto']!, _montoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_montoMeta);
+    }
+    if (data.containsKey('metodo_pago')) {
+      context.handle(
+        _metodoPagoMeta,
+        metodoPago.isAcceptableOrUnknown(data['metodo_pago']!, _metodoPagoMeta),
+      );
+    }
+    if (data.containsKey('referencia')) {
+      context.handle(
+        _referenciaMeta,
+        referencia.isAcceptableOrUnknown(data['referencia']!, _referenciaMeta),
+      );
+    }
+    if (data.containsKey('observacion')) {
+      context.handle(
+        _observacionMeta,
+        observacion.isAcceptableOrUnknown(
+          data['observacion']!,
+          _observacionMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MovimientosCajaData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MovimientosCajaData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      cajaId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}caja_id'],
+      )!,
+      fecha: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha'],
+      )!,
+      tipo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tipo'],
+      )!,
+      concepto: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}concepto'],
+      )!,
+      monto: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}monto'],
+      )!,
+      metodoPago: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}metodo_pago'],
+      ),
+      referencia: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}referencia'],
+      ),
+      observacion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}observacion'],
+      ),
+    );
+  }
+
+  @override
+  $MovimientosCajaTable createAlias(String alias) {
+    return $MovimientosCajaTable(attachedDatabase, alias);
+  }
+}
+
+class MovimientosCajaData extends DataClass
+    implements Insertable<MovimientosCajaData> {
+  final int id;
+  final int cajaId;
+  final DateTime fecha;
+  final String tipo;
+  final String concepto;
+  final double monto;
+  final String? metodoPago;
+  final String? referencia;
+  final String? observacion;
+  const MovimientosCajaData({
+    required this.id,
+    required this.cajaId,
+    required this.fecha,
+    required this.tipo,
+    required this.concepto,
+    required this.monto,
+    this.metodoPago,
+    this.referencia,
+    this.observacion,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['caja_id'] = Variable<int>(cajaId);
+    map['fecha'] = Variable<DateTime>(fecha);
+    map['tipo'] = Variable<String>(tipo);
+    map['concepto'] = Variable<String>(concepto);
+    map['monto'] = Variable<double>(monto);
+    if (!nullToAbsent || metodoPago != null) {
+      map['metodo_pago'] = Variable<String>(metodoPago);
+    }
+    if (!nullToAbsent || referencia != null) {
+      map['referencia'] = Variable<String>(referencia);
+    }
+    if (!nullToAbsent || observacion != null) {
+      map['observacion'] = Variable<String>(observacion);
+    }
+    return map;
+  }
+
+  MovimientosCajaCompanion toCompanion(bool nullToAbsent) {
+    return MovimientosCajaCompanion(
+      id: Value(id),
+      cajaId: Value(cajaId),
+      fecha: Value(fecha),
+      tipo: Value(tipo),
+      concepto: Value(concepto),
+      monto: Value(monto),
+      metodoPago: metodoPago == null && nullToAbsent
+          ? const Value.absent()
+          : Value(metodoPago),
+      referencia: referencia == null && nullToAbsent
+          ? const Value.absent()
+          : Value(referencia),
+      observacion: observacion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(observacion),
+    );
+  }
+
+  factory MovimientosCajaData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MovimientosCajaData(
+      id: serializer.fromJson<int>(json['id']),
+      cajaId: serializer.fromJson<int>(json['cajaId']),
+      fecha: serializer.fromJson<DateTime>(json['fecha']),
+      tipo: serializer.fromJson<String>(json['tipo']),
+      concepto: serializer.fromJson<String>(json['concepto']),
+      monto: serializer.fromJson<double>(json['monto']),
+      metodoPago: serializer.fromJson<String?>(json['metodoPago']),
+      referencia: serializer.fromJson<String?>(json['referencia']),
+      observacion: serializer.fromJson<String?>(json['observacion']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'cajaId': serializer.toJson<int>(cajaId),
+      'fecha': serializer.toJson<DateTime>(fecha),
+      'tipo': serializer.toJson<String>(tipo),
+      'concepto': serializer.toJson<String>(concepto),
+      'monto': serializer.toJson<double>(monto),
+      'metodoPago': serializer.toJson<String?>(metodoPago),
+      'referencia': serializer.toJson<String?>(referencia),
+      'observacion': serializer.toJson<String?>(observacion),
+    };
+  }
+
+  MovimientosCajaData copyWith({
+    int? id,
+    int? cajaId,
+    DateTime? fecha,
+    String? tipo,
+    String? concepto,
+    double? monto,
+    Value<String?> metodoPago = const Value.absent(),
+    Value<String?> referencia = const Value.absent(),
+    Value<String?> observacion = const Value.absent(),
+  }) => MovimientosCajaData(
+    id: id ?? this.id,
+    cajaId: cajaId ?? this.cajaId,
+    fecha: fecha ?? this.fecha,
+    tipo: tipo ?? this.tipo,
+    concepto: concepto ?? this.concepto,
+    monto: monto ?? this.monto,
+    metodoPago: metodoPago.present ? metodoPago.value : this.metodoPago,
+    referencia: referencia.present ? referencia.value : this.referencia,
+    observacion: observacion.present ? observacion.value : this.observacion,
+  );
+  MovimientosCajaData copyWithCompanion(MovimientosCajaCompanion data) {
+    return MovimientosCajaData(
+      id: data.id.present ? data.id.value : this.id,
+      cajaId: data.cajaId.present ? data.cajaId.value : this.cajaId,
+      fecha: data.fecha.present ? data.fecha.value : this.fecha,
+      tipo: data.tipo.present ? data.tipo.value : this.tipo,
+      concepto: data.concepto.present ? data.concepto.value : this.concepto,
+      monto: data.monto.present ? data.monto.value : this.monto,
+      metodoPago: data.metodoPago.present
+          ? data.metodoPago.value
+          : this.metodoPago,
+      referencia: data.referencia.present
+          ? data.referencia.value
+          : this.referencia,
+      observacion: data.observacion.present
+          ? data.observacion.value
+          : this.observacion,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MovimientosCajaData(')
+          ..write('id: $id, ')
+          ..write('cajaId: $cajaId, ')
+          ..write('fecha: $fecha, ')
+          ..write('tipo: $tipo, ')
+          ..write('concepto: $concepto, ')
+          ..write('monto: $monto, ')
+          ..write('metodoPago: $metodoPago, ')
+          ..write('referencia: $referencia, ')
+          ..write('observacion: $observacion')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    cajaId,
+    fecha,
+    tipo,
+    concepto,
+    monto,
+    metodoPago,
+    referencia,
+    observacion,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MovimientosCajaData &&
+          other.id == this.id &&
+          other.cajaId == this.cajaId &&
+          other.fecha == this.fecha &&
+          other.tipo == this.tipo &&
+          other.concepto == this.concepto &&
+          other.monto == this.monto &&
+          other.metodoPago == this.metodoPago &&
+          other.referencia == this.referencia &&
+          other.observacion == this.observacion);
+}
+
+class MovimientosCajaCompanion extends UpdateCompanion<MovimientosCajaData> {
+  final Value<int> id;
+  final Value<int> cajaId;
+  final Value<DateTime> fecha;
+  final Value<String> tipo;
+  final Value<String> concepto;
+  final Value<double> monto;
+  final Value<String?> metodoPago;
+  final Value<String?> referencia;
+  final Value<String?> observacion;
+  const MovimientosCajaCompanion({
+    this.id = const Value.absent(),
+    this.cajaId = const Value.absent(),
+    this.fecha = const Value.absent(),
+    this.tipo = const Value.absent(),
+    this.concepto = const Value.absent(),
+    this.monto = const Value.absent(),
+    this.metodoPago = const Value.absent(),
+    this.referencia = const Value.absent(),
+    this.observacion = const Value.absent(),
+  });
+  MovimientosCajaCompanion.insert({
+    this.id = const Value.absent(),
+    required int cajaId,
+    this.fecha = const Value.absent(),
+    required String tipo,
+    required String concepto,
+    required double monto,
+    this.metodoPago = const Value.absent(),
+    this.referencia = const Value.absent(),
+    this.observacion = const Value.absent(),
+  }) : cajaId = Value(cajaId),
+       tipo = Value(tipo),
+       concepto = Value(concepto),
+       monto = Value(monto);
+  static Insertable<MovimientosCajaData> custom({
+    Expression<int>? id,
+    Expression<int>? cajaId,
+    Expression<DateTime>? fecha,
+    Expression<String>? tipo,
+    Expression<String>? concepto,
+    Expression<double>? monto,
+    Expression<String>? metodoPago,
+    Expression<String>? referencia,
+    Expression<String>? observacion,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (cajaId != null) 'caja_id': cajaId,
+      if (fecha != null) 'fecha': fecha,
+      if (tipo != null) 'tipo': tipo,
+      if (concepto != null) 'concepto': concepto,
+      if (monto != null) 'monto': monto,
+      if (metodoPago != null) 'metodo_pago': metodoPago,
+      if (referencia != null) 'referencia': referencia,
+      if (observacion != null) 'observacion': observacion,
+    });
+  }
+
+  MovimientosCajaCompanion copyWith({
+    Value<int>? id,
+    Value<int>? cajaId,
+    Value<DateTime>? fecha,
+    Value<String>? tipo,
+    Value<String>? concepto,
+    Value<double>? monto,
+    Value<String?>? metodoPago,
+    Value<String?>? referencia,
+    Value<String?>? observacion,
+  }) {
+    return MovimientosCajaCompanion(
+      id: id ?? this.id,
+      cajaId: cajaId ?? this.cajaId,
+      fecha: fecha ?? this.fecha,
+      tipo: tipo ?? this.tipo,
+      concepto: concepto ?? this.concepto,
+      monto: monto ?? this.monto,
+      metodoPago: metodoPago ?? this.metodoPago,
+      referencia: referencia ?? this.referencia,
+      observacion: observacion ?? this.observacion,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (cajaId.present) {
+      map['caja_id'] = Variable<int>(cajaId.value);
+    }
+    if (fecha.present) {
+      map['fecha'] = Variable<DateTime>(fecha.value);
+    }
+    if (tipo.present) {
+      map['tipo'] = Variable<String>(tipo.value);
+    }
+    if (concepto.present) {
+      map['concepto'] = Variable<String>(concepto.value);
+    }
+    if (monto.present) {
+      map['monto'] = Variable<double>(monto.value);
+    }
+    if (metodoPago.present) {
+      map['metodo_pago'] = Variable<String>(metodoPago.value);
+    }
+    if (referencia.present) {
+      map['referencia'] = Variable<String>(referencia.value);
+    }
+    if (observacion.present) {
+      map['observacion'] = Variable<String>(observacion.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MovimientosCajaCompanion(')
+          ..write('id: $id, ')
+          ..write('cajaId: $cajaId, ')
+          ..write('fecha: $fecha, ')
+          ..write('tipo: $tipo, ')
+          ..write('concepto: $concepto, ')
+          ..write('monto: $monto, ')
+          ..write('metodoPago: $metodoPago, ')
+          ..write('referencia: $referencia, ')
+          ..write('observacion: $observacion')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6557,6 +7587,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MovimientosInventarioTable movimientosInventario =
       $MovimientosInventarioTable(this);
   late final $EmpresaTable empresa = $EmpresaTable(this);
+  late final $CajasTable cajas = $CajasTable(this);
+  late final $MovimientosCajaTable movimientosCaja = $MovimientosCajaTable(
+    this,
+  );
   late final ProductosDao productosDao = ProductosDao(this as AppDatabase);
   late final InsumosDao insumosDao = InsumosDao(this as AppDatabase);
   late final RecetasDao recetasDao = RecetasDao(this as AppDatabase);
@@ -6568,6 +7602,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final MovimientosInventarioDao movimientosInventarioDao =
       MovimientosInventarioDao(this as AppDatabase);
   late final EmpresaDao empresaDao = EmpresaDao(this as AppDatabase);
+  late final CajasDao cajasDao = CajasDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6583,6 +7618,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     clientes,
     movimientosInventario,
     empresa,
+    cajas,
+    movimientosCaja,
   ];
 }
 
@@ -9752,6 +10789,527 @@ typedef $$EmpresaTableProcessedTableManager =
       EmpresaData,
       PrefetchHooks Function()
     >;
+typedef $$CajasTableCreateCompanionBuilder =
+    CajasCompanion Function({
+      Value<int> id,
+      Value<DateTime> fechaApertura,
+      Value<double> montoInicial,
+      Value<DateTime?> fechaCierre,
+      Value<double?> montoCierre,
+      Value<String> estado,
+      Value<String?> observaciones,
+    });
+typedef $$CajasTableUpdateCompanionBuilder =
+    CajasCompanion Function({
+      Value<int> id,
+      Value<DateTime> fechaApertura,
+      Value<double> montoInicial,
+      Value<DateTime?> fechaCierre,
+      Value<double?> montoCierre,
+      Value<String> estado,
+      Value<String?> observaciones,
+    });
+
+class $$CajasTableFilterComposer extends Composer<_$AppDatabase, $CajasTable> {
+  $$CajasTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaApertura => $composableBuilder(
+    column: $table.fechaApertura,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get montoInicial => $composableBuilder(
+    column: $table.montoInicial,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaCierre => $composableBuilder(
+    column: $table.fechaCierre,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get montoCierre => $composableBuilder(
+    column: $table.montoCierre,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get estado => $composableBuilder(
+    column: $table.estado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CajasTableOrderingComposer
+    extends Composer<_$AppDatabase, $CajasTable> {
+  $$CajasTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaApertura => $composableBuilder(
+    column: $table.fechaApertura,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get montoInicial => $composableBuilder(
+    column: $table.montoInicial,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaCierre => $composableBuilder(
+    column: $table.fechaCierre,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get montoCierre => $composableBuilder(
+    column: $table.montoCierre,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get estado => $composableBuilder(
+    column: $table.estado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CajasTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CajasTable> {
+  $$CajasTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fechaApertura => $composableBuilder(
+    column: $table.fechaApertura,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get montoInicial => $composableBuilder(
+    column: $table.montoInicial,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get fechaCierre => $composableBuilder(
+    column: $table.fechaCierre,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get montoCierre => $composableBuilder(
+    column: $table.montoCierre,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get estado =>
+      $composableBuilder(column: $table.estado, builder: (column) => column);
+
+  GeneratedColumn<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => column,
+  );
+}
+
+class $$CajasTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CajasTable,
+          Caja,
+          $$CajasTableFilterComposer,
+          $$CajasTableOrderingComposer,
+          $$CajasTableAnnotationComposer,
+          $$CajasTableCreateCompanionBuilder,
+          $$CajasTableUpdateCompanionBuilder,
+          (Caja, BaseReferences<_$AppDatabase, $CajasTable, Caja>),
+          Caja,
+          PrefetchHooks Function()
+        > {
+  $$CajasTableTableManager(_$AppDatabase db, $CajasTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CajasTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CajasTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CajasTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<DateTime> fechaApertura = const Value.absent(),
+                Value<double> montoInicial = const Value.absent(),
+                Value<DateTime?> fechaCierre = const Value.absent(),
+                Value<double?> montoCierre = const Value.absent(),
+                Value<String> estado = const Value.absent(),
+                Value<String?> observaciones = const Value.absent(),
+              }) => CajasCompanion(
+                id: id,
+                fechaApertura: fechaApertura,
+                montoInicial: montoInicial,
+                fechaCierre: fechaCierre,
+                montoCierre: montoCierre,
+                estado: estado,
+                observaciones: observaciones,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<DateTime> fechaApertura = const Value.absent(),
+                Value<double> montoInicial = const Value.absent(),
+                Value<DateTime?> fechaCierre = const Value.absent(),
+                Value<double?> montoCierre = const Value.absent(),
+                Value<String> estado = const Value.absent(),
+                Value<String?> observaciones = const Value.absent(),
+              }) => CajasCompanion.insert(
+                id: id,
+                fechaApertura: fechaApertura,
+                montoInicial: montoInicial,
+                fechaCierre: fechaCierre,
+                montoCierre: montoCierre,
+                estado: estado,
+                observaciones: observaciones,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CajasTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CajasTable,
+      Caja,
+      $$CajasTableFilterComposer,
+      $$CajasTableOrderingComposer,
+      $$CajasTableAnnotationComposer,
+      $$CajasTableCreateCompanionBuilder,
+      $$CajasTableUpdateCompanionBuilder,
+      (Caja, BaseReferences<_$AppDatabase, $CajasTable, Caja>),
+      Caja,
+      PrefetchHooks Function()
+    >;
+typedef $$MovimientosCajaTableCreateCompanionBuilder =
+    MovimientosCajaCompanion Function({
+      Value<int> id,
+      required int cajaId,
+      Value<DateTime> fecha,
+      required String tipo,
+      required String concepto,
+      required double monto,
+      Value<String?> metodoPago,
+      Value<String?> referencia,
+      Value<String?> observacion,
+    });
+typedef $$MovimientosCajaTableUpdateCompanionBuilder =
+    MovimientosCajaCompanion Function({
+      Value<int> id,
+      Value<int> cajaId,
+      Value<DateTime> fecha,
+      Value<String> tipo,
+      Value<String> concepto,
+      Value<double> monto,
+      Value<String?> metodoPago,
+      Value<String?> referencia,
+      Value<String?> observacion,
+    });
+
+class $$MovimientosCajaTableFilterComposer
+    extends Composer<_$AppDatabase, $MovimientosCajaTable> {
+  $$MovimientosCajaTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cajaId => $composableBuilder(
+    column: $table.cajaId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fecha => $composableBuilder(
+    column: $table.fecha,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get concepto => $composableBuilder(
+    column: $table.concepto,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get monto => $composableBuilder(
+    column: $table.monto,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get metodoPago => $composableBuilder(
+    column: $table.metodoPago,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get referencia => $composableBuilder(
+    column: $table.referencia,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get observacion => $composableBuilder(
+    column: $table.observacion,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MovimientosCajaTableOrderingComposer
+    extends Composer<_$AppDatabase, $MovimientosCajaTable> {
+  $$MovimientosCajaTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cajaId => $composableBuilder(
+    column: $table.cajaId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fecha => $composableBuilder(
+    column: $table.fecha,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get concepto => $composableBuilder(
+    column: $table.concepto,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get monto => $composableBuilder(
+    column: $table.monto,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get metodoPago => $composableBuilder(
+    column: $table.metodoPago,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get referencia => $composableBuilder(
+    column: $table.referencia,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get observacion => $composableBuilder(
+    column: $table.observacion,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MovimientosCajaTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MovimientosCajaTable> {
+  $$MovimientosCajaTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get cajaId =>
+      $composableBuilder(column: $table.cajaId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fecha =>
+      $composableBuilder(column: $table.fecha, builder: (column) => column);
+
+  GeneratedColumn<String> get tipo =>
+      $composableBuilder(column: $table.tipo, builder: (column) => column);
+
+  GeneratedColumn<String> get concepto =>
+      $composableBuilder(column: $table.concepto, builder: (column) => column);
+
+  GeneratedColumn<double> get monto =>
+      $composableBuilder(column: $table.monto, builder: (column) => column);
+
+  GeneratedColumn<String> get metodoPago => $composableBuilder(
+    column: $table.metodoPago,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get referencia => $composableBuilder(
+    column: $table.referencia,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get observacion => $composableBuilder(
+    column: $table.observacion,
+    builder: (column) => column,
+  );
+}
+
+class $$MovimientosCajaTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MovimientosCajaTable,
+          MovimientosCajaData,
+          $$MovimientosCajaTableFilterComposer,
+          $$MovimientosCajaTableOrderingComposer,
+          $$MovimientosCajaTableAnnotationComposer,
+          $$MovimientosCajaTableCreateCompanionBuilder,
+          $$MovimientosCajaTableUpdateCompanionBuilder,
+          (
+            MovimientosCajaData,
+            BaseReferences<
+              _$AppDatabase,
+              $MovimientosCajaTable,
+              MovimientosCajaData
+            >,
+          ),
+          MovimientosCajaData,
+          PrefetchHooks Function()
+        > {
+  $$MovimientosCajaTableTableManager(
+    _$AppDatabase db,
+    $MovimientosCajaTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MovimientosCajaTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MovimientosCajaTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MovimientosCajaTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> cajaId = const Value.absent(),
+                Value<DateTime> fecha = const Value.absent(),
+                Value<String> tipo = const Value.absent(),
+                Value<String> concepto = const Value.absent(),
+                Value<double> monto = const Value.absent(),
+                Value<String?> metodoPago = const Value.absent(),
+                Value<String?> referencia = const Value.absent(),
+                Value<String?> observacion = const Value.absent(),
+              }) => MovimientosCajaCompanion(
+                id: id,
+                cajaId: cajaId,
+                fecha: fecha,
+                tipo: tipo,
+                concepto: concepto,
+                monto: monto,
+                metodoPago: metodoPago,
+                referencia: referencia,
+                observacion: observacion,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int cajaId,
+                Value<DateTime> fecha = const Value.absent(),
+                required String tipo,
+                required String concepto,
+                required double monto,
+                Value<String?> metodoPago = const Value.absent(),
+                Value<String?> referencia = const Value.absent(),
+                Value<String?> observacion = const Value.absent(),
+              }) => MovimientosCajaCompanion.insert(
+                id: id,
+                cajaId: cajaId,
+                fecha: fecha,
+                tipo: tipo,
+                concepto: concepto,
+                monto: monto,
+                metodoPago: metodoPago,
+                referencia: referencia,
+                observacion: observacion,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MovimientosCajaTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MovimientosCajaTable,
+      MovimientosCajaData,
+      $$MovimientosCajaTableFilterComposer,
+      $$MovimientosCajaTableOrderingComposer,
+      $$MovimientosCajaTableAnnotationComposer,
+      $$MovimientosCajaTableCreateCompanionBuilder,
+      $$MovimientosCajaTableUpdateCompanionBuilder,
+      (
+        MovimientosCajaData,
+        BaseReferences<
+          _$AppDatabase,
+          $MovimientosCajaTable,
+          MovimientosCajaData
+        >,
+      ),
+      MovimientosCajaData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9776,4 +11334,8 @@ class $AppDatabaseManager {
       $$MovimientosInventarioTableTableManager(_db, _db.movimientosInventario);
   $$EmpresaTableTableManager get empresa =>
       $$EmpresaTableTableManager(_db, _db.empresa);
+  $$CajasTableTableManager get cajas =>
+      $$CajasTableTableManager(_db, _db.cajas);
+  $$MovimientosCajaTableTableManager get movimientosCaja =>
+      $$MovimientosCajaTableTableManager(_db, _db.movimientosCaja);
 }
