@@ -44,6 +44,7 @@ class CobroService {
     if (carritoService.items.isEmpty) return;
 
     final ahora = DateTime.now();
+
     final numeroVenta =
     await ventasRepository.obtenerSiguienteNumeroVenta();
 
@@ -96,42 +97,38 @@ class CobroService {
     );
 
     // ==========================================================
-    // REGISTRAR EN CAJA SOLO SI ES EFECTIVO
+    // REGISTRAR VENTA EN CAJA
     // ==========================================================
     //
-    // La Caja representa el dinero físico disponible.
+    // TODAS las ventas quedan registradas en movimientos de caja:
     //
-    // Efectivo      -> aumenta Caja
-    // Yape          -> NO aumenta Caja
-    // Plin          -> NO aumenta Caja
-    // Tarjeta       -> NO aumenta Caja
-    // Transferencia -> NO aumenta Caja
+    // Efectivo      -> aparece y suma al efectivo esperado
+    // Yape          -> aparece pero NO suma al efectivo
+    // Plin          -> aparece pero NO suma al efectivo
+    // Tarjeta       -> aparece pero NO suma al efectivo
+    // Transferencia -> aparece pero NO suma al efectivo
     //
-    // La venta sí queda registrada en Ventas.
+    // La pantalla Caja se encarga de calcular el efectivo esperado
+    // considerando únicamente las ventas en EFECTIVO.
     // ==========================================================
 
-    final esEfectivo =
-        venta.metodoPago.trim().toLowerCase() == 'efectivo';
+    final cajaAbierta =
+    await cajasRepository.obtenerAbierta();
 
-    if (esEfectivo) {
-      final cajaAbierta =
-      await cajasRepository.obtenerAbierta();
-
-      if (cajaAbierta != null) {
-        await cajasRepository.registrarMovimiento(
-          MovimientosCajaCompanion(
-            cajaId: Value(cajaAbierta.id),
-            tipo: const Value('VENTA'),
-            concepto: Value('Venta ${venta.numero}'),
-            monto: Value(venta.total),
-            metodoPago: Value(venta.metodoPago),
-            referencia: Value(venta.numero),
-            observacion: const Value(
-              'Venta en efectivo registrada desde POS',
-            ),
+    if (cajaAbierta != null) {
+      await cajasRepository.registrarMovimiento(
+        MovimientosCajaCompanion(
+          cajaId: Value(cajaAbierta.id),
+          tipo: const Value('VENTA'),
+          concepto: Value('Venta ${venta.numero}'),
+          monto: Value(venta.total),
+          metodoPago: Value(venta.metodoPago),
+          referencia: Value(venta.numero),
+          observacion: Value(
+            'Venta ${venta.metodoPago} registrada desde POS',
           ),
-        );
-      }
+        ),
+      );
     }
 
     // ==========================================================
