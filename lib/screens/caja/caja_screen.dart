@@ -50,7 +50,43 @@ class _CajaScreenState extends State<CajaScreen> {
     List<MovimientosCajaData> movimientos = [];
 
     if (caja != null) {
-      movimientos = await _repository.obtenerMovimientos(caja.id);
+      final todosLosMovimientos =
+      await _repository.obtenerMovimientos(caja.id);
+
+      movimientos = todosLosMovimientos.where((movimiento) {
+        // ----------------------------------------------------------
+        // VENTAS
+        // ----------------------------------------------------------
+        // En Caja solo mostramos ventas pagadas en EFECTIVO.
+        // Yape, Plin, Tarjeta y Transferencia no representan
+        // dinero físico dentro de la caja.
+        // ----------------------------------------------------------
+
+        if (movimiento.tipo == 'VENTA') {
+          final metodo = movimiento.metodoPago
+              ?.trim()
+              .toLowerCase();
+
+          return metodo == 'efectivo';
+        }
+
+        // ----------------------------------------------------------
+        // INGRESOS Y EGRESOS
+        // ----------------------------------------------------------
+        // Estos sí afectan físicamente el efectivo de Caja.
+        // ----------------------------------------------------------
+
+        if (movimiento.tipo == 'INGRESO') {
+          return true;
+        }
+
+        if (movimiento.tipo == 'EGRESO') {
+          return true;
+        }
+
+        // Cualquier otro tipo no se muestra en Caja.
+        return false;
+      }).toList();
     }
 
     if (!mounted) return;
