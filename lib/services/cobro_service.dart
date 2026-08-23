@@ -14,6 +14,7 @@ import 'printer_service.dart';
 import 'ticket_print_service.dart';
 
 import '../ticket/esc_pos_renderer.dart';
+import 'package:flutter/foundation.dart';
 
 class CobroService {
   final CarritoService carritoService;
@@ -117,9 +118,31 @@ class CobroService {
     // GUARDAR VENTA
     // ==========================================================
 
-    await ventasRepository.guardarVenta(
+    final idGuardado = await ventasRepository.guardarVenta(
       venta,
     );
+
+    debugPrint("========== VENTA ANTES DE GUARDAR ==========");
+    debugPrint("NUMERO: ${venta.numero}");
+    debugPrint("TIPO: ${venta.tipoDocumento}");
+    debugPrint("DNI: ${venta.dni}");
+    debugPrint("RUC: ${venta.ruc}");
+    debugPrint("NOMBRE: ${venta.nombreCliente}");
+    debugPrint("RAZON SOCIAL: ${venta.razonSocial}");
+    debugPrint("DIRECCION: ${venta.direccionFiscal}");
+
+    final ventaVerificada =
+    await ventasRepository.obtenerVenta(idGuardado);
+
+    debugPrint("========== VENTA DESPUES DE GUARDAR ==========");
+    debugPrint("ID: $idGuardado");
+    debugPrint("NUMERO: ${ventaVerificada?.numero}");
+    debugPrint("TIPO: ${ventaVerificada?.tipoDocumento}");
+    debugPrint("DNI: ${ventaVerificada?.dni}");
+    debugPrint("RUC: ${ventaVerificada?.ruc}");
+    debugPrint("NOMBRE: ${ventaVerificada?.nombreCliente}");
+    debugPrint("RAZON SOCIAL: ${ventaVerificada?.razonSocial}");
+    debugPrint("DIRECCION: ${ventaVerificada?.direccionFiscal}");
 
     // ==========================================================
     // INCREMENTAR CORRELATIVO

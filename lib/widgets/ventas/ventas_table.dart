@@ -98,7 +98,6 @@ class VentasTable extends StatelessWidget {
           DataColumn(label: Text("Pago")),
           DataColumn(label: Text("Total")),
           DataColumn(label: Text("Fecha")),
-          DataColumn(label: Text("Acciones")),
         ],
         rows: ventas.map((venta) {
           return DataRow(
@@ -130,29 +129,34 @@ class VentasTable extends StatelessWidget {
               ),
 
               DataCell(
-                Text(
-                  "${venta.fecha.day.toString().padLeft(2, '0')}/"
-                      "${venta.fecha.month.toString().padLeft(2, '0')}/"
-                      "${venta.fecha.year}",
-                ),
-              ),
-
-              //========================================
-              // REIMPRIMIR
-              //========================================
-
-              DataCell(
-                IconButton(
-                  tooltip: "Reimprimir ticket",
-                  icon: const Icon(
-                    Icons.print_outlined,
-                  ),
-                  onPressed: () {
-                    _reimprimirTicket(
-                      context,
-                      venta,
-                    );
-                  },
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "${venta.fecha.day.toString().padLeft(2, '0')}/"
+                          "${venta.fecha.month.toString().padLeft(2, '0')}/"
+                          "${venta.fecha.year}",
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      tooltip: "Reimprimir ticket",
+                      icon: const Icon(
+                        Icons.print_outlined,
+                        size: 20,
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                      onPressed: () {
+                        _reimprimirTicket(
+                          context,
+                          venta,
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],
