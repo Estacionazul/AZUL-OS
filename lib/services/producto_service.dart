@@ -11,15 +11,25 @@ class ProductoService extends ChangeNotifier {
   List<ProductoModel> _productos = [];
   List<ProductoModel> _productosFiltrados = [];
 
+  String _textoBusqueda = '';
+  int? _categoriaSeleccionadaId;
+
   List<ProductoModel> get productos =>
       List.unmodifiable(_productosFiltrados);
 
   List<ProductoModel> get todosProductos =>
       List.unmodifiable(_productos);
 
+  int? get categoriaSeleccionadaId =>
+      _categoriaSeleccionadaId;
+
+  String get textoBusqueda =>
+      _textoBusqueda;
+
   Future<void> cargarProductos() async {
     _productos = await _repository.obtenerTodos();
-    _productosFiltrados = List.from(_productos);
+
+    _aplicarFiltros();
 
     notifyListeners();
   }
@@ -55,31 +65,99 @@ class ProductoService extends ChangeNotifier {
     }
   }
 
-  /// BUSCAR PRODUCTOS
-  void buscarProductos(String texto) {
-    // Si el buscador está vacío
-    if (texto.trim().isEmpty) {
-      _productosFiltrados = List.from(_productos);
-    } else {
-      final busqueda = texto.toLowerCase();
+  // ==========================================================
+  // BUSCAR PRODUCTOS
+  // ==========================================================
 
-      _productosFiltrados = _productos.where((producto) {
-        return producto.nombre.toLowerCase().contains(busqueda) ||
-            producto.codigo.toLowerCase().contains(busqueda);
-      }).toList();
-    }
+  void buscarProductos(String texto) {
+    _textoBusqueda = texto.trim().toLowerCase();
+
+    _aplicarFiltros();
 
     notifyListeners();
   }
 
-  int get cantidadProductos => _productos.length;
+  // ==========================================================
+  // FILTRAR POR CATEGORÍA
+  // ==========================================================
+
+  void seleccionarCategoria(int? categoriaId) {
+    _categoriaSeleccionadaId = categoriaId;
+
+    _aplicarFiltros();
+
+    notifyListeners();
+  }
+
+  // ==========================================================
+  // LIMPIAR FILTROS
+  // ==========================================================
+
+  void limpiarFiltros() {
+    _textoBusqueda = '';
+    _categoriaSeleccionadaId = null;
+
+    _aplicarFiltros();
+
+    notifyListeners();
+  }
+
+  // ==========================================================
+  // APLICAR BÚSQUEDA + CATEGORÍA
+  // ==========================================================
+
+  void _aplicarFiltros() {
+    Iterable<ProductoModel> resultado =
+        _productos;
+
+    // ----------------------------------------------------------
+    // CATEGORÍA
+    // ----------------------------------------------------------
+
+    if (_categoriaSeleccionadaId != null) {
+      resultado = resultado.where(
+            (producto) =>
+        producto.categoriaId ==
+            _categoriaSeleccionadaId,
+      );
+    }
+
+    // ----------------------------------------------------------
+    // BÚSQUEDA
+    // ----------------------------------------------------------
+
+    if (_textoBusqueda.isNotEmpty) {
+      resultado = resultado.where(
+            (producto) {
+          final nombre =
+          producto.nombre.toLowerCase();
+
+          final codigo =
+          producto.codigo.toLowerCase();
+
+          final codigoBarras =
+          producto.codigoBarras.toLowerCase();
+
+          return nombre.contains(_textoBusqueda) ||
+              codigo.contains(_textoBusqueda) ||
+              codigoBarras.contains(_textoBusqueda);
+        },
+      );
+    }
+
+    _productosFiltrados =
+        resultado.toList();
+  }
+
+  int get cantidadProductos =>
+      _productos.length;
 
   Future<bool> aumentarStock(
       int productoId,
       double cantidad,
       ) async {
-
-    final producto = obtenerProducto(productoId);
+    final producto =
+    obtenerProducto(productoId);
 
     if (producto == null) {
       return false;

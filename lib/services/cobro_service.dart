@@ -4,6 +4,7 @@ import '../models/venta.dart';
 import '../database/app_database.dart' show MovimientosCajaCompanion;
 import '../repositories/ventas_repository.dart';
 import '../repositories/cajas_repository.dart';
+import '../repositories/empresa_repository.dart';
 
 import 'carrito_service.dart';
 import 'venta_service.dart';
@@ -20,6 +21,7 @@ class CobroService {
   final VentaService ventaService;
   final VentasRepository ventasRepository;
   final InventarioAutomaticoService inventarioAutomaticoService;
+  final EmpresaRepository empresaRepository;
   final CajasRepository cajasRepository;
 
   final TicketPrintService ticketPrintService;
@@ -32,6 +34,7 @@ class CobroService {
     required this.ventaService,
     required this.ventasRepository,
     required this.inventarioAutomaticoService,
+    required this.empresaRepository,
     required this.ticketPrintService,
     required this.escPosRenderer,
     required this.printerService,
@@ -45,14 +48,35 @@ class CobroService {
 
     final ahora = DateTime.now();
 
-    final numeroVenta =
-    await ventasRepository.obtenerSiguienteNumeroVenta();
+    final ventaActual = ventaService.venta;
+
+    // ==========================================================
+    // OBTENER NÚMERO SEGÚN EL TIPO DE DOCUMENTO
+    // ==========================================================
+
+    late final String numeroVenta;
+
+    switch (ventaActual.tipoDocumento) {
+      case 'Boleta':
+        numeroVenta =
+        await empresaRepository.obtenerSiguienteNumeroBoleta();
+        break;
+
+      case 'Factura':
+        numeroVenta =
+        await empresaRepository.obtenerSiguienteNumeroFactura();
+        break;
+
+      case 'Nota de Venta':
+      default:
+        numeroVenta =
+        await ventasRepository.obtenerSiguienteNumeroVenta();
+        break;
+    }
 
     final total = carritoService.total;
     final subtotal = total / 1.18;
     final igv = total - subtotal;
-
-    final ventaActual = ventaService.venta;
 
     final venta = Venta(
       numero: numeroVenta,
@@ -68,7 +92,12 @@ class CobroService {
       dni: ventaActual.dni,
       ruc: ventaActual.ruc,
 
-      nombreCliente: ventaActual.clienteNombre,
+      nombreCliente: ventaActual.tipoDocumento == 'Factura'
+          ? (ventaActual.razonSocial?.trim().isNotEmpty == true
+          ? ventaActual.razonSocial!.trim()
+          : ventaActual.clienteNombre)
+          : ventaActual.clienteNombre,
+
       razonSocial: ventaActual.razonSocial,
       direccionFiscal: ventaActual.direccionFiscal,
 
@@ -92,6 +121,38 @@ class CobroService {
       venta,
     );
 
+    // ==========================================================
+    // INCREMENTAR CORRELATIVO
+    // ==========================================================
+    //
+    // Solo se incrementa DESPUÉS de guardar correctamente
+    // la venta.
+    //
+    // Nota de Venta:
+    //   utiliza su propio correlativo V000001, V000002...
+    //
+    // Boleta:
+    //   B001-00000001, B001-00000002...
+    //
+    // Factura:
+    //   F001-00000001, F001-00000002...
+    //
+    // ==========================================================
+
+    switch (venta.tipoDocumento) {
+      case 'Boleta':
+        await empresaRepository.incrementarCorrelativoBoleta();
+        break;
+
+      case 'Factura':
+        await empresaRepository.incrementarCorrelativoFactura();
+        break;
+
+      case 'Nota de Venta':
+      default:
+        break;
+    }
+
     ventasService.registrarVenta(
       venta,
     );
@@ -100,15 +161,15 @@ class CobroService {
     // REGISTRAR VENTA EN CAJA
     // ==========================================================
     //
-    // TODAS las ventas quedan registradas en movimientos de caja:
+    // Todas las ventas quedan registradas en movimientos de caja.
     //
-    // Efectivo      -> aparece y suma al efectivo esperado
-    // Yape          -> aparece pero NO suma al efectivo
-    // Plin          -> aparece pero NO suma al efectivo
-    // Tarjeta       -> aparece pero NO suma al efectivo
-    // Transferencia -> aparece pero NO suma al efectivo
+    // Efectivo      -> suma al efectivo esperado
+    // Yape          -> no suma al efectivo
+    // Plin          -> no suma al efectivo
+    // Tarjeta       -> no suma al efectivo
+    // Transferencia -> no suma al efectivo
     //
-    // La pantalla Caja se encarga de calcular el efectivo esperado
+    // La pantalla Caja calcula el efectivo esperado
     // considerando únicamente las ventas en EFECTIVO.
     // ==========================================================
 

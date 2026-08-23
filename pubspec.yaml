@@ -29,6 +29,7 @@ dependencies:
   # Impresión
   esc_pos_utils_plus: ^2.0.4
   win32: ^5.15.0
+  ffi: ^2.2.0
 
 dev_dependencies:
   flutter_test:

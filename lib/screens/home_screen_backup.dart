@@ -12,7 +12,6 @@ import 'ventas/ventas_screen.dart';
 import 'produccion/produccion_screen.dart';
 import 'configuracion/configuracion_screen.dart';
 import 'caja/caja_screen.dart';
-import 'reportes_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,13 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      DashboardScreen(
-        onNavigate: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-      ),
+      const DashboardScreen(),
       const CafeteriaScreen(),
       const ProductosScreen(),
       const InventarioScreen(),
@@ -44,7 +37,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
       const CajaScreen(),
 
-      const ReportesScreen(),
+      const Center(
+        child: Text(
+          "Reportes\n(Próximamente)",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 22),
+        ),
+      ),
 
       const ConfiguracionScreen(),
     ];

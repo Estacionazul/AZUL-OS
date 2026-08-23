@@ -295,13 +295,62 @@ class VentasRepository {
 
   Future<DashboardResumen>
   obtenerResumenDashboard() async {
+    final ventas = await obtenerVentas();
+
+    final ahora = DateTime.now();
+
+    final ventasHoy = ventas.where(
+          (venta) =>
+      venta.fecha.year == ahora.year &&
+          venta.fecha.month == ahora.month &&
+          venta.fecha.day == ahora.day,
+    ).toList();
+
+    final ventasMes = ventas.where(
+          (venta) =>
+      venta.fecha.year == ahora.year &&
+          venta.fecha.month == ahora.month,
+    ).toList();
+
+    final clientesHoy = ventasHoy
+        .map(
+          (venta) =>
+      venta.nombreCliente?.trim() ??
+          'Cliente General',
+    )
+        .where((nombre) => nombre.isNotEmpty)
+        .toSet()
+        .length;
+
+    final clientesMes = ventasMes
+        .map(
+          (venta) =>
+      venta.nombreCliente?.trim() ??
+          'Cliente General',
+    )
+        .where((nombre) => nombre.isNotEmpty)
+        .toSet()
+        .length;
+
     return DashboardResumen(
-      ventasHoy:
-      await obtenerTotalVentasHoy(),
-      ticketsHoy:
-      await obtenerCantidadVentasHoy(),
-      clientesHoy:
-      await obtenerCantidadClientesHoy(),
+      ventasHoy: ventasHoy.fold<double>(
+        0.0,
+            (total, venta) => total + venta.total,
+      ),
+
+      ventasMes: ventasMes.fold<double>(
+        0.0,
+            (total, venta) => total + venta.total,
+      ),
+
+      ticketsHoy: ventasHoy.length,
+
+      ticketsMes: ventasMes.length,
+
+      clientesHoy: clientesHoy,
+
+      clientesMes: clientesMes,
+
       alertas: 0,
     );
   }

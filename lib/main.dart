@@ -256,15 +256,16 @@ class AzulOSApp extends StatelessWidget {
         ),
 
         // ==========================================
-        // COBRO
-        // ==========================================
+// COBRO
+// ==========================================
 
-        ProxyProvider5<
+        ProxyProvider6<
             CarritoService,
             VentasService,
             VentaService,
             VentasRepository,
             InventarioAutomaticoService,
+            EmpresaRepository,
             CobroService>(
           update: (
               context,
@@ -273,6 +274,7 @@ class AzulOSApp extends StatelessWidget {
               ventaService,
               ventasRepository,
               inventarioAutomaticoService,
+              empresaRepository,
               __,
               ) =>
               CobroService(
@@ -282,6 +284,10 @@ class AzulOSApp extends StatelessWidget {
                 ventasRepository: ventasRepository,
                 inventarioAutomaticoService:
                 inventarioAutomaticoService,
+
+                empresaRepository:
+                empresaRepository,
+
                 cajasRepository:
                 context.read<CajasRepository>(),
 

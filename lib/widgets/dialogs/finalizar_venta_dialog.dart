@@ -205,6 +205,21 @@ class _FinalizarVentaDialogState
                           razonSocial: _razonSocialController.text.trim(),
                           direccionFiscal: _direccionController.text.trim(),
                         );
+                        debugPrint("========== DATOS CLIENTE ANTES DE COBRAR ==========");
+                        debugPrint("TIPO: $_tipoDocumento");
+                        debugPrint("DNI: ${_dniController.text.trim()}");
+                        debugPrint("NOMBRE: ${_nombreController.text.trim()}");
+                        debugPrint("RUC: ${_rucController.text.trim()}");
+                        debugPrint("RAZON SOCIAL: ${_razonSocialController.text.trim()}");
+                        debugPrint("DIRECCION: ${_direccionController.text.trim()}");
+
+                        debugPrint("========== DATOS EN VENTA SERVICE ==========");
+                        debugPrint("TIPO: ${ventaService.venta.tipoDocumento}");
+                        debugPrint("DNI: ${ventaService.venta.dni}");
+                        debugPrint("NOMBRE: ${ventaService.venta.clienteNombre}");
+                        debugPrint("RUC: ${ventaService.venta.ruc}");
+                        debugPrint("RAZON SOCIAL: ${ventaService.venta.razonSocial}");
+                        debugPrint("DIRECCION: ${ventaService.venta.direccionFiscal}");
                         debugPrint("Documento: $_tipoDocumento");
                         debugPrint("DNI: ${_dniController.text}");
                         debugPrint("Nombre: ${_nombreController.text}");

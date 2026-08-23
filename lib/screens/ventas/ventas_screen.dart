@@ -12,6 +12,7 @@ import '../../repositories/ventas_repository.dart';
 import '../../widgets/ventas/venta_empty.dart';
 import '../../widgets/ventas/venta_search_bar.dart';
 import '../../widgets/ventas/ventas_table.dart';
+import 'pos_screen.dart';
 
 class VentasScreen extends StatefulWidget {
   const VentasScreen({super.key});
@@ -62,9 +63,34 @@ class _VentasScreenState extends State<VentasScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const AppSectionTitle(
-              title: "Historial de Ventas",
-              subtitle: "Todas las ventas registradas",
+            Row(
+              children: [
+                const Expanded(
+                  child: AppSectionTitle(
+                    title: "Historial de Ventas",
+                    subtitle: "Todas las ventas registradas",
+                  ),
+                ),
+
+                const SizedBox(width: 16),
+
+                FilledButton.icon(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PosScreen(),
+                      ),
+                    );
+
+                    if (!mounted) return;
+
+                    await _cargarVentas();
+                  },
+                  icon: const Icon(Icons.point_of_sale),
+                  label: const Text('Nueva venta'),
+                ),
+              ],
             ),
 
             const SizedBox(height: AppSpacing.lg),
