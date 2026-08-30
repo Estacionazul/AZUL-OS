@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
@@ -11,7 +11,7 @@ import 'repositories/recetas_repository.dart';
 import 'repositories/receta_detalle_repository.dart';
 import 'repositories/clientes_repository.dart';
 import 'repositories/insumo_repository.dart';
-import 'screens/home_screen.dart';
+import 'screens/auth/auth_gate.dart';
 
 import 'seed/datos_iniciales.dart';
 
@@ -34,7 +34,11 @@ import 'ticket/esc_pos_renderer.dart';
 import 'printer/windows_printer_adapter.dart';
 import 'repositories/empresa_repository.dart';
 import 'repositories/cajas_repository.dart';
+import 'repositories/usuarios_repository.dart';
+import 'repositories/permisos_usuario_repository.dart';
 import 'services/empresa_service.dart';
+import 'facturacion/services/facturacion_service.dart';
+import 'facturacion/repositories/comprobantes_electronicos_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,12 +67,12 @@ Future<void> main() async {
     await printerAdapter.selectPrinter(nombreImpresora);
 
     print('');
-    print('✅ IMPRESORA AUTOMÁTICAMENTE SELECCIONADA');
-    print('🖨️ $nombreImpresora');
+    print('âœ… IMPRESORA AUTOMÃTICAMENTE SELECCIONADA');
+    print('ðŸ–¨ï¸ $nombreImpresora');
   } else {
     print('');
-    print('⚠️ NO SE ENCONTRÓ LA IMPRESORA:');
-    print('🖨️ $nombreImpresora');
+    print('âš ï¸ NO SE ENCONTRÃ“ LA IMPRESORA:');
+    print('ðŸ–¨ï¸ $nombreImpresora');
   }
 
   print('==============================================');
@@ -110,6 +114,25 @@ class AzulOSApp extends StatelessWidget {
 
         Provider(
           create: (_) => EmpresaRepository(database),
+        ),
+
+        Provider<ComprobantesElectronicosRepository>(
+          create: (_) => ComprobantesElectronicosRepository(database),
+        ),
+
+        Provider<FacturacionService>(
+          create: (context) => FacturacionService(
+            comprobantesElectronicosRepository:
+            context.read<ComprobantesElectronicosRepository>(),
+          ),
+        ),
+
+        Provider(
+          create: (_) => UsuariosRepository(database),
+        ),
+
+        Provider(
+          create: (_) => PermisosUsuarioRepository(database),
         ),
 
         Provider(
@@ -291,6 +314,9 @@ class AzulOSApp extends StatelessWidget {
                 cajasRepository:
                 context.read<CajasRepository>(),
 
+                facturacionService:
+                context.read<FacturacionService>(),
+
                 ticketPrintService:
                 context.read<TicketPrintService>(),
 
@@ -306,7 +332,7 @@ class AzulOSApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'AZUL OS',
         theme: AppTheme.lightTheme,
-        home: const HomeScreen(),
+        home: const AuthGate(),
       ),
     );
   }

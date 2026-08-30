@@ -26,10 +26,16 @@ dependencies:
   # Utilidades
   intl: ^0.20.2
 
+  # Facturación electrónica / firma digital
+  pkcs12_parser: ^1.0.0
+  xml_crypto: ^5.1.0
+  flutter_secure_storage: ^10.3.1
+
   # Impresión
   esc_pos_utils_plus: ^2.0.4
   win32: ^5.15.0
   ffi: ^2.2.0
+  archive: ^4.2.0
 
 dev_dependencies:
   flutter_test:

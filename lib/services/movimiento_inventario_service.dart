@@ -120,8 +120,6 @@ class MovimientoInventarioService extends ChangeNotifier {
       nuevosStocksProducto: stocks.productos,
       nuevosStocksInsumo: stocks.insumos,
     );
-
-    await _refrescarEstado();
   }
 
   // ==========================================================

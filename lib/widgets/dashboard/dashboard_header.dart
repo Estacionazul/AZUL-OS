@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:azul_os/services/sesion_service.dart';
 
 class DashboardHeader extends StatelessWidget {
   const DashboardHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final sesion = SesionService.instancia;
+
+    final nombre = sesion.nombreUsuario ?? 'Usuario';
+    final rol = sesion.rolUsuario ?? '';
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 30,
@@ -20,11 +26,11 @@ class DashboardHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   "Dashboard",
                   style: TextStyle(
                     fontSize: 30,
@@ -32,11 +38,13 @@ class DashboardHeader extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
 
                 Text(
-                  "Bienvenida a AZUL OS",
-                  style: TextStyle(
+                  sesion.esCEO
+                      ? "Bienvenida a AZUL OS"
+                      : "Bienvenido a AZUL OS",
+                  style: const TextStyle(
                     color: Colors.grey,
                     fontSize: 16,
                   ),
@@ -66,18 +74,18 @@ class DashboardHeader extends StatelessWidget {
 
           const SizedBox(width: 10),
 
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Betsy",
-                style: TextStyle(
+                nombre,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
-                "CEO",
-                style: TextStyle(
+                rol,
+                style: const TextStyle(
                   color: Colors.grey,
                 ),
               ),

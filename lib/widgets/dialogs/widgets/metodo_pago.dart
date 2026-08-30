@@ -29,7 +29,6 @@ class MetodoPago extends StatelessWidget {
           spacing: 15,
           runSpacing: 15,
           children: [
-
             _tarjeta(
               icono: Icons.payments,
               emoji: "💵",
@@ -101,10 +100,11 @@ class MetodoPago extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             Text(
               emoji,
-              style: const TextStyle(fontSize: 28),
+              style: const TextStyle(
+                fontSize: 28,
+              ),
             ),
 
             const SizedBox(height: 8),

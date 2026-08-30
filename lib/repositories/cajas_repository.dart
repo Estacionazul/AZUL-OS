@@ -6,8 +6,7 @@ import '../database/dao/cajas_dao.dart';
 class CajasRepository {
   final CajasDao _dao;
 
-  CajasRepository(AppDatabase database)
-      : _dao = CajasDao(database);
+  CajasRepository(AppDatabase database) : _dao = CajasDao(database);
 
   // ==========================================================
   // CAJAS
@@ -29,9 +28,7 @@ class CajasRepository {
   }
 
   /// Abre una nueva caja.
-  Future<int> abrir({
-    required double montoInicial,
-  }) {
+  Future<int> abrir({required double montoInicial}) {
     return _dao.abrirCaja(
       CajasCompanion(
         montoInicial: Value(montoInicial),
@@ -50,23 +47,35 @@ class CajasRepository {
   // ==========================================================
 
   /// Obtiene los movimientos de una caja.
-  Future<List<MovimientosCajaData>> obtenerMovimientos(
-      int cajaId,
-      ) {
+  Future<List<MovimientosCajaData>> obtenerMovimientos(int cajaId) {
     return _dao.obtenerMovimientosPorCaja(cajaId);
   }
 
   /// Registra un movimiento de caja.
-  Future<int> registrarMovimiento(
-      MovimientosCajaCompanion datos,
-      ) {
+  Future<int> registrarMovimiento(MovimientosCajaCompanion datos) {
     return _dao.registrarMovimiento(datos);
   }
 
+  // ==========================================================
+  // REGISTRAR MOVIMIENTO SIN TRANSACCIÓN
+  // ==========================================================
+
+  Future<int> registrarMovimientoSinTransaccion(
+    MovimientosCajaCompanion datos,
+  ) {
+    return _dao.registrarMovimientoSinTransaccion(datos);
+  }
+
+  // ==========================================================
+  // EJECUTAR TRANSACCIÓN GENERAL
+  // ==========================================================
+
+  Future<T> ejecutarEnTransaccion<T>(Future<T> Function() accion) {
+    return _dao.ejecutarEnTransaccion(accion);
+  }
+
   /// Obtiene el último movimiento de una caja.
-  Future<MovimientosCajaData?> obtenerUltimoMovimiento(
-      int cajaId,
-      ) {
+  Future<MovimientosCajaData?> obtenerUltimoMovimiento(int cajaId) {
     return _dao.obtenerUltimoMovimiento(cajaId);
   }
 }

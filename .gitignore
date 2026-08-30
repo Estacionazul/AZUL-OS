@@ -43,3 +43,31 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ==========================================
+# AZUL OS - ARCHIVOS LOCALES / SENSIBLES
+# ==========================================
+
+# Certificados digitales
+*.p12
+*.pfx
+*.pem
+*.key
+
+# Archivos XML de pruebas
+xml_prueba_*.xml
+*_prueba_firmado.xml
+
+# Archivos temporales de desarrollo
+devtools_options.yaml
+facturacion_actual.txt
+
+# Scripts locales de inspección / pruebas
+inspect_db.dart
+inspect_empresa_ventas.dart
+inspect_movimientos.dart
+inspect_stock.dart
+inspect_ventas.dart
+reset_produccion.dart
+test_certificado.dart
+

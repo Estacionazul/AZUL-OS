@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' show Value;
+import 'package:provider/provider.dart';
 
 import '../../database/app_database.dart';
 import '../../repositories/cajas_repository.dart';
@@ -12,7 +13,6 @@ class CajaScreen extends StatefulWidget {
 }
 
 class _CajaScreenState extends State<CajaScreen> {
-  late final AppDatabase _database;
   late final CajasRepository _repository;
 
   Caja? _cajaActual;
@@ -24,16 +24,9 @@ class _CajaScreenState extends State<CajaScreen> {
   void initState() {
     super.initState();
 
-    _database = AppDatabase();
-    _repository = CajasRepository(_database);
+    _repository = context.read<CajasRepository>();
 
     _cargarCaja();
-  }
-
-  @override
-  void dispose() {
-    _database.close();
-    super.dispose();
   }
 
   // ==========================================================
@@ -57,23 +50,25 @@ class _CajaScreenState extends State<CajaScreen> {
         // ----------------------------------------------------------
         // VENTAS
         // ----------------------------------------------------------
-        // En Caja solo mostramos ventas pagadas en EFECTIVO.
-        // Yape, Plin, Tarjeta y Transferencia no representan
-        // dinero físico dentro de la caja.
+        //
+        // TODAS las ventas deben aparecer en el historial de Caja.
+        //
+        // El método de pago NO determina si la venta se muestra.
+        //
+        // El método de pago solamente determina si afecta
+        // el EFECTIVO ESPERADO, lo cual se calcula en
+        // _totalMovimientos().
         // ----------------------------------------------------------
 
         if (movimiento.tipo == 'VENTA') {
-          final metodo = movimiento.metodoPago
-              ?.trim()
-              .toLowerCase();
-
-          return metodo == 'efectivo';
+          return true;
         }
 
         // ----------------------------------------------------------
         // INGRESOS Y EGRESOS
         // ----------------------------------------------------------
-        // Estos sí afectan físicamente el efectivo de Caja.
+        //
+        // Ambos representan movimientos físicos de efectivo.
         // ----------------------------------------------------------
 
         if (movimiento.tipo == 'INGRESO') {
@@ -84,7 +79,14 @@ class _CajaScreenState extends State<CajaScreen> {
           return true;
         }
 
-        // Cualquier otro tipo no se muestra en Caja.
+        // ----------------------------------------------------------
+        // OTROS TIPOS
+        // ----------------------------------------------------------
+        //
+        // APERTURA y CIERRE no se muestran como movimientos
+        // operativos del historial.
+        // ----------------------------------------------------------
+
         return false;
       }).toList();
     }
@@ -587,6 +589,30 @@ class _CajaScreenState extends State<CajaScreen> {
 
     final monto =
     resultado['monto'] as double;
+
+    // ==========================================================
+// VALIDAR EFECTIVO DISPONIBLE PARA EGRESOS
+// ==========================================================
+
+    if (!esIngreso) {
+      final efectivoDisponible = _saldoEsperado();
+
+      if (monto > efectivoDisponible + 0.01) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red,
+            content: Text(
+              'Efectivo insuficiente. '
+                  'Disponible: S/ ${efectivoDisponible.toStringAsFixed(2)}',
+            ),
+          ),
+        );
+
+        return;
+      }
+    }
 
     await _repository.registrarMovimiento(
       MovimientosCajaCompanion(

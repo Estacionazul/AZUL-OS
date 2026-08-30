@@ -148,6 +148,9 @@ class VentasDao extends DatabaseAccessor<AppDatabase>
 
   Future<String?> obtenerUltimoNumeroVenta() async {
     final ultimaVenta = await (select(ventas)
+      ..where(
+            (t) => t.tipoDocumento.equals('Nota de Venta'),
+      )
       ..orderBy([
             (t) => OrderingTerm.desc(t.id),
       ])

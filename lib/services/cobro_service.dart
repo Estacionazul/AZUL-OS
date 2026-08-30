@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/venta.dart';
 import '../database/app_database.dart' show MovimientosCajaCompanion;
@@ -14,7 +15,7 @@ import 'printer_service.dart';
 import 'ticket_print_service.dart';
 
 import '../ticket/esc_pos_renderer.dart';
-import 'package:flutter/foundation.dart';
+import '../facturacion/services/facturacion_service.dart';
 
 class CobroService {
   final CarritoService carritoService;
@@ -24,6 +25,7 @@ class CobroService {
   final InventarioAutomaticoService inventarioAutomaticoService;
   final EmpresaRepository empresaRepository;
   final CajasRepository cajasRepository;
+  final FacturacionService facturacionService;
 
   final TicketPrintService ticketPrintService;
   final EscPosRenderer escPosRenderer;
@@ -40,6 +42,7 @@ class CobroService {
     required this.escPosRenderer,
     required this.printerService,
     required this.cajasRepository,
+    required this.facturacionService,
   });
 
   Future<void> cobrar({
@@ -75,9 +78,30 @@ class CobroService {
         break;
     }
 
+    // ==========================================================
+    // VERIFICAR CAJA ABIERTA ANTES DE REGISTRAR LA VENTA
+    // ==========================================================
+
+    final cajaAbierta = await cajasRepository.obtenerAbierta();
+
+    if (cajaAbierta == null) {
+      throw StateError(
+        'No hay una caja abierta. '
+            'Debe abrir la caja antes de registrar una venta.',
+      );
+    }
+
+    // ==========================================================
+    // CALCULAR TOTALES
+    // ==========================================================
+
     final total = carritoService.total;
     final subtotal = total / 1.18;
     final igv = total - subtotal;
+
+    // ==========================================================
+    // CREAR VENTA
+    // ==========================================================
 
     final venta = Venta(
       numero: numeroVenta,
@@ -122,27 +146,66 @@ class CobroService {
       venta,
     );
 
-    debugPrint("========== VENTA ANTES DE GUARDAR ==========");
-    debugPrint("NUMERO: ${venta.numero}");
-    debugPrint("TIPO: ${venta.tipoDocumento}");
-    debugPrint("DNI: ${venta.dni}");
-    debugPrint("RUC: ${venta.ruc}");
-    debugPrint("NOMBRE: ${venta.nombreCliente}");
-    debugPrint("RAZON SOCIAL: ${venta.razonSocial}");
-    debugPrint("DIRECCION: ${venta.direccionFiscal}");
+    // ==========================================================
+    // REGISTRAR VENTA EN CAJA
+    // ==========================================================
+
+    await cajasRepository.registrarMovimiento(
+      MovimientosCajaCompanion(
+        cajaId: Value(cajaAbierta.id),
+        tipo: const Value('VENTA'),
+        concepto: Value('Venta ${venta.numero}'),
+        monto: Value(venta.total),
+        metodoPago: Value(metodoPago.toUpperCase()),
+        referencia: Value(venta.numero),
+        observacion: Value(
+          venta.tipoDocumento,
+        ),
+      ),
+    );
+
+    debugPrint(
+      '========== MOVIMIENTO CAJA REGISTRADO ==========',
+    );
+    debugPrint('CAJA ID: ${cajaAbierta.id}');
+    debugPrint('TIPO: VENTA');
+    debugPrint('MONTO: ${venta.total}');
+    debugPrint('METODO: ${metodoPago.toUpperCase()}');
+    debugPrint('REFERENCIA: ${venta.numero}');
+
+    // ==========================================================
+    // VERIFICAR DATOS GUARDADOS
+    // ==========================================================
+
+    debugPrint(
+      '========== VENTA ANTES DE GUARDAR ==========',
+    );
+    debugPrint('NUMERO: ${venta.numero}');
+    debugPrint('TIPO: ${venta.tipoDocumento}');
+    debugPrint('DNI: ${venta.dni}');
+    debugPrint('RUC: ${venta.ruc}');
+    debugPrint('NOMBRE: ${venta.nombreCliente}');
+    debugPrint('RAZON SOCIAL: ${venta.razonSocial}');
+    debugPrint('DIRECCION: ${venta.direccionFiscal}');
 
     final ventaVerificada =
     await ventasRepository.obtenerVenta(idGuardado);
 
-    debugPrint("========== VENTA DESPUES DE GUARDAR ==========");
-    debugPrint("ID: $idGuardado");
-    debugPrint("NUMERO: ${ventaVerificada?.numero}");
-    debugPrint("TIPO: ${ventaVerificada?.tipoDocumento}");
-    debugPrint("DNI: ${ventaVerificada?.dni}");
-    debugPrint("RUC: ${ventaVerificada?.ruc}");
-    debugPrint("NOMBRE: ${ventaVerificada?.nombreCliente}");
-    debugPrint("RAZON SOCIAL: ${ventaVerificada?.razonSocial}");
-    debugPrint("DIRECCION: ${ventaVerificada?.direccionFiscal}");
+    debugPrint(
+      '========== VENTA DESPUES DE GUARDAR ==========',
+    );
+    debugPrint('ID: $idGuardado');
+    debugPrint('NUMERO: ${ventaVerificada?.numero}');
+    debugPrint('TIPO: ${ventaVerificada?.tipoDocumento}');
+    debugPrint('DNI: ${ventaVerificada?.dni}');
+    debugPrint('RUC: ${ventaVerificada?.ruc}');
+    debugPrint('NOMBRE: ${ventaVerificada?.nombreCliente}');
+    debugPrint(
+      'RAZON SOCIAL: ${ventaVerificada?.razonSocial}',
+    );
+    debugPrint(
+      'DIRECCION: ${ventaVerificada?.direccionFiscal}',
+    );
 
     // ==========================================================
     // INCREMENTAR CORRELATIVO
@@ -176,44 +239,13 @@ class CobroService {
         break;
     }
 
+    // ==========================================================
+    // REGISTRAR VENTA EN EL SERVICIO
+    // ==========================================================
+
     ventasService.registrarVenta(
       venta,
     );
-
-    // ==========================================================
-    // REGISTRAR VENTA EN CAJA
-    // ==========================================================
-    //
-    // Todas las ventas quedan registradas en movimientos de caja.
-    //
-    // Efectivo      -> suma al efectivo esperado
-    // Yape          -> no suma al efectivo
-    // Plin          -> no suma al efectivo
-    // Tarjeta       -> no suma al efectivo
-    // Transferencia -> no suma al efectivo
-    //
-    // La pantalla Caja calcula el efectivo esperado
-    // considerando únicamente las ventas en EFECTIVO.
-    // ==========================================================
-
-    final cajaAbierta =
-    await cajasRepository.obtenerAbierta();
-
-    if (cajaAbierta != null) {
-      await cajasRepository.registrarMovimiento(
-        MovimientosCajaCompanion(
-          cajaId: Value(cajaAbierta.id),
-          tipo: const Value('VENTA'),
-          concepto: Value('Venta ${venta.numero}'),
-          monto: Value(venta.total),
-          metodoPago: Value(venta.metodoPago),
-          referencia: Value(venta.numero),
-          observacion: Value(
-            'Venta ${venta.metodoPago} registrada desde POS',
-          ),
-        ),
-      );
-    }
 
     // ==========================================================
     // DESCONTAR INVENTARIO

@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../services/sesion_service.dart';
 
 class SidebarUserCard extends StatelessWidget {
   const SidebarUserCard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final sesion = SesionService.instancia;
+
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
@@ -24,7 +27,7 @@ class SidebarUserCard extends StatelessWidget {
           color: Colors.white.withValues(alpha: 0.10),
         ),
       ),
-      child: const Row(
+      child: Row(
         children: [
 
           CircleAvatar(
@@ -44,7 +47,7 @@ class SidebarUserCard extends StatelessWidget {
               children: [
 
                 Text(
-                  "Betsy Villacorta",
+                  sesion.nombreUsuario ?? 'Usuario',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -54,7 +57,7 @@ class SidebarUserCard extends StatelessWidget {
                 SizedBox(height: 2),
 
                 Text(
-                  "CEO",
+                  sesion.rolUsuario ?? '',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 12,

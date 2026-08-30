@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
@@ -23,12 +23,20 @@ import 'tables/movimientos_inventario_table.dart';
 import 'tables/empresa_table.dart';
 import 'tables/cajas_table.dart';
 import 'tables/movimientos_caja_table.dart';
+import 'tables/usuarios_table.dart';
 
 import 'dao/ventas_dao.dart';
 import 'dao/clientes_dao.dart';
 import 'dao/movimientos_inventario_dao.dart';
 import 'dao/empresa_dao.dart';
 import 'dao/cajas_dao.dart';
+import 'dao/usuarios_dao.dart';
+import 'dao/permisos_usuario_dao.dart';
+import 'dao/comprobantes_electronicos_dao.dart';
+
+import 'tables/permisos_usuario_table.dart';
+import 'tables/comprobantes_electronicos_table.dart';
+
 part 'app_database.g.dart';
 
 @DriftDatabase(
@@ -45,6 +53,9 @@ part 'app_database.g.dart';
     Empresa,
     Cajas,
     MovimientosCaja,
+    Usuarios,
+    PermisosUsuario,
+    ComprobantesElectronicos,
   ],
   daos: [
     ProductosDao,
@@ -56,13 +67,16 @@ part 'app_database.g.dart';
     MovimientosInventarioDao,
     EmpresaDao,
     CajasDao,
+    UsuariosDao,
+    PermisosUsuarioDao,
+    ComprobantesElectronicosDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -74,6 +88,18 @@ class AppDatabase extends _$AppDatabase {
       if (from < 11) {
         await m.createTable(cajas);
         await m.createTable(movimientosCaja);
+      }
+
+      if (from < 12) {
+        await m.createTable(usuarios);
+      }
+
+      if (from < 13) {
+        await m.createTable(permisosUsuario);
+      }
+
+      if (from < 14) {
+        await m.createTable(comprobantesElectronicos);
       }
     },
   );
@@ -95,3 +121,5 @@ LazyDatabase _openConnection() {
     return NativeDatabase(file);
   });
 }
+
+

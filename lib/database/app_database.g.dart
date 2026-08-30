@@ -7573,6 +7573,2108 @@ class MovimientosCajaCompanion extends UpdateCompanion<MovimientosCajaData> {
   }
 }
 
+class $UsuariosTable extends Usuarios with TableInfo<$UsuariosTable, Usuario> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UsuariosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nombreMeta = const VerificationMeta('nombre');
+  @override
+  late final GeneratedColumn<String> nombre = GeneratedColumn<String>(
+    'nombre',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pinMeta = const VerificationMeta('pin');
+  @override
+  late final GeneratedColumn<String> pin = GeneratedColumn<String>(
+    'pin',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rolMeta = const VerificationMeta('rol');
+  @override
+  late final GeneratedColumn<String> rol = GeneratedColumn<String>(
+    'rol',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('CAJERO'),
+  );
+  static const VerificationMeta _activoMeta = const VerificationMeta('activo');
+  @override
+  late final GeneratedColumn<bool> activo = GeneratedColumn<bool>(
+    'activo',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("activo" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, nombre, pin, rol, activo];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'usuarios';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Usuario> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('nombre')) {
+      context.handle(
+        _nombreMeta,
+        nombre.isAcceptableOrUnknown(data['nombre']!, _nombreMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nombreMeta);
+    }
+    if (data.containsKey('pin')) {
+      context.handle(
+        _pinMeta,
+        pin.isAcceptableOrUnknown(data['pin']!, _pinMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pinMeta);
+    }
+    if (data.containsKey('rol')) {
+      context.handle(
+        _rolMeta,
+        rol.isAcceptableOrUnknown(data['rol']!, _rolMeta),
+      );
+    }
+    if (data.containsKey('activo')) {
+      context.handle(
+        _activoMeta,
+        activo.isAcceptableOrUnknown(data['activo']!, _activoMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Usuario map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Usuario(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      nombre: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nombre'],
+      )!,
+      pin: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pin'],
+      )!,
+      rol: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rol'],
+      )!,
+      activo: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}activo'],
+      )!,
+    );
+  }
+
+  @override
+  $UsuariosTable createAlias(String alias) {
+    return $UsuariosTable(attachedDatabase, alias);
+  }
+}
+
+class Usuario extends DataClass implements Insertable<Usuario> {
+  final int id;
+  final String nombre;
+  final String pin;
+  final String rol;
+  final bool activo;
+  const Usuario({
+    required this.id,
+    required this.nombre,
+    required this.pin,
+    required this.rol,
+    required this.activo,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['nombre'] = Variable<String>(nombre);
+    map['pin'] = Variable<String>(pin);
+    map['rol'] = Variable<String>(rol);
+    map['activo'] = Variable<bool>(activo);
+    return map;
+  }
+
+  UsuariosCompanion toCompanion(bool nullToAbsent) {
+    return UsuariosCompanion(
+      id: Value(id),
+      nombre: Value(nombre),
+      pin: Value(pin),
+      rol: Value(rol),
+      activo: Value(activo),
+    );
+  }
+
+  factory Usuario.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Usuario(
+      id: serializer.fromJson<int>(json['id']),
+      nombre: serializer.fromJson<String>(json['nombre']),
+      pin: serializer.fromJson<String>(json['pin']),
+      rol: serializer.fromJson<String>(json['rol']),
+      activo: serializer.fromJson<bool>(json['activo']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'nombre': serializer.toJson<String>(nombre),
+      'pin': serializer.toJson<String>(pin),
+      'rol': serializer.toJson<String>(rol),
+      'activo': serializer.toJson<bool>(activo),
+    };
+  }
+
+  Usuario copyWith({
+    int? id,
+    String? nombre,
+    String? pin,
+    String? rol,
+    bool? activo,
+  }) => Usuario(
+    id: id ?? this.id,
+    nombre: nombre ?? this.nombre,
+    pin: pin ?? this.pin,
+    rol: rol ?? this.rol,
+    activo: activo ?? this.activo,
+  );
+  Usuario copyWithCompanion(UsuariosCompanion data) {
+    return Usuario(
+      id: data.id.present ? data.id.value : this.id,
+      nombre: data.nombre.present ? data.nombre.value : this.nombre,
+      pin: data.pin.present ? data.pin.value : this.pin,
+      rol: data.rol.present ? data.rol.value : this.rol,
+      activo: data.activo.present ? data.activo.value : this.activo,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Usuario(')
+          ..write('id: $id, ')
+          ..write('nombre: $nombre, ')
+          ..write('pin: $pin, ')
+          ..write('rol: $rol, ')
+          ..write('activo: $activo')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, nombre, pin, rol, activo);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Usuario &&
+          other.id == this.id &&
+          other.nombre == this.nombre &&
+          other.pin == this.pin &&
+          other.rol == this.rol &&
+          other.activo == this.activo);
+}
+
+class UsuariosCompanion extends UpdateCompanion<Usuario> {
+  final Value<int> id;
+  final Value<String> nombre;
+  final Value<String> pin;
+  final Value<String> rol;
+  final Value<bool> activo;
+  const UsuariosCompanion({
+    this.id = const Value.absent(),
+    this.nombre = const Value.absent(),
+    this.pin = const Value.absent(),
+    this.rol = const Value.absent(),
+    this.activo = const Value.absent(),
+  });
+  UsuariosCompanion.insert({
+    this.id = const Value.absent(),
+    required String nombre,
+    required String pin,
+    this.rol = const Value.absent(),
+    this.activo = const Value.absent(),
+  }) : nombre = Value(nombre),
+       pin = Value(pin);
+  static Insertable<Usuario> custom({
+    Expression<int>? id,
+    Expression<String>? nombre,
+    Expression<String>? pin,
+    Expression<String>? rol,
+    Expression<bool>? activo,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (nombre != null) 'nombre': nombre,
+      if (pin != null) 'pin': pin,
+      if (rol != null) 'rol': rol,
+      if (activo != null) 'activo': activo,
+    });
+  }
+
+  UsuariosCompanion copyWith({
+    Value<int>? id,
+    Value<String>? nombre,
+    Value<String>? pin,
+    Value<String>? rol,
+    Value<bool>? activo,
+  }) {
+    return UsuariosCompanion(
+      id: id ?? this.id,
+      nombre: nombre ?? this.nombre,
+      pin: pin ?? this.pin,
+      rol: rol ?? this.rol,
+      activo: activo ?? this.activo,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (nombre.present) {
+      map['nombre'] = Variable<String>(nombre.value);
+    }
+    if (pin.present) {
+      map['pin'] = Variable<String>(pin.value);
+    }
+    if (rol.present) {
+      map['rol'] = Variable<String>(rol.value);
+    }
+    if (activo.present) {
+      map['activo'] = Variable<bool>(activo.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UsuariosCompanion(')
+          ..write('id: $id, ')
+          ..write('nombre: $nombre, ')
+          ..write('pin: $pin, ')
+          ..write('rol: $rol, ')
+          ..write('activo: $activo')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PermisosUsuarioTable extends PermisosUsuario
+    with TableInfo<$PermisosUsuarioTable, PermisosUsuarioData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PermisosUsuarioTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _usuarioIdMeta = const VerificationMeta(
+    'usuarioId',
+  );
+  @override
+  late final GeneratedColumn<int> usuarioId = GeneratedColumn<int>(
+    'usuario_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES usuarios (id)',
+    ),
+  );
+  static const VerificationMeta _moduloMeta = const VerificationMeta('modulo');
+  @override
+  late final GeneratedColumn<String> modulo = GeneratedColumn<String>(
+    'modulo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _permitidoMeta = const VerificationMeta(
+    'permitido',
+  );
+  @override
+  late final GeneratedColumn<bool> permitido = GeneratedColumn<bool>(
+    'permitido',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("permitido" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, usuarioId, modulo, permitido];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'permisos_usuario';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PermisosUsuarioData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('usuario_id')) {
+      context.handle(
+        _usuarioIdMeta,
+        usuarioId.isAcceptableOrUnknown(data['usuario_id']!, _usuarioIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_usuarioIdMeta);
+    }
+    if (data.containsKey('modulo')) {
+      context.handle(
+        _moduloMeta,
+        modulo.isAcceptableOrUnknown(data['modulo']!, _moduloMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_moduloMeta);
+    }
+    if (data.containsKey('permitido')) {
+      context.handle(
+        _permitidoMeta,
+        permitido.isAcceptableOrUnknown(data['permitido']!, _permitidoMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PermisosUsuarioData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PermisosUsuarioData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      usuarioId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}usuario_id'],
+      )!,
+      modulo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}modulo'],
+      )!,
+      permitido: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}permitido'],
+      )!,
+    );
+  }
+
+  @override
+  $PermisosUsuarioTable createAlias(String alias) {
+    return $PermisosUsuarioTable(attachedDatabase, alias);
+  }
+}
+
+class PermisosUsuarioData extends DataClass
+    implements Insertable<PermisosUsuarioData> {
+  final int id;
+  final int usuarioId;
+  final String modulo;
+  final bool permitido;
+  const PermisosUsuarioData({
+    required this.id,
+    required this.usuarioId,
+    required this.modulo,
+    required this.permitido,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['usuario_id'] = Variable<int>(usuarioId);
+    map['modulo'] = Variable<String>(modulo);
+    map['permitido'] = Variable<bool>(permitido);
+    return map;
+  }
+
+  PermisosUsuarioCompanion toCompanion(bool nullToAbsent) {
+    return PermisosUsuarioCompanion(
+      id: Value(id),
+      usuarioId: Value(usuarioId),
+      modulo: Value(modulo),
+      permitido: Value(permitido),
+    );
+  }
+
+  factory PermisosUsuarioData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PermisosUsuarioData(
+      id: serializer.fromJson<int>(json['id']),
+      usuarioId: serializer.fromJson<int>(json['usuarioId']),
+      modulo: serializer.fromJson<String>(json['modulo']),
+      permitido: serializer.fromJson<bool>(json['permitido']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'usuarioId': serializer.toJson<int>(usuarioId),
+      'modulo': serializer.toJson<String>(modulo),
+      'permitido': serializer.toJson<bool>(permitido),
+    };
+  }
+
+  PermisosUsuarioData copyWith({
+    int? id,
+    int? usuarioId,
+    String? modulo,
+    bool? permitido,
+  }) => PermisosUsuarioData(
+    id: id ?? this.id,
+    usuarioId: usuarioId ?? this.usuarioId,
+    modulo: modulo ?? this.modulo,
+    permitido: permitido ?? this.permitido,
+  );
+  PermisosUsuarioData copyWithCompanion(PermisosUsuarioCompanion data) {
+    return PermisosUsuarioData(
+      id: data.id.present ? data.id.value : this.id,
+      usuarioId: data.usuarioId.present ? data.usuarioId.value : this.usuarioId,
+      modulo: data.modulo.present ? data.modulo.value : this.modulo,
+      permitido: data.permitido.present ? data.permitido.value : this.permitido,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PermisosUsuarioData(')
+          ..write('id: $id, ')
+          ..write('usuarioId: $usuarioId, ')
+          ..write('modulo: $modulo, ')
+          ..write('permitido: $permitido')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, usuarioId, modulo, permitido);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PermisosUsuarioData &&
+          other.id == this.id &&
+          other.usuarioId == this.usuarioId &&
+          other.modulo == this.modulo &&
+          other.permitido == this.permitido);
+}
+
+class PermisosUsuarioCompanion extends UpdateCompanion<PermisosUsuarioData> {
+  final Value<int> id;
+  final Value<int> usuarioId;
+  final Value<String> modulo;
+  final Value<bool> permitido;
+  const PermisosUsuarioCompanion({
+    this.id = const Value.absent(),
+    this.usuarioId = const Value.absent(),
+    this.modulo = const Value.absent(),
+    this.permitido = const Value.absent(),
+  });
+  PermisosUsuarioCompanion.insert({
+    this.id = const Value.absent(),
+    required int usuarioId,
+    required String modulo,
+    this.permitido = const Value.absent(),
+  }) : usuarioId = Value(usuarioId),
+       modulo = Value(modulo);
+  static Insertable<PermisosUsuarioData> custom({
+    Expression<int>? id,
+    Expression<int>? usuarioId,
+    Expression<String>? modulo,
+    Expression<bool>? permitido,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (usuarioId != null) 'usuario_id': usuarioId,
+      if (modulo != null) 'modulo': modulo,
+      if (permitido != null) 'permitido': permitido,
+    });
+  }
+
+  PermisosUsuarioCompanion copyWith({
+    Value<int>? id,
+    Value<int>? usuarioId,
+    Value<String>? modulo,
+    Value<bool>? permitido,
+  }) {
+    return PermisosUsuarioCompanion(
+      id: id ?? this.id,
+      usuarioId: usuarioId ?? this.usuarioId,
+      modulo: modulo ?? this.modulo,
+      permitido: permitido ?? this.permitido,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (usuarioId.present) {
+      map['usuario_id'] = Variable<int>(usuarioId.value);
+    }
+    if (modulo.present) {
+      map['modulo'] = Variable<String>(modulo.value);
+    }
+    if (permitido.present) {
+      map['permitido'] = Variable<bool>(permitido.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PermisosUsuarioCompanion(')
+          ..write('id: $id, ')
+          ..write('usuarioId: $usuarioId, ')
+          ..write('modulo: $modulo, ')
+          ..write('permitido: $permitido')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ComprobantesElectronicosTable extends ComprobantesElectronicos
+    with TableInfo<$ComprobantesElectronicosTable, ComprobantesElectronico> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ComprobantesElectronicosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _ventaIdMeta = const VerificationMeta(
+    'ventaId',
+  );
+  @override
+  late final GeneratedColumn<int> ventaId = GeneratedColumn<int>(
+    'venta_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _comprobanteRelacionadoIdMeta =
+      const VerificationMeta('comprobanteRelacionadoId');
+  @override
+  late final GeneratedColumn<int> comprobanteRelacionadoId =
+      GeneratedColumn<int>(
+        'comprobante_relacionado_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _tipoMeta = const VerificationMeta('tipo');
+  @override
+  late final GeneratedColumn<String> tipo = GeneratedColumn<String>(
+    'tipo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serieMeta = const VerificationMeta('serie');
+  @override
+  late final GeneratedColumn<String> serie = GeneratedColumn<String>(
+    'serie',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 4,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _numeroMeta = const VerificationMeta('numero');
+  @override
+  late final GeneratedColumn<int> numero = GeneratedColumn<int>(
+    'numero',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fechaEmisionMeta = const VerificationMeta(
+    'fechaEmision',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fechaEmision = GeneratedColumn<DateTime>(
+    'fecha_emision',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dniMeta = const VerificationMeta('dni');
+  @override
+  late final GeneratedColumn<String> dni = GeneratedColumn<String>(
+    'dni',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _rucMeta = const VerificationMeta('ruc');
+  @override
+  late final GeneratedColumn<String> ruc = GeneratedColumn<String>(
+    'ruc',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nombreClienteMeta = const VerificationMeta(
+    'nombreCliente',
+  );
+  @override
+  late final GeneratedColumn<String> nombreCliente = GeneratedColumn<String>(
+    'nombre_cliente',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _direccionFiscalMeta = const VerificationMeta(
+    'direccionFiscal',
+  );
+  @override
+  late final GeneratedColumn<String> direccionFiscal = GeneratedColumn<String>(
+    'direccion_fiscal',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _subtotalMeta = const VerificationMeta(
+    'subtotal',
+  );
+  @override
+  late final GeneratedColumn<double> subtotal = GeneratedColumn<double>(
+    'subtotal',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _igvMeta = const VerificationMeta('igv');
+  @override
+  late final GeneratedColumn<double> igv = GeneratedColumn<double>(
+    'igv',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalMeta = const VerificationMeta('total');
+  @override
+  late final GeneratedColumn<double> total = GeneratedColumn<double>(
+    'total',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _metodoPagoMeta = const VerificationMeta(
+    'metodoPago',
+  );
+  @override
+  late final GeneratedColumn<String> metodoPago = GeneratedColumn<String>(
+    'metodo_pago',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _estadoMeta = const VerificationMeta('estado');
+  @override
+  late final GeneratedColumn<String> estado = GeneratedColumn<String>(
+    'estado',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pendiente'),
+  );
+  static const VerificationMeta _codigoRespuestaSunatMeta =
+      const VerificationMeta('codigoRespuestaSunat');
+  @override
+  late final GeneratedColumn<String> codigoRespuestaSunat =
+      GeneratedColumn<String>(
+        'codigo_respuesta_sunat',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _mensajeRespuestaSunatMeta =
+      const VerificationMeta('mensajeRespuestaSunat');
+  @override
+  late final GeneratedColumn<String> mensajeRespuestaSunat =
+      GeneratedColumn<String>(
+        'mensaje_respuesta_sunat',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _cdrMeta = const VerificationMeta('cdr');
+  @override
+  late final GeneratedColumn<String> cdr = GeneratedColumn<String>(
+    'cdr',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _xmlMeta = const VerificationMeta('xml');
+  @override
+  late final GeneratedColumn<String> xml = GeneratedColumn<String>(
+    'xml',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fechaEnvioSunatMeta = const VerificationMeta(
+    'fechaEnvioSunat',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fechaEnvioSunat =
+      GeneratedColumn<DateTime>(
+        'fecha_envio_sunat',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _fechaRespuestaSunatMeta =
+      const VerificationMeta('fechaRespuestaSunat');
+  @override
+  late final GeneratedColumn<DateTime> fechaRespuestaSunat =
+      GeneratedColumn<DateTime>(
+        'fecha_respuesta_sunat',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _codigoMotivoNotaCreditoMeta =
+      const VerificationMeta('codigoMotivoNotaCredito');
+  @override
+  late final GeneratedColumn<String> codigoMotivoNotaCredito =
+      GeneratedColumn<String>(
+        'codigo_motivo_nota_credito',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _motivoNotaCreditoMeta = const VerificationMeta(
+    'motivoNotaCredito',
+  );
+  @override
+  late final GeneratedColumn<String> motivoNotaCredito =
+      GeneratedColumn<String>(
+        'motivo_nota_credito',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _observacionesMeta = const VerificationMeta(
+    'observaciones',
+  );
+  @override
+  late final GeneratedColumn<String> observaciones = GeneratedColumn<String>(
+    'observaciones',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    ventaId,
+    comprobanteRelacionadoId,
+    tipo,
+    serie,
+    numero,
+    fechaEmision,
+    dni,
+    ruc,
+    nombreCliente,
+    direccionFiscal,
+    subtotal,
+    igv,
+    total,
+    metodoPago,
+    estado,
+    codigoRespuestaSunat,
+    mensajeRespuestaSunat,
+    cdr,
+    xml,
+    fechaEnvioSunat,
+    fechaRespuestaSunat,
+    codigoMotivoNotaCredito,
+    motivoNotaCredito,
+    observaciones,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'comprobantes_electronicos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ComprobantesElectronico> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('venta_id')) {
+      context.handle(
+        _ventaIdMeta,
+        ventaId.isAcceptableOrUnknown(data['venta_id']!, _ventaIdMeta),
+      );
+    }
+    if (data.containsKey('comprobante_relacionado_id')) {
+      context.handle(
+        _comprobanteRelacionadoIdMeta,
+        comprobanteRelacionadoId.isAcceptableOrUnknown(
+          data['comprobante_relacionado_id']!,
+          _comprobanteRelacionadoIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('tipo')) {
+      context.handle(
+        _tipoMeta,
+        tipo.isAcceptableOrUnknown(data['tipo']!, _tipoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tipoMeta);
+    }
+    if (data.containsKey('serie')) {
+      context.handle(
+        _serieMeta,
+        serie.isAcceptableOrUnknown(data['serie']!, _serieMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_serieMeta);
+    }
+    if (data.containsKey('numero')) {
+      context.handle(
+        _numeroMeta,
+        numero.isAcceptableOrUnknown(data['numero']!, _numeroMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_numeroMeta);
+    }
+    if (data.containsKey('fecha_emision')) {
+      context.handle(
+        _fechaEmisionMeta,
+        fechaEmision.isAcceptableOrUnknown(
+          data['fecha_emision']!,
+          _fechaEmisionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_fechaEmisionMeta);
+    }
+    if (data.containsKey('dni')) {
+      context.handle(
+        _dniMeta,
+        dni.isAcceptableOrUnknown(data['dni']!, _dniMeta),
+      );
+    }
+    if (data.containsKey('ruc')) {
+      context.handle(
+        _rucMeta,
+        ruc.isAcceptableOrUnknown(data['ruc']!, _rucMeta),
+      );
+    }
+    if (data.containsKey('nombre_cliente')) {
+      context.handle(
+        _nombreClienteMeta,
+        nombreCliente.isAcceptableOrUnknown(
+          data['nombre_cliente']!,
+          _nombreClienteMeta,
+        ),
+      );
+    }
+    if (data.containsKey('direccion_fiscal')) {
+      context.handle(
+        _direccionFiscalMeta,
+        direccionFiscal.isAcceptableOrUnknown(
+          data['direccion_fiscal']!,
+          _direccionFiscalMeta,
+        ),
+      );
+    }
+    if (data.containsKey('subtotal')) {
+      context.handle(
+        _subtotalMeta,
+        subtotal.isAcceptableOrUnknown(data['subtotal']!, _subtotalMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_subtotalMeta);
+    }
+    if (data.containsKey('igv')) {
+      context.handle(
+        _igvMeta,
+        igv.isAcceptableOrUnknown(data['igv']!, _igvMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_igvMeta);
+    }
+    if (data.containsKey('total')) {
+      context.handle(
+        _totalMeta,
+        total.isAcceptableOrUnknown(data['total']!, _totalMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_totalMeta);
+    }
+    if (data.containsKey('metodo_pago')) {
+      context.handle(
+        _metodoPagoMeta,
+        metodoPago.isAcceptableOrUnknown(data['metodo_pago']!, _metodoPagoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_metodoPagoMeta);
+    }
+    if (data.containsKey('estado')) {
+      context.handle(
+        _estadoMeta,
+        estado.isAcceptableOrUnknown(data['estado']!, _estadoMeta),
+      );
+    }
+    if (data.containsKey('codigo_respuesta_sunat')) {
+      context.handle(
+        _codigoRespuestaSunatMeta,
+        codigoRespuestaSunat.isAcceptableOrUnknown(
+          data['codigo_respuesta_sunat']!,
+          _codigoRespuestaSunatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('mensaje_respuesta_sunat')) {
+      context.handle(
+        _mensajeRespuestaSunatMeta,
+        mensajeRespuestaSunat.isAcceptableOrUnknown(
+          data['mensaje_respuesta_sunat']!,
+          _mensajeRespuestaSunatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cdr')) {
+      context.handle(
+        _cdrMeta,
+        cdr.isAcceptableOrUnknown(data['cdr']!, _cdrMeta),
+      );
+    }
+    if (data.containsKey('xml')) {
+      context.handle(
+        _xmlMeta,
+        xml.isAcceptableOrUnknown(data['xml']!, _xmlMeta),
+      );
+    }
+    if (data.containsKey('fecha_envio_sunat')) {
+      context.handle(
+        _fechaEnvioSunatMeta,
+        fechaEnvioSunat.isAcceptableOrUnknown(
+          data['fecha_envio_sunat']!,
+          _fechaEnvioSunatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('fecha_respuesta_sunat')) {
+      context.handle(
+        _fechaRespuestaSunatMeta,
+        fechaRespuestaSunat.isAcceptableOrUnknown(
+          data['fecha_respuesta_sunat']!,
+          _fechaRespuestaSunatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('codigo_motivo_nota_credito')) {
+      context.handle(
+        _codigoMotivoNotaCreditoMeta,
+        codigoMotivoNotaCredito.isAcceptableOrUnknown(
+          data['codigo_motivo_nota_credito']!,
+          _codigoMotivoNotaCreditoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('motivo_nota_credito')) {
+      context.handle(
+        _motivoNotaCreditoMeta,
+        motivoNotaCredito.isAcceptableOrUnknown(
+          data['motivo_nota_credito']!,
+          _motivoNotaCreditoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('observaciones')) {
+      context.handle(
+        _observacionesMeta,
+        observaciones.isAcceptableOrUnknown(
+          data['observaciones']!,
+          _observacionesMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ComprobantesElectronico map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ComprobantesElectronico(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      ventaId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}venta_id'],
+      ),
+      comprobanteRelacionadoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}comprobante_relacionado_id'],
+      ),
+      tipo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tipo'],
+      )!,
+      serie: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}serie'],
+      )!,
+      numero: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}numero'],
+      )!,
+      fechaEmision: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_emision'],
+      )!,
+      dni: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dni'],
+      ),
+      ruc: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ruc'],
+      ),
+      nombreCliente: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nombre_cliente'],
+      ),
+      direccionFiscal: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}direccion_fiscal'],
+      ),
+      subtotal: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}subtotal'],
+      )!,
+      igv: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}igv'],
+      )!,
+      total: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}total'],
+      )!,
+      metodoPago: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}metodo_pago'],
+      )!,
+      estado: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}estado'],
+      )!,
+      codigoRespuestaSunat: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}codigo_respuesta_sunat'],
+      ),
+      mensajeRespuestaSunat: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mensaje_respuesta_sunat'],
+      ),
+      cdr: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cdr'],
+      ),
+      xml: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}xml'],
+      ),
+      fechaEnvioSunat: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_envio_sunat'],
+      ),
+      fechaRespuestaSunat: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_respuesta_sunat'],
+      ),
+      codigoMotivoNotaCredito: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}codigo_motivo_nota_credito'],
+      ),
+      motivoNotaCredito: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}motivo_nota_credito'],
+      ),
+      observaciones: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}observaciones'],
+      ),
+    );
+  }
+
+  @override
+  $ComprobantesElectronicosTable createAlias(String alias) {
+    return $ComprobantesElectronicosTable(attachedDatabase, alias);
+  }
+}
+
+class ComprobantesElectronico extends DataClass
+    implements Insertable<ComprobantesElectronico> {
+  final int id;
+
+  /// Venta interna de AZUL OS relacionada.
+  final int? ventaId;
+
+  /// Comprobante electrónico relacionado.
+  /// Principalmente utilizado para notas de crédito.
+  final int? comprobanteRelacionadoId;
+
+  /// notaVenta
+  /// boleta
+  /// factura
+  /// notaCredito
+  final String tipo;
+
+  /// Serie SUNAT.
+  ///
+  /// Ejemplos:
+  /// B001
+  /// F001
+  final String serie;
+
+  /// Correlativo del comprobante.
+  final int numero;
+  final DateTime fechaEmision;
+  final String? dni;
+  final String? ruc;
+  final String? nombreCliente;
+  final String? direccionFiscal;
+  final double subtotal;
+  final double igv;
+  final double total;
+  final String metodoPago;
+
+  /// pendiente
+  /// generado
+  /// enviado
+  /// aceptado
+  /// rechazado
+  /// dadoDeBaja
+  /// anulado
+  final String estado;
+  final String? codigoRespuestaSunat;
+  final String? mensajeRespuestaSunat;
+  final String? cdr;
+  final String? xml;
+  final DateTime? fechaEnvioSunat;
+  final DateTime? fechaRespuestaSunat;
+
+  /// Código de motivo SUNAT.
+  final String? codigoMotivoNotaCredito;
+
+  /// Descripción del motivo.
+  final String? motivoNotaCredito;
+  final String? observaciones;
+  const ComprobantesElectronico({
+    required this.id,
+    this.ventaId,
+    this.comprobanteRelacionadoId,
+    required this.tipo,
+    required this.serie,
+    required this.numero,
+    required this.fechaEmision,
+    this.dni,
+    this.ruc,
+    this.nombreCliente,
+    this.direccionFiscal,
+    required this.subtotal,
+    required this.igv,
+    required this.total,
+    required this.metodoPago,
+    required this.estado,
+    this.codigoRespuestaSunat,
+    this.mensajeRespuestaSunat,
+    this.cdr,
+    this.xml,
+    this.fechaEnvioSunat,
+    this.fechaRespuestaSunat,
+    this.codigoMotivoNotaCredito,
+    this.motivoNotaCredito,
+    this.observaciones,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || ventaId != null) {
+      map['venta_id'] = Variable<int>(ventaId);
+    }
+    if (!nullToAbsent || comprobanteRelacionadoId != null) {
+      map['comprobante_relacionado_id'] = Variable<int>(
+        comprobanteRelacionadoId,
+      );
+    }
+    map['tipo'] = Variable<String>(tipo);
+    map['serie'] = Variable<String>(serie);
+    map['numero'] = Variable<int>(numero);
+    map['fecha_emision'] = Variable<DateTime>(fechaEmision);
+    if (!nullToAbsent || dni != null) {
+      map['dni'] = Variable<String>(dni);
+    }
+    if (!nullToAbsent || ruc != null) {
+      map['ruc'] = Variable<String>(ruc);
+    }
+    if (!nullToAbsent || nombreCliente != null) {
+      map['nombre_cliente'] = Variable<String>(nombreCliente);
+    }
+    if (!nullToAbsent || direccionFiscal != null) {
+      map['direccion_fiscal'] = Variable<String>(direccionFiscal);
+    }
+    map['subtotal'] = Variable<double>(subtotal);
+    map['igv'] = Variable<double>(igv);
+    map['total'] = Variable<double>(total);
+    map['metodo_pago'] = Variable<String>(metodoPago);
+    map['estado'] = Variable<String>(estado);
+    if (!nullToAbsent || codigoRespuestaSunat != null) {
+      map['codigo_respuesta_sunat'] = Variable<String>(codigoRespuestaSunat);
+    }
+    if (!nullToAbsent || mensajeRespuestaSunat != null) {
+      map['mensaje_respuesta_sunat'] = Variable<String>(mensajeRespuestaSunat);
+    }
+    if (!nullToAbsent || cdr != null) {
+      map['cdr'] = Variable<String>(cdr);
+    }
+    if (!nullToAbsent || xml != null) {
+      map['xml'] = Variable<String>(xml);
+    }
+    if (!nullToAbsent || fechaEnvioSunat != null) {
+      map['fecha_envio_sunat'] = Variable<DateTime>(fechaEnvioSunat);
+    }
+    if (!nullToAbsent || fechaRespuestaSunat != null) {
+      map['fecha_respuesta_sunat'] = Variable<DateTime>(fechaRespuestaSunat);
+    }
+    if (!nullToAbsent || codigoMotivoNotaCredito != null) {
+      map['codigo_motivo_nota_credito'] = Variable<String>(
+        codigoMotivoNotaCredito,
+      );
+    }
+    if (!nullToAbsent || motivoNotaCredito != null) {
+      map['motivo_nota_credito'] = Variable<String>(motivoNotaCredito);
+    }
+    if (!nullToAbsent || observaciones != null) {
+      map['observaciones'] = Variable<String>(observaciones);
+    }
+    return map;
+  }
+
+  ComprobantesElectronicosCompanion toCompanion(bool nullToAbsent) {
+    return ComprobantesElectronicosCompanion(
+      id: Value(id),
+      ventaId: ventaId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ventaId),
+      comprobanteRelacionadoId: comprobanteRelacionadoId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(comprobanteRelacionadoId),
+      tipo: Value(tipo),
+      serie: Value(serie),
+      numero: Value(numero),
+      fechaEmision: Value(fechaEmision),
+      dni: dni == null && nullToAbsent ? const Value.absent() : Value(dni),
+      ruc: ruc == null && nullToAbsent ? const Value.absent() : Value(ruc),
+      nombreCliente: nombreCliente == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nombreCliente),
+      direccionFiscal: direccionFiscal == null && nullToAbsent
+          ? const Value.absent()
+          : Value(direccionFiscal),
+      subtotal: Value(subtotal),
+      igv: Value(igv),
+      total: Value(total),
+      metodoPago: Value(metodoPago),
+      estado: Value(estado),
+      codigoRespuestaSunat: codigoRespuestaSunat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(codigoRespuestaSunat),
+      mensajeRespuestaSunat: mensajeRespuestaSunat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mensajeRespuestaSunat),
+      cdr: cdr == null && nullToAbsent ? const Value.absent() : Value(cdr),
+      xml: xml == null && nullToAbsent ? const Value.absent() : Value(xml),
+      fechaEnvioSunat: fechaEnvioSunat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fechaEnvioSunat),
+      fechaRespuestaSunat: fechaRespuestaSunat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fechaRespuestaSunat),
+      codigoMotivoNotaCredito: codigoMotivoNotaCredito == null && nullToAbsent
+          ? const Value.absent()
+          : Value(codigoMotivoNotaCredito),
+      motivoNotaCredito: motivoNotaCredito == null && nullToAbsent
+          ? const Value.absent()
+          : Value(motivoNotaCredito),
+      observaciones: observaciones == null && nullToAbsent
+          ? const Value.absent()
+          : Value(observaciones),
+    );
+  }
+
+  factory ComprobantesElectronico.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ComprobantesElectronico(
+      id: serializer.fromJson<int>(json['id']),
+      ventaId: serializer.fromJson<int?>(json['ventaId']),
+      comprobanteRelacionadoId: serializer.fromJson<int?>(
+        json['comprobanteRelacionadoId'],
+      ),
+      tipo: serializer.fromJson<String>(json['tipo']),
+      serie: serializer.fromJson<String>(json['serie']),
+      numero: serializer.fromJson<int>(json['numero']),
+      fechaEmision: serializer.fromJson<DateTime>(json['fechaEmision']),
+      dni: serializer.fromJson<String?>(json['dni']),
+      ruc: serializer.fromJson<String?>(json['ruc']),
+      nombreCliente: serializer.fromJson<String?>(json['nombreCliente']),
+      direccionFiscal: serializer.fromJson<String?>(json['direccionFiscal']),
+      subtotal: serializer.fromJson<double>(json['subtotal']),
+      igv: serializer.fromJson<double>(json['igv']),
+      total: serializer.fromJson<double>(json['total']),
+      metodoPago: serializer.fromJson<String>(json['metodoPago']),
+      estado: serializer.fromJson<String>(json['estado']),
+      codigoRespuestaSunat: serializer.fromJson<String?>(
+        json['codigoRespuestaSunat'],
+      ),
+      mensajeRespuestaSunat: serializer.fromJson<String?>(
+        json['mensajeRespuestaSunat'],
+      ),
+      cdr: serializer.fromJson<String?>(json['cdr']),
+      xml: serializer.fromJson<String?>(json['xml']),
+      fechaEnvioSunat: serializer.fromJson<DateTime?>(json['fechaEnvioSunat']),
+      fechaRespuestaSunat: serializer.fromJson<DateTime?>(
+        json['fechaRespuestaSunat'],
+      ),
+      codigoMotivoNotaCredito: serializer.fromJson<String?>(
+        json['codigoMotivoNotaCredito'],
+      ),
+      motivoNotaCredito: serializer.fromJson<String?>(
+        json['motivoNotaCredito'],
+      ),
+      observaciones: serializer.fromJson<String?>(json['observaciones']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'ventaId': serializer.toJson<int?>(ventaId),
+      'comprobanteRelacionadoId': serializer.toJson<int?>(
+        comprobanteRelacionadoId,
+      ),
+      'tipo': serializer.toJson<String>(tipo),
+      'serie': serializer.toJson<String>(serie),
+      'numero': serializer.toJson<int>(numero),
+      'fechaEmision': serializer.toJson<DateTime>(fechaEmision),
+      'dni': serializer.toJson<String?>(dni),
+      'ruc': serializer.toJson<String?>(ruc),
+      'nombreCliente': serializer.toJson<String?>(nombreCliente),
+      'direccionFiscal': serializer.toJson<String?>(direccionFiscal),
+      'subtotal': serializer.toJson<double>(subtotal),
+      'igv': serializer.toJson<double>(igv),
+      'total': serializer.toJson<double>(total),
+      'metodoPago': serializer.toJson<String>(metodoPago),
+      'estado': serializer.toJson<String>(estado),
+      'codigoRespuestaSunat': serializer.toJson<String?>(codigoRespuestaSunat),
+      'mensajeRespuestaSunat': serializer.toJson<String?>(
+        mensajeRespuestaSunat,
+      ),
+      'cdr': serializer.toJson<String?>(cdr),
+      'xml': serializer.toJson<String?>(xml),
+      'fechaEnvioSunat': serializer.toJson<DateTime?>(fechaEnvioSunat),
+      'fechaRespuestaSunat': serializer.toJson<DateTime?>(fechaRespuestaSunat),
+      'codigoMotivoNotaCredito': serializer.toJson<String?>(
+        codigoMotivoNotaCredito,
+      ),
+      'motivoNotaCredito': serializer.toJson<String?>(motivoNotaCredito),
+      'observaciones': serializer.toJson<String?>(observaciones),
+    };
+  }
+
+  ComprobantesElectronico copyWith({
+    int? id,
+    Value<int?> ventaId = const Value.absent(),
+    Value<int?> comprobanteRelacionadoId = const Value.absent(),
+    String? tipo,
+    String? serie,
+    int? numero,
+    DateTime? fechaEmision,
+    Value<String?> dni = const Value.absent(),
+    Value<String?> ruc = const Value.absent(),
+    Value<String?> nombreCliente = const Value.absent(),
+    Value<String?> direccionFiscal = const Value.absent(),
+    double? subtotal,
+    double? igv,
+    double? total,
+    String? metodoPago,
+    String? estado,
+    Value<String?> codigoRespuestaSunat = const Value.absent(),
+    Value<String?> mensajeRespuestaSunat = const Value.absent(),
+    Value<String?> cdr = const Value.absent(),
+    Value<String?> xml = const Value.absent(),
+    Value<DateTime?> fechaEnvioSunat = const Value.absent(),
+    Value<DateTime?> fechaRespuestaSunat = const Value.absent(),
+    Value<String?> codigoMotivoNotaCredito = const Value.absent(),
+    Value<String?> motivoNotaCredito = const Value.absent(),
+    Value<String?> observaciones = const Value.absent(),
+  }) => ComprobantesElectronico(
+    id: id ?? this.id,
+    ventaId: ventaId.present ? ventaId.value : this.ventaId,
+    comprobanteRelacionadoId: comprobanteRelacionadoId.present
+        ? comprobanteRelacionadoId.value
+        : this.comprobanteRelacionadoId,
+    tipo: tipo ?? this.tipo,
+    serie: serie ?? this.serie,
+    numero: numero ?? this.numero,
+    fechaEmision: fechaEmision ?? this.fechaEmision,
+    dni: dni.present ? dni.value : this.dni,
+    ruc: ruc.present ? ruc.value : this.ruc,
+    nombreCliente: nombreCliente.present
+        ? nombreCliente.value
+        : this.nombreCliente,
+    direccionFiscal: direccionFiscal.present
+        ? direccionFiscal.value
+        : this.direccionFiscal,
+    subtotal: subtotal ?? this.subtotal,
+    igv: igv ?? this.igv,
+    total: total ?? this.total,
+    metodoPago: metodoPago ?? this.metodoPago,
+    estado: estado ?? this.estado,
+    codigoRespuestaSunat: codigoRespuestaSunat.present
+        ? codigoRespuestaSunat.value
+        : this.codigoRespuestaSunat,
+    mensajeRespuestaSunat: mensajeRespuestaSunat.present
+        ? mensajeRespuestaSunat.value
+        : this.mensajeRespuestaSunat,
+    cdr: cdr.present ? cdr.value : this.cdr,
+    xml: xml.present ? xml.value : this.xml,
+    fechaEnvioSunat: fechaEnvioSunat.present
+        ? fechaEnvioSunat.value
+        : this.fechaEnvioSunat,
+    fechaRespuestaSunat: fechaRespuestaSunat.present
+        ? fechaRespuestaSunat.value
+        : this.fechaRespuestaSunat,
+    codigoMotivoNotaCredito: codigoMotivoNotaCredito.present
+        ? codigoMotivoNotaCredito.value
+        : this.codigoMotivoNotaCredito,
+    motivoNotaCredito: motivoNotaCredito.present
+        ? motivoNotaCredito.value
+        : this.motivoNotaCredito,
+    observaciones: observaciones.present
+        ? observaciones.value
+        : this.observaciones,
+  );
+  ComprobantesElectronico copyWithCompanion(
+    ComprobantesElectronicosCompanion data,
+  ) {
+    return ComprobantesElectronico(
+      id: data.id.present ? data.id.value : this.id,
+      ventaId: data.ventaId.present ? data.ventaId.value : this.ventaId,
+      comprobanteRelacionadoId: data.comprobanteRelacionadoId.present
+          ? data.comprobanteRelacionadoId.value
+          : this.comprobanteRelacionadoId,
+      tipo: data.tipo.present ? data.tipo.value : this.tipo,
+      serie: data.serie.present ? data.serie.value : this.serie,
+      numero: data.numero.present ? data.numero.value : this.numero,
+      fechaEmision: data.fechaEmision.present
+          ? data.fechaEmision.value
+          : this.fechaEmision,
+      dni: data.dni.present ? data.dni.value : this.dni,
+      ruc: data.ruc.present ? data.ruc.value : this.ruc,
+      nombreCliente: data.nombreCliente.present
+          ? data.nombreCliente.value
+          : this.nombreCliente,
+      direccionFiscal: data.direccionFiscal.present
+          ? data.direccionFiscal.value
+          : this.direccionFiscal,
+      subtotal: data.subtotal.present ? data.subtotal.value : this.subtotal,
+      igv: data.igv.present ? data.igv.value : this.igv,
+      total: data.total.present ? data.total.value : this.total,
+      metodoPago: data.metodoPago.present
+          ? data.metodoPago.value
+          : this.metodoPago,
+      estado: data.estado.present ? data.estado.value : this.estado,
+      codigoRespuestaSunat: data.codigoRespuestaSunat.present
+          ? data.codigoRespuestaSunat.value
+          : this.codigoRespuestaSunat,
+      mensajeRespuestaSunat: data.mensajeRespuestaSunat.present
+          ? data.mensajeRespuestaSunat.value
+          : this.mensajeRespuestaSunat,
+      cdr: data.cdr.present ? data.cdr.value : this.cdr,
+      xml: data.xml.present ? data.xml.value : this.xml,
+      fechaEnvioSunat: data.fechaEnvioSunat.present
+          ? data.fechaEnvioSunat.value
+          : this.fechaEnvioSunat,
+      fechaRespuestaSunat: data.fechaRespuestaSunat.present
+          ? data.fechaRespuestaSunat.value
+          : this.fechaRespuestaSunat,
+      codigoMotivoNotaCredito: data.codigoMotivoNotaCredito.present
+          ? data.codigoMotivoNotaCredito.value
+          : this.codigoMotivoNotaCredito,
+      motivoNotaCredito: data.motivoNotaCredito.present
+          ? data.motivoNotaCredito.value
+          : this.motivoNotaCredito,
+      observaciones: data.observaciones.present
+          ? data.observaciones.value
+          : this.observaciones,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ComprobantesElectronico(')
+          ..write('id: $id, ')
+          ..write('ventaId: $ventaId, ')
+          ..write('comprobanteRelacionadoId: $comprobanteRelacionadoId, ')
+          ..write('tipo: $tipo, ')
+          ..write('serie: $serie, ')
+          ..write('numero: $numero, ')
+          ..write('fechaEmision: $fechaEmision, ')
+          ..write('dni: $dni, ')
+          ..write('ruc: $ruc, ')
+          ..write('nombreCliente: $nombreCliente, ')
+          ..write('direccionFiscal: $direccionFiscal, ')
+          ..write('subtotal: $subtotal, ')
+          ..write('igv: $igv, ')
+          ..write('total: $total, ')
+          ..write('metodoPago: $metodoPago, ')
+          ..write('estado: $estado, ')
+          ..write('codigoRespuestaSunat: $codigoRespuestaSunat, ')
+          ..write('mensajeRespuestaSunat: $mensajeRespuestaSunat, ')
+          ..write('cdr: $cdr, ')
+          ..write('xml: $xml, ')
+          ..write('fechaEnvioSunat: $fechaEnvioSunat, ')
+          ..write('fechaRespuestaSunat: $fechaRespuestaSunat, ')
+          ..write('codigoMotivoNotaCredito: $codigoMotivoNotaCredito, ')
+          ..write('motivoNotaCredito: $motivoNotaCredito, ')
+          ..write('observaciones: $observaciones')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    id,
+    ventaId,
+    comprobanteRelacionadoId,
+    tipo,
+    serie,
+    numero,
+    fechaEmision,
+    dni,
+    ruc,
+    nombreCliente,
+    direccionFiscal,
+    subtotal,
+    igv,
+    total,
+    metodoPago,
+    estado,
+    codigoRespuestaSunat,
+    mensajeRespuestaSunat,
+    cdr,
+    xml,
+    fechaEnvioSunat,
+    fechaRespuestaSunat,
+    codigoMotivoNotaCredito,
+    motivoNotaCredito,
+    observaciones,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ComprobantesElectronico &&
+          other.id == this.id &&
+          other.ventaId == this.ventaId &&
+          other.comprobanteRelacionadoId == this.comprobanteRelacionadoId &&
+          other.tipo == this.tipo &&
+          other.serie == this.serie &&
+          other.numero == this.numero &&
+          other.fechaEmision == this.fechaEmision &&
+          other.dni == this.dni &&
+          other.ruc == this.ruc &&
+          other.nombreCliente == this.nombreCliente &&
+          other.direccionFiscal == this.direccionFiscal &&
+          other.subtotal == this.subtotal &&
+          other.igv == this.igv &&
+          other.total == this.total &&
+          other.metodoPago == this.metodoPago &&
+          other.estado == this.estado &&
+          other.codigoRespuestaSunat == this.codigoRespuestaSunat &&
+          other.mensajeRespuestaSunat == this.mensajeRespuestaSunat &&
+          other.cdr == this.cdr &&
+          other.xml == this.xml &&
+          other.fechaEnvioSunat == this.fechaEnvioSunat &&
+          other.fechaRespuestaSunat == this.fechaRespuestaSunat &&
+          other.codigoMotivoNotaCredito == this.codigoMotivoNotaCredito &&
+          other.motivoNotaCredito == this.motivoNotaCredito &&
+          other.observaciones == this.observaciones);
+}
+
+class ComprobantesElectronicosCompanion
+    extends UpdateCompanion<ComprobantesElectronico> {
+  final Value<int> id;
+  final Value<int?> ventaId;
+  final Value<int?> comprobanteRelacionadoId;
+  final Value<String> tipo;
+  final Value<String> serie;
+  final Value<int> numero;
+  final Value<DateTime> fechaEmision;
+  final Value<String?> dni;
+  final Value<String?> ruc;
+  final Value<String?> nombreCliente;
+  final Value<String?> direccionFiscal;
+  final Value<double> subtotal;
+  final Value<double> igv;
+  final Value<double> total;
+  final Value<String> metodoPago;
+  final Value<String> estado;
+  final Value<String?> codigoRespuestaSunat;
+  final Value<String?> mensajeRespuestaSunat;
+  final Value<String?> cdr;
+  final Value<String?> xml;
+  final Value<DateTime?> fechaEnvioSunat;
+  final Value<DateTime?> fechaRespuestaSunat;
+  final Value<String?> codigoMotivoNotaCredito;
+  final Value<String?> motivoNotaCredito;
+  final Value<String?> observaciones;
+  const ComprobantesElectronicosCompanion({
+    this.id = const Value.absent(),
+    this.ventaId = const Value.absent(),
+    this.comprobanteRelacionadoId = const Value.absent(),
+    this.tipo = const Value.absent(),
+    this.serie = const Value.absent(),
+    this.numero = const Value.absent(),
+    this.fechaEmision = const Value.absent(),
+    this.dni = const Value.absent(),
+    this.ruc = const Value.absent(),
+    this.nombreCliente = const Value.absent(),
+    this.direccionFiscal = const Value.absent(),
+    this.subtotal = const Value.absent(),
+    this.igv = const Value.absent(),
+    this.total = const Value.absent(),
+    this.metodoPago = const Value.absent(),
+    this.estado = const Value.absent(),
+    this.codigoRespuestaSunat = const Value.absent(),
+    this.mensajeRespuestaSunat = const Value.absent(),
+    this.cdr = const Value.absent(),
+    this.xml = const Value.absent(),
+    this.fechaEnvioSunat = const Value.absent(),
+    this.fechaRespuestaSunat = const Value.absent(),
+    this.codigoMotivoNotaCredito = const Value.absent(),
+    this.motivoNotaCredito = const Value.absent(),
+    this.observaciones = const Value.absent(),
+  });
+  ComprobantesElectronicosCompanion.insert({
+    this.id = const Value.absent(),
+    this.ventaId = const Value.absent(),
+    this.comprobanteRelacionadoId = const Value.absent(),
+    required String tipo,
+    required String serie,
+    required int numero,
+    required DateTime fechaEmision,
+    this.dni = const Value.absent(),
+    this.ruc = const Value.absent(),
+    this.nombreCliente = const Value.absent(),
+    this.direccionFiscal = const Value.absent(),
+    required double subtotal,
+    required double igv,
+    required double total,
+    required String metodoPago,
+    this.estado = const Value.absent(),
+    this.codigoRespuestaSunat = const Value.absent(),
+    this.mensajeRespuestaSunat = const Value.absent(),
+    this.cdr = const Value.absent(),
+    this.xml = const Value.absent(),
+    this.fechaEnvioSunat = const Value.absent(),
+    this.fechaRespuestaSunat = const Value.absent(),
+    this.codigoMotivoNotaCredito = const Value.absent(),
+    this.motivoNotaCredito = const Value.absent(),
+    this.observaciones = const Value.absent(),
+  }) : tipo = Value(tipo),
+       serie = Value(serie),
+       numero = Value(numero),
+       fechaEmision = Value(fechaEmision),
+       subtotal = Value(subtotal),
+       igv = Value(igv),
+       total = Value(total),
+       metodoPago = Value(metodoPago);
+  static Insertable<ComprobantesElectronico> custom({
+    Expression<int>? id,
+    Expression<int>? ventaId,
+    Expression<int>? comprobanteRelacionadoId,
+    Expression<String>? tipo,
+    Expression<String>? serie,
+    Expression<int>? numero,
+    Expression<DateTime>? fechaEmision,
+    Expression<String>? dni,
+    Expression<String>? ruc,
+    Expression<String>? nombreCliente,
+    Expression<String>? direccionFiscal,
+    Expression<double>? subtotal,
+    Expression<double>? igv,
+    Expression<double>? total,
+    Expression<String>? metodoPago,
+    Expression<String>? estado,
+    Expression<String>? codigoRespuestaSunat,
+    Expression<String>? mensajeRespuestaSunat,
+    Expression<String>? cdr,
+    Expression<String>? xml,
+    Expression<DateTime>? fechaEnvioSunat,
+    Expression<DateTime>? fechaRespuestaSunat,
+    Expression<String>? codigoMotivoNotaCredito,
+    Expression<String>? motivoNotaCredito,
+    Expression<String>? observaciones,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (ventaId != null) 'venta_id': ventaId,
+      if (comprobanteRelacionadoId != null)
+        'comprobante_relacionado_id': comprobanteRelacionadoId,
+      if (tipo != null) 'tipo': tipo,
+      if (serie != null) 'serie': serie,
+      if (numero != null) 'numero': numero,
+      if (fechaEmision != null) 'fecha_emision': fechaEmision,
+      if (dni != null) 'dni': dni,
+      if (ruc != null) 'ruc': ruc,
+      if (nombreCliente != null) 'nombre_cliente': nombreCliente,
+      if (direccionFiscal != null) 'direccion_fiscal': direccionFiscal,
+      if (subtotal != null) 'subtotal': subtotal,
+      if (igv != null) 'igv': igv,
+      if (total != null) 'total': total,
+      if (metodoPago != null) 'metodo_pago': metodoPago,
+      if (estado != null) 'estado': estado,
+      if (codigoRespuestaSunat != null)
+        'codigo_respuesta_sunat': codigoRespuestaSunat,
+      if (mensajeRespuestaSunat != null)
+        'mensaje_respuesta_sunat': mensajeRespuestaSunat,
+      if (cdr != null) 'cdr': cdr,
+      if (xml != null) 'xml': xml,
+      if (fechaEnvioSunat != null) 'fecha_envio_sunat': fechaEnvioSunat,
+      if (fechaRespuestaSunat != null)
+        'fecha_respuesta_sunat': fechaRespuestaSunat,
+      if (codigoMotivoNotaCredito != null)
+        'codigo_motivo_nota_credito': codigoMotivoNotaCredito,
+      if (motivoNotaCredito != null) 'motivo_nota_credito': motivoNotaCredito,
+      if (observaciones != null) 'observaciones': observaciones,
+    });
+  }
+
+  ComprobantesElectronicosCompanion copyWith({
+    Value<int>? id,
+    Value<int?>? ventaId,
+    Value<int?>? comprobanteRelacionadoId,
+    Value<String>? tipo,
+    Value<String>? serie,
+    Value<int>? numero,
+    Value<DateTime>? fechaEmision,
+    Value<String?>? dni,
+    Value<String?>? ruc,
+    Value<String?>? nombreCliente,
+    Value<String?>? direccionFiscal,
+    Value<double>? subtotal,
+    Value<double>? igv,
+    Value<double>? total,
+    Value<String>? metodoPago,
+    Value<String>? estado,
+    Value<String?>? codigoRespuestaSunat,
+    Value<String?>? mensajeRespuestaSunat,
+    Value<String?>? cdr,
+    Value<String?>? xml,
+    Value<DateTime?>? fechaEnvioSunat,
+    Value<DateTime?>? fechaRespuestaSunat,
+    Value<String?>? codigoMotivoNotaCredito,
+    Value<String?>? motivoNotaCredito,
+    Value<String?>? observaciones,
+  }) {
+    return ComprobantesElectronicosCompanion(
+      id: id ?? this.id,
+      ventaId: ventaId ?? this.ventaId,
+      comprobanteRelacionadoId:
+          comprobanteRelacionadoId ?? this.comprobanteRelacionadoId,
+      tipo: tipo ?? this.tipo,
+      serie: serie ?? this.serie,
+      numero: numero ?? this.numero,
+      fechaEmision: fechaEmision ?? this.fechaEmision,
+      dni: dni ?? this.dni,
+      ruc: ruc ?? this.ruc,
+      nombreCliente: nombreCliente ?? this.nombreCliente,
+      direccionFiscal: direccionFiscal ?? this.direccionFiscal,
+      subtotal: subtotal ?? this.subtotal,
+      igv: igv ?? this.igv,
+      total: total ?? this.total,
+      metodoPago: metodoPago ?? this.metodoPago,
+      estado: estado ?? this.estado,
+      codigoRespuestaSunat: codigoRespuestaSunat ?? this.codigoRespuestaSunat,
+      mensajeRespuestaSunat:
+          mensajeRespuestaSunat ?? this.mensajeRespuestaSunat,
+      cdr: cdr ?? this.cdr,
+      xml: xml ?? this.xml,
+      fechaEnvioSunat: fechaEnvioSunat ?? this.fechaEnvioSunat,
+      fechaRespuestaSunat: fechaRespuestaSunat ?? this.fechaRespuestaSunat,
+      codigoMotivoNotaCredito:
+          codigoMotivoNotaCredito ?? this.codigoMotivoNotaCredito,
+      motivoNotaCredito: motivoNotaCredito ?? this.motivoNotaCredito,
+      observaciones: observaciones ?? this.observaciones,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (ventaId.present) {
+      map['venta_id'] = Variable<int>(ventaId.value);
+    }
+    if (comprobanteRelacionadoId.present) {
+      map['comprobante_relacionado_id'] = Variable<int>(
+        comprobanteRelacionadoId.value,
+      );
+    }
+    if (tipo.present) {
+      map['tipo'] = Variable<String>(tipo.value);
+    }
+    if (serie.present) {
+      map['serie'] = Variable<String>(serie.value);
+    }
+    if (numero.present) {
+      map['numero'] = Variable<int>(numero.value);
+    }
+    if (fechaEmision.present) {
+      map['fecha_emision'] = Variable<DateTime>(fechaEmision.value);
+    }
+    if (dni.present) {
+      map['dni'] = Variable<String>(dni.value);
+    }
+    if (ruc.present) {
+      map['ruc'] = Variable<String>(ruc.value);
+    }
+    if (nombreCliente.present) {
+      map['nombre_cliente'] = Variable<String>(nombreCliente.value);
+    }
+    if (direccionFiscal.present) {
+      map['direccion_fiscal'] = Variable<String>(direccionFiscal.value);
+    }
+    if (subtotal.present) {
+      map['subtotal'] = Variable<double>(subtotal.value);
+    }
+    if (igv.present) {
+      map['igv'] = Variable<double>(igv.value);
+    }
+    if (total.present) {
+      map['total'] = Variable<double>(total.value);
+    }
+    if (metodoPago.present) {
+      map['metodo_pago'] = Variable<String>(metodoPago.value);
+    }
+    if (estado.present) {
+      map['estado'] = Variable<String>(estado.value);
+    }
+    if (codigoRespuestaSunat.present) {
+      map['codigo_respuesta_sunat'] = Variable<String>(
+        codigoRespuestaSunat.value,
+      );
+    }
+    if (mensajeRespuestaSunat.present) {
+      map['mensaje_respuesta_sunat'] = Variable<String>(
+        mensajeRespuestaSunat.value,
+      );
+    }
+    if (cdr.present) {
+      map['cdr'] = Variable<String>(cdr.value);
+    }
+    if (xml.present) {
+      map['xml'] = Variable<String>(xml.value);
+    }
+    if (fechaEnvioSunat.present) {
+      map['fecha_envio_sunat'] = Variable<DateTime>(fechaEnvioSunat.value);
+    }
+    if (fechaRespuestaSunat.present) {
+      map['fecha_respuesta_sunat'] = Variable<DateTime>(
+        fechaRespuestaSunat.value,
+      );
+    }
+    if (codigoMotivoNotaCredito.present) {
+      map['codigo_motivo_nota_credito'] = Variable<String>(
+        codigoMotivoNotaCredito.value,
+      );
+    }
+    if (motivoNotaCredito.present) {
+      map['motivo_nota_credito'] = Variable<String>(motivoNotaCredito.value);
+    }
+    if (observaciones.present) {
+      map['observaciones'] = Variable<String>(observaciones.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ComprobantesElectronicosCompanion(')
+          ..write('id: $id, ')
+          ..write('ventaId: $ventaId, ')
+          ..write('comprobanteRelacionadoId: $comprobanteRelacionadoId, ')
+          ..write('tipo: $tipo, ')
+          ..write('serie: $serie, ')
+          ..write('numero: $numero, ')
+          ..write('fechaEmision: $fechaEmision, ')
+          ..write('dni: $dni, ')
+          ..write('ruc: $ruc, ')
+          ..write('nombreCliente: $nombreCliente, ')
+          ..write('direccionFiscal: $direccionFiscal, ')
+          ..write('subtotal: $subtotal, ')
+          ..write('igv: $igv, ')
+          ..write('total: $total, ')
+          ..write('metodoPago: $metodoPago, ')
+          ..write('estado: $estado, ')
+          ..write('codigoRespuestaSunat: $codigoRespuestaSunat, ')
+          ..write('mensajeRespuestaSunat: $mensajeRespuestaSunat, ')
+          ..write('cdr: $cdr, ')
+          ..write('xml: $xml, ')
+          ..write('fechaEnvioSunat: $fechaEnvioSunat, ')
+          ..write('fechaRespuestaSunat: $fechaRespuestaSunat, ')
+          ..write('codigoMotivoNotaCredito: $codigoMotivoNotaCredito, ')
+          ..write('motivoNotaCredito: $motivoNotaCredito, ')
+          ..write('observaciones: $observaciones')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -7591,6 +9693,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MovimientosCajaTable movimientosCaja = $MovimientosCajaTable(
     this,
   );
+  late final $UsuariosTable usuarios = $UsuariosTable(this);
+  late final $PermisosUsuarioTable permisosUsuario = $PermisosUsuarioTable(
+    this,
+  );
+  late final $ComprobantesElectronicosTable comprobantesElectronicos =
+      $ComprobantesElectronicosTable(this);
   late final ProductosDao productosDao = ProductosDao(this as AppDatabase);
   late final InsumosDao insumosDao = InsumosDao(this as AppDatabase);
   late final RecetasDao recetasDao = RecetasDao(this as AppDatabase);
@@ -7603,6 +9711,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       MovimientosInventarioDao(this as AppDatabase);
   late final EmpresaDao empresaDao = EmpresaDao(this as AppDatabase);
   late final CajasDao cajasDao = CajasDao(this as AppDatabase);
+  late final UsuariosDao usuariosDao = UsuariosDao(this as AppDatabase);
+  late final PermisosUsuarioDao permisosUsuarioDao = PermisosUsuarioDao(
+    this as AppDatabase,
+  );
+  late final ComprobantesElectronicosDao comprobantesElectronicosDao =
+      ComprobantesElectronicosDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7620,6 +9734,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     empresa,
     cajas,
     movimientosCaja,
+    usuarios,
+    permisosUsuario,
+    comprobantesElectronicos,
   ];
 }
 
@@ -11310,6 +13427,1226 @@ typedef $$MovimientosCajaTableProcessedTableManager =
       MovimientosCajaData,
       PrefetchHooks Function()
     >;
+typedef $$UsuariosTableCreateCompanionBuilder =
+    UsuariosCompanion Function({
+      Value<int> id,
+      required String nombre,
+      required String pin,
+      Value<String> rol,
+      Value<bool> activo,
+    });
+typedef $$UsuariosTableUpdateCompanionBuilder =
+    UsuariosCompanion Function({
+      Value<int> id,
+      Value<String> nombre,
+      Value<String> pin,
+      Value<String> rol,
+      Value<bool> activo,
+    });
+
+final class $$UsuariosTableReferences
+    extends BaseReferences<_$AppDatabase, $UsuariosTable, Usuario> {
+  $$UsuariosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$PermisosUsuarioTable, List<PermisosUsuarioData>>
+  _permisosUsuarioRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.permisosUsuario,
+    aliasName: 'usuarios__id__permisos_usuario__usuario_id',
+  );
+
+  $$PermisosUsuarioTableProcessedTableManager get permisosUsuarioRefs {
+    final manager = $$PermisosUsuarioTableTableManager(
+      $_db,
+      $_db.permisosUsuario,
+    ).filter((f) => f.usuarioId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _permisosUsuarioRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$UsuariosTableFilterComposer
+    extends Composer<_$AppDatabase, $UsuariosTable> {
+  $$UsuariosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nombre => $composableBuilder(
+    column: $table.nombre,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pin => $composableBuilder(
+    column: $table.pin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rol => $composableBuilder(
+    column: $table.rol,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get activo => $composableBuilder(
+    column: $table.activo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> permisosUsuarioRefs(
+    Expression<bool> Function($$PermisosUsuarioTableFilterComposer f) f,
+  ) {
+    final $$PermisosUsuarioTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.permisosUsuario,
+      getReferencedColumn: (t) => t.usuarioId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PermisosUsuarioTableFilterComposer(
+            $db: $db,
+            $table: $db.permisosUsuario,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$UsuariosTableOrderingComposer
+    extends Composer<_$AppDatabase, $UsuariosTable> {
+  $$UsuariosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nombre => $composableBuilder(
+    column: $table.nombre,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pin => $composableBuilder(
+    column: $table.pin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rol => $composableBuilder(
+    column: $table.rol,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get activo => $composableBuilder(
+    column: $table.activo,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$UsuariosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $UsuariosTable> {
+  $$UsuariosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get nombre =>
+      $composableBuilder(column: $table.nombre, builder: (column) => column);
+
+  GeneratedColumn<String> get pin =>
+      $composableBuilder(column: $table.pin, builder: (column) => column);
+
+  GeneratedColumn<String> get rol =>
+      $composableBuilder(column: $table.rol, builder: (column) => column);
+
+  GeneratedColumn<bool> get activo =>
+      $composableBuilder(column: $table.activo, builder: (column) => column);
+
+  Expression<T> permisosUsuarioRefs<T extends Object>(
+    Expression<T> Function($$PermisosUsuarioTableAnnotationComposer a) f,
+  ) {
+    final $$PermisosUsuarioTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.permisosUsuario,
+      getReferencedColumn: (t) => t.usuarioId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PermisosUsuarioTableAnnotationComposer(
+            $db: $db,
+            $table: $db.permisosUsuario,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$UsuariosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $UsuariosTable,
+          Usuario,
+          $$UsuariosTableFilterComposer,
+          $$UsuariosTableOrderingComposer,
+          $$UsuariosTableAnnotationComposer,
+          $$UsuariosTableCreateCompanionBuilder,
+          $$UsuariosTableUpdateCompanionBuilder,
+          (Usuario, $$UsuariosTableReferences),
+          Usuario,
+          PrefetchHooks Function({bool permisosUsuarioRefs})
+        > {
+  $$UsuariosTableTableManager(_$AppDatabase db, $UsuariosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$UsuariosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UsuariosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UsuariosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> nombre = const Value.absent(),
+                Value<String> pin = const Value.absent(),
+                Value<String> rol = const Value.absent(),
+                Value<bool> activo = const Value.absent(),
+              }) => UsuariosCompanion(
+                id: id,
+                nombre: nombre,
+                pin: pin,
+                rol: rol,
+                activo: activo,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String nombre,
+                required String pin,
+                Value<String> rol = const Value.absent(),
+                Value<bool> activo = const Value.absent(),
+              }) => UsuariosCompanion.insert(
+                id: id,
+                nombre: nombre,
+                pin: pin,
+                rol: rol,
+                activo: activo,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$UsuariosTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({permisosUsuarioRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (permisosUsuarioRefs) db.permisosUsuario,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (permisosUsuarioRefs)
+                    await $_getPrefetchedData<
+                      Usuario,
+                      $UsuariosTable,
+                      PermisosUsuarioData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$UsuariosTableReferences
+                          ._permisosUsuarioRefsTable(db),
+                      managerFromTypedResult: (p0) => $$UsuariosTableReferences(
+                        db,
+                        table,
+                        p0,
+                      ).permisosUsuarioRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.usuarioId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$UsuariosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $UsuariosTable,
+      Usuario,
+      $$UsuariosTableFilterComposer,
+      $$UsuariosTableOrderingComposer,
+      $$UsuariosTableAnnotationComposer,
+      $$UsuariosTableCreateCompanionBuilder,
+      $$UsuariosTableUpdateCompanionBuilder,
+      (Usuario, $$UsuariosTableReferences),
+      Usuario,
+      PrefetchHooks Function({bool permisosUsuarioRefs})
+    >;
+typedef $$PermisosUsuarioTableCreateCompanionBuilder =
+    PermisosUsuarioCompanion Function({
+      Value<int> id,
+      required int usuarioId,
+      required String modulo,
+      Value<bool> permitido,
+    });
+typedef $$PermisosUsuarioTableUpdateCompanionBuilder =
+    PermisosUsuarioCompanion Function({
+      Value<int> id,
+      Value<int> usuarioId,
+      Value<String> modulo,
+      Value<bool> permitido,
+    });
+
+final class $$PermisosUsuarioTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $PermisosUsuarioTable,
+          PermisosUsuarioData
+        > {
+  $$PermisosUsuarioTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $UsuariosTable _usuarioIdTable(_$AppDatabase db) =>
+      db.usuarios.createAlias('permisos_usuario__usuario_id__usuarios__id');
+
+  $$UsuariosTableProcessedTableManager get usuarioId {
+    final $_column = $_itemColumn<int>('usuario_id')!;
+
+    final manager = $$UsuariosTableTableManager(
+      $_db,
+      $_db.usuarios,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_usuarioIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PermisosUsuarioTableFilterComposer
+    extends Composer<_$AppDatabase, $PermisosUsuarioTable> {
+  $$PermisosUsuarioTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modulo => $composableBuilder(
+    column: $table.modulo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get permitido => $composableBuilder(
+    column: $table.permitido,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsuariosTableFilterComposer get usuarioId {
+    final $$UsuariosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.usuarioId,
+      referencedTable: $db.usuarios,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsuariosTableFilterComposer(
+            $db: $db,
+            $table: $db.usuarios,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PermisosUsuarioTableOrderingComposer
+    extends Composer<_$AppDatabase, $PermisosUsuarioTable> {
+  $$PermisosUsuarioTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modulo => $composableBuilder(
+    column: $table.modulo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get permitido => $composableBuilder(
+    column: $table.permitido,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsuariosTableOrderingComposer get usuarioId {
+    final $$UsuariosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.usuarioId,
+      referencedTable: $db.usuarios,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsuariosTableOrderingComposer(
+            $db: $db,
+            $table: $db.usuarios,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PermisosUsuarioTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PermisosUsuarioTable> {
+  $$PermisosUsuarioTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get modulo =>
+      $composableBuilder(column: $table.modulo, builder: (column) => column);
+
+  GeneratedColumn<bool> get permitido =>
+      $composableBuilder(column: $table.permitido, builder: (column) => column);
+
+  $$UsuariosTableAnnotationComposer get usuarioId {
+    final $$UsuariosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.usuarioId,
+      referencedTable: $db.usuarios,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsuariosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.usuarios,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PermisosUsuarioTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PermisosUsuarioTable,
+          PermisosUsuarioData,
+          $$PermisosUsuarioTableFilterComposer,
+          $$PermisosUsuarioTableOrderingComposer,
+          $$PermisosUsuarioTableAnnotationComposer,
+          $$PermisosUsuarioTableCreateCompanionBuilder,
+          $$PermisosUsuarioTableUpdateCompanionBuilder,
+          (PermisosUsuarioData, $$PermisosUsuarioTableReferences),
+          PermisosUsuarioData,
+          PrefetchHooks Function({bool usuarioId})
+        > {
+  $$PermisosUsuarioTableTableManager(
+    _$AppDatabase db,
+    $PermisosUsuarioTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PermisosUsuarioTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PermisosUsuarioTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PermisosUsuarioTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> usuarioId = const Value.absent(),
+                Value<String> modulo = const Value.absent(),
+                Value<bool> permitido = const Value.absent(),
+              }) => PermisosUsuarioCompanion(
+                id: id,
+                usuarioId: usuarioId,
+                modulo: modulo,
+                permitido: permitido,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int usuarioId,
+                required String modulo,
+                Value<bool> permitido = const Value.absent(),
+              }) => PermisosUsuarioCompanion.insert(
+                id: id,
+                usuarioId: usuarioId,
+                modulo: modulo,
+                permitido: permitido,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PermisosUsuarioTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({usuarioId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (usuarioId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.usuarioId,
+                                referencedTable:
+                                    $$PermisosUsuarioTableReferences
+                                        ._usuarioIdTable(db),
+                                referencedColumn:
+                                    $$PermisosUsuarioTableReferences
+                                        ._usuarioIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PermisosUsuarioTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PermisosUsuarioTable,
+      PermisosUsuarioData,
+      $$PermisosUsuarioTableFilterComposer,
+      $$PermisosUsuarioTableOrderingComposer,
+      $$PermisosUsuarioTableAnnotationComposer,
+      $$PermisosUsuarioTableCreateCompanionBuilder,
+      $$PermisosUsuarioTableUpdateCompanionBuilder,
+      (PermisosUsuarioData, $$PermisosUsuarioTableReferences),
+      PermisosUsuarioData,
+      PrefetchHooks Function({bool usuarioId})
+    >;
+typedef $$ComprobantesElectronicosTableCreateCompanionBuilder =
+    ComprobantesElectronicosCompanion Function({
+      Value<int> id,
+      Value<int?> ventaId,
+      Value<int?> comprobanteRelacionadoId,
+      required String tipo,
+      required String serie,
+      required int numero,
+      required DateTime fechaEmision,
+      Value<String?> dni,
+      Value<String?> ruc,
+      Value<String?> nombreCliente,
+      Value<String?> direccionFiscal,
+      required double subtotal,
+      required double igv,
+      required double total,
+      required String metodoPago,
+      Value<String> estado,
+      Value<String?> codigoRespuestaSunat,
+      Value<String?> mensajeRespuestaSunat,
+      Value<String?> cdr,
+      Value<String?> xml,
+      Value<DateTime?> fechaEnvioSunat,
+      Value<DateTime?> fechaRespuestaSunat,
+      Value<String?> codigoMotivoNotaCredito,
+      Value<String?> motivoNotaCredito,
+      Value<String?> observaciones,
+    });
+typedef $$ComprobantesElectronicosTableUpdateCompanionBuilder =
+    ComprobantesElectronicosCompanion Function({
+      Value<int> id,
+      Value<int?> ventaId,
+      Value<int?> comprobanteRelacionadoId,
+      Value<String> tipo,
+      Value<String> serie,
+      Value<int> numero,
+      Value<DateTime> fechaEmision,
+      Value<String?> dni,
+      Value<String?> ruc,
+      Value<String?> nombreCliente,
+      Value<String?> direccionFiscal,
+      Value<double> subtotal,
+      Value<double> igv,
+      Value<double> total,
+      Value<String> metodoPago,
+      Value<String> estado,
+      Value<String?> codigoRespuestaSunat,
+      Value<String?> mensajeRespuestaSunat,
+      Value<String?> cdr,
+      Value<String?> xml,
+      Value<DateTime?> fechaEnvioSunat,
+      Value<DateTime?> fechaRespuestaSunat,
+      Value<String?> codigoMotivoNotaCredito,
+      Value<String?> motivoNotaCredito,
+      Value<String?> observaciones,
+    });
+
+class $$ComprobantesElectronicosTableFilterComposer
+    extends Composer<_$AppDatabase, $ComprobantesElectronicosTable> {
+  $$ComprobantesElectronicosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ventaId => $composableBuilder(
+    column: $table.ventaId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get comprobanteRelacionadoId => $composableBuilder(
+    column: $table.comprobanteRelacionadoId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serie => $composableBuilder(
+    column: $table.serie,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get numero => $composableBuilder(
+    column: $table.numero,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaEmision => $composableBuilder(
+    column: $table.fechaEmision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dni => $composableBuilder(
+    column: $table.dni,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ruc => $composableBuilder(
+    column: $table.ruc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nombreCliente => $composableBuilder(
+    column: $table.nombreCliente,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get direccionFiscal => $composableBuilder(
+    column: $table.direccionFiscal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get subtotal => $composableBuilder(
+    column: $table.subtotal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get igv => $composableBuilder(
+    column: $table.igv,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get total => $composableBuilder(
+    column: $table.total,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get metodoPago => $composableBuilder(
+    column: $table.metodoPago,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get estado => $composableBuilder(
+    column: $table.estado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get codigoRespuestaSunat => $composableBuilder(
+    column: $table.codigoRespuestaSunat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mensajeRespuestaSunat => $composableBuilder(
+    column: $table.mensajeRespuestaSunat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cdr => $composableBuilder(
+    column: $table.cdr,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get xml => $composableBuilder(
+    column: $table.xml,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaEnvioSunat => $composableBuilder(
+    column: $table.fechaEnvioSunat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaRespuestaSunat => $composableBuilder(
+    column: $table.fechaRespuestaSunat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get codigoMotivoNotaCredito => $composableBuilder(
+    column: $table.codigoMotivoNotaCredito,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get motivoNotaCredito => $composableBuilder(
+    column: $table.motivoNotaCredito,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ComprobantesElectronicosTableOrderingComposer
+    extends Composer<_$AppDatabase, $ComprobantesElectronicosTable> {
+  $$ComprobantesElectronicosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ventaId => $composableBuilder(
+    column: $table.ventaId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get comprobanteRelacionadoId => $composableBuilder(
+    column: $table.comprobanteRelacionadoId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serie => $composableBuilder(
+    column: $table.serie,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get numero => $composableBuilder(
+    column: $table.numero,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaEmision => $composableBuilder(
+    column: $table.fechaEmision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dni => $composableBuilder(
+    column: $table.dni,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ruc => $composableBuilder(
+    column: $table.ruc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nombreCliente => $composableBuilder(
+    column: $table.nombreCliente,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get direccionFiscal => $composableBuilder(
+    column: $table.direccionFiscal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get subtotal => $composableBuilder(
+    column: $table.subtotal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get igv => $composableBuilder(
+    column: $table.igv,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get total => $composableBuilder(
+    column: $table.total,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get metodoPago => $composableBuilder(
+    column: $table.metodoPago,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get estado => $composableBuilder(
+    column: $table.estado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get codigoRespuestaSunat => $composableBuilder(
+    column: $table.codigoRespuestaSunat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mensajeRespuestaSunat => $composableBuilder(
+    column: $table.mensajeRespuestaSunat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cdr => $composableBuilder(
+    column: $table.cdr,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get xml => $composableBuilder(
+    column: $table.xml,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaEnvioSunat => $composableBuilder(
+    column: $table.fechaEnvioSunat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaRespuestaSunat => $composableBuilder(
+    column: $table.fechaRespuestaSunat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get codigoMotivoNotaCredito => $composableBuilder(
+    column: $table.codigoMotivoNotaCredito,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get motivoNotaCredito => $composableBuilder(
+    column: $table.motivoNotaCredito,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ComprobantesElectronicosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ComprobantesElectronicosTable> {
+  $$ComprobantesElectronicosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get ventaId =>
+      $composableBuilder(column: $table.ventaId, builder: (column) => column);
+
+  GeneratedColumn<int> get comprobanteRelacionadoId => $composableBuilder(
+    column: $table.comprobanteRelacionadoId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get tipo =>
+      $composableBuilder(column: $table.tipo, builder: (column) => column);
+
+  GeneratedColumn<String> get serie =>
+      $composableBuilder(column: $table.serie, builder: (column) => column);
+
+  GeneratedColumn<int> get numero =>
+      $composableBuilder(column: $table.numero, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fechaEmision => $composableBuilder(
+    column: $table.fechaEmision,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get dni =>
+      $composableBuilder(column: $table.dni, builder: (column) => column);
+
+  GeneratedColumn<String> get ruc =>
+      $composableBuilder(column: $table.ruc, builder: (column) => column);
+
+  GeneratedColumn<String> get nombreCliente => $composableBuilder(
+    column: $table.nombreCliente,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get direccionFiscal => $composableBuilder(
+    column: $table.direccionFiscal,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get subtotal =>
+      $composableBuilder(column: $table.subtotal, builder: (column) => column);
+
+  GeneratedColumn<double> get igv =>
+      $composableBuilder(column: $table.igv, builder: (column) => column);
+
+  GeneratedColumn<double> get total =>
+      $composableBuilder(column: $table.total, builder: (column) => column);
+
+  GeneratedColumn<String> get metodoPago => $composableBuilder(
+    column: $table.metodoPago,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get estado =>
+      $composableBuilder(column: $table.estado, builder: (column) => column);
+
+  GeneratedColumn<String> get codigoRespuestaSunat => $composableBuilder(
+    column: $table.codigoRespuestaSunat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get mensajeRespuestaSunat => $composableBuilder(
+    column: $table.mensajeRespuestaSunat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cdr =>
+      $composableBuilder(column: $table.cdr, builder: (column) => column);
+
+  GeneratedColumn<String> get xml =>
+      $composableBuilder(column: $table.xml, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fechaEnvioSunat => $composableBuilder(
+    column: $table.fechaEnvioSunat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get fechaRespuestaSunat => $composableBuilder(
+    column: $table.fechaRespuestaSunat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get codigoMotivoNotaCredito => $composableBuilder(
+    column: $table.codigoMotivoNotaCredito,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get motivoNotaCredito => $composableBuilder(
+    column: $table.motivoNotaCredito,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => column,
+  );
+}
+
+class $$ComprobantesElectronicosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ComprobantesElectronicosTable,
+          ComprobantesElectronico,
+          $$ComprobantesElectronicosTableFilterComposer,
+          $$ComprobantesElectronicosTableOrderingComposer,
+          $$ComprobantesElectronicosTableAnnotationComposer,
+          $$ComprobantesElectronicosTableCreateCompanionBuilder,
+          $$ComprobantesElectronicosTableUpdateCompanionBuilder,
+          (
+            ComprobantesElectronico,
+            BaseReferences<
+              _$AppDatabase,
+              $ComprobantesElectronicosTable,
+              ComprobantesElectronico
+            >,
+          ),
+          ComprobantesElectronico,
+          PrefetchHooks Function()
+        > {
+  $$ComprobantesElectronicosTableTableManager(
+    _$AppDatabase db,
+    $ComprobantesElectronicosTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ComprobantesElectronicosTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$ComprobantesElectronicosTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ComprobantesElectronicosTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int?> ventaId = const Value.absent(),
+                Value<int?> comprobanteRelacionadoId = const Value.absent(),
+                Value<String> tipo = const Value.absent(),
+                Value<String> serie = const Value.absent(),
+                Value<int> numero = const Value.absent(),
+                Value<DateTime> fechaEmision = const Value.absent(),
+                Value<String?> dni = const Value.absent(),
+                Value<String?> ruc = const Value.absent(),
+                Value<String?> nombreCliente = const Value.absent(),
+                Value<String?> direccionFiscal = const Value.absent(),
+                Value<double> subtotal = const Value.absent(),
+                Value<double> igv = const Value.absent(),
+                Value<double> total = const Value.absent(),
+                Value<String> metodoPago = const Value.absent(),
+                Value<String> estado = const Value.absent(),
+                Value<String?> codigoRespuestaSunat = const Value.absent(),
+                Value<String?> mensajeRespuestaSunat = const Value.absent(),
+                Value<String?> cdr = const Value.absent(),
+                Value<String?> xml = const Value.absent(),
+                Value<DateTime?> fechaEnvioSunat = const Value.absent(),
+                Value<DateTime?> fechaRespuestaSunat = const Value.absent(),
+                Value<String?> codigoMotivoNotaCredito = const Value.absent(),
+                Value<String?> motivoNotaCredito = const Value.absent(),
+                Value<String?> observaciones = const Value.absent(),
+              }) => ComprobantesElectronicosCompanion(
+                id: id,
+                ventaId: ventaId,
+                comprobanteRelacionadoId: comprobanteRelacionadoId,
+                tipo: tipo,
+                serie: serie,
+                numero: numero,
+                fechaEmision: fechaEmision,
+                dni: dni,
+                ruc: ruc,
+                nombreCliente: nombreCliente,
+                direccionFiscal: direccionFiscal,
+                subtotal: subtotal,
+                igv: igv,
+                total: total,
+                metodoPago: metodoPago,
+                estado: estado,
+                codigoRespuestaSunat: codigoRespuestaSunat,
+                mensajeRespuestaSunat: mensajeRespuestaSunat,
+                cdr: cdr,
+                xml: xml,
+                fechaEnvioSunat: fechaEnvioSunat,
+                fechaRespuestaSunat: fechaRespuestaSunat,
+                codigoMotivoNotaCredito: codigoMotivoNotaCredito,
+                motivoNotaCredito: motivoNotaCredito,
+                observaciones: observaciones,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int?> ventaId = const Value.absent(),
+                Value<int?> comprobanteRelacionadoId = const Value.absent(),
+                required String tipo,
+                required String serie,
+                required int numero,
+                required DateTime fechaEmision,
+                Value<String?> dni = const Value.absent(),
+                Value<String?> ruc = const Value.absent(),
+                Value<String?> nombreCliente = const Value.absent(),
+                Value<String?> direccionFiscal = const Value.absent(),
+                required double subtotal,
+                required double igv,
+                required double total,
+                required String metodoPago,
+                Value<String> estado = const Value.absent(),
+                Value<String?> codigoRespuestaSunat = const Value.absent(),
+                Value<String?> mensajeRespuestaSunat = const Value.absent(),
+                Value<String?> cdr = const Value.absent(),
+                Value<String?> xml = const Value.absent(),
+                Value<DateTime?> fechaEnvioSunat = const Value.absent(),
+                Value<DateTime?> fechaRespuestaSunat = const Value.absent(),
+                Value<String?> codigoMotivoNotaCredito = const Value.absent(),
+                Value<String?> motivoNotaCredito = const Value.absent(),
+                Value<String?> observaciones = const Value.absent(),
+              }) => ComprobantesElectronicosCompanion.insert(
+                id: id,
+                ventaId: ventaId,
+                comprobanteRelacionadoId: comprobanteRelacionadoId,
+                tipo: tipo,
+                serie: serie,
+                numero: numero,
+                fechaEmision: fechaEmision,
+                dni: dni,
+                ruc: ruc,
+                nombreCliente: nombreCliente,
+                direccionFiscal: direccionFiscal,
+                subtotal: subtotal,
+                igv: igv,
+                total: total,
+                metodoPago: metodoPago,
+                estado: estado,
+                codigoRespuestaSunat: codigoRespuestaSunat,
+                mensajeRespuestaSunat: mensajeRespuestaSunat,
+                cdr: cdr,
+                xml: xml,
+                fechaEnvioSunat: fechaEnvioSunat,
+                fechaRespuestaSunat: fechaRespuestaSunat,
+                codigoMotivoNotaCredito: codigoMotivoNotaCredito,
+                motivoNotaCredito: motivoNotaCredito,
+                observaciones: observaciones,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ComprobantesElectronicosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ComprobantesElectronicosTable,
+      ComprobantesElectronico,
+      $$ComprobantesElectronicosTableFilterComposer,
+      $$ComprobantesElectronicosTableOrderingComposer,
+      $$ComprobantesElectronicosTableAnnotationComposer,
+      $$ComprobantesElectronicosTableCreateCompanionBuilder,
+      $$ComprobantesElectronicosTableUpdateCompanionBuilder,
+      (
+        ComprobantesElectronico,
+        BaseReferences<
+          _$AppDatabase,
+          $ComprobantesElectronicosTable,
+          ComprobantesElectronico
+        >,
+      ),
+      ComprobantesElectronico,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -11338,4 +14675,13 @@ class $AppDatabaseManager {
       $$CajasTableTableManager(_db, _db.cajas);
   $$MovimientosCajaTableTableManager get movimientosCaja =>
       $$MovimientosCajaTableTableManager(_db, _db.movimientosCaja);
+  $$UsuariosTableTableManager get usuarios =>
+      $$UsuariosTableTableManager(_db, _db.usuarios);
+  $$PermisosUsuarioTableTableManager get permisosUsuario =>
+      $$PermisosUsuarioTableTableManager(_db, _db.permisosUsuario);
+  $$ComprobantesElectronicosTableTableManager get comprobantesElectronicos =>
+      $$ComprobantesElectronicosTableTableManager(
+        _db,
+        _db.comprobantesElectronicos,
+      );
 }
