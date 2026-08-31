@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../models/ubicacion_pedido.dart';
 import '../services/pedidos_service.dart';
 import '../widgets/ubicacion_pedido_card.dart';
+import 'pedido_detalle_screen.dart';
+import '../../database/app_database.dart';
 
 class PedidosScreen extends StatelessWidget {
   const PedidosScreen({super.key});
@@ -11,7 +13,9 @@ class PedidosScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => PedidosService(),
+      create: (context) => PedidosService(
+        context.read<AppDatabase>(),
+      ),
       child: const _PedidosView(),
     );
   }
@@ -210,17 +214,23 @@ class _PedidosView extends StatelessWidget {
   }
 
   static void _abrirUbicacion(
-    BuildContext context,
-    UbicacionPedido ubicacion,
-  ) {
+      BuildContext context,
+      UbicacionPedido ubicacion,
+      ) {
     final service = context.read<PedidosService>();
 
-    final pedido = service.abrirPedido(ubicacion);
+    // Crea el pedido si la ubicación está libre.
+    // Si ya existe, devuelve el pedido existente.
+    service.abrirPedido(ubicacion);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${pedido.ubicacion.nombre} listo para tomar el pedido.',
+    // Abrimos inmediatamente el detalle del pedido.
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider.value(
+          value: service,
+          child: PedidoDetalleScreen(
+            ubicacion: ubicacion,
+          ),
         ),
       ),
     );

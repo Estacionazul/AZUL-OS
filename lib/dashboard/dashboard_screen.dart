@@ -102,6 +102,7 @@
             'INVENTARIO': true,
             'RECETAS': true,
             'PRODUCCION': true,
+            'PEDIDOS': true,
             'VENTAS': true,
             'CLIENTES': true,
             'CAJA': true,
@@ -126,6 +127,7 @@
           repository.tienePermiso(usuarioId, 'INVENTARIO'),
           repository.tienePermiso(usuarioId, 'RECETAS'),
           repository.tienePermiso(usuarioId, 'PRODUCCION'),
+          repository.tienePermiso(usuarioId, 'PEDIDOS'),
           repository.tienePermiso(usuarioId, 'VENTAS'),
           repository.tienePermiso(usuarioId, 'CLIENTES'),
           repository.tienePermiso(usuarioId, 'CAJA'),
@@ -138,10 +140,11 @@
           'INVENTARIO': resultados[2],
           'RECETAS': resultados[3],
           'PRODUCCION': resultados[4],
-          'VENTAS': resultados[5],
-          'CLIENTES': resultados[6],
-          'CAJA': resultados[7],
-          'REPORTES': resultados[8],
+          'PEDIDOS': resultados[5],
+          'VENTAS': resultados[6],
+          'CLIENTES': resultados[7],
+          'CAJA': resultados[8],
+          'REPORTES': resultados[9],
         };
       }
 
@@ -753,6 +756,17 @@
                                   ),
                                 ),
 
+                              if (permisos['PEDIDOS'] == true)
+                                SizedBox(
+                                  width: 210,
+                                  child: QuickActionCard(
+                                    icon: Icons.receipt_long,
+                                    titulo: 'Pedidos',
+                                    color: Colors.blue,
+                                    onTap: () => widget.onNavigate?.call(6),
+                                  ),
+                                ),
+
                               if (permisos['VENTAS'] == true)
                                 SizedBox(
                                   width: 210,
@@ -760,7 +774,7 @@
                                     icon: Icons.receipt_long,
                                     titulo: 'Ventas',
                                     color: Colors.green,
-                                    onTap: () => widget.onNavigate?.call(6),
+                                    onTap: () => widget.onNavigate?.call(7),
                                   ),
                                 ),
 
@@ -771,7 +785,7 @@
                                     icon: Icons.people,
                                     titulo: 'Clientes',
                                     color: AppColors.info,
-                                    onTap: () => widget.onNavigate?.call(7),
+                                    onTap: () => widget.onNavigate?.call(8),
                                   ),
                                 ),
 
@@ -782,7 +796,7 @@
                                     icon: Icons.point_of_sale,
                                     titulo: 'Caja',
                                     color: Colors.purple,
-                                    onTap: () => widget.onNavigate?.call(8),
+                                    onTap: () => widget.onNavigate?.call(9),
                                   ),
                                 ),
 
@@ -793,7 +807,7 @@
                                     icon: Icons.bar_chart,
                                     titulo: 'Reportes',
                                     color: AppColors.success,
-                                    onTap: () => widget.onNavigate?.call(9),
+                                    onTap: () => widget.onNavigate?.call(10),
                                   ),
                                 ),
                             ],
@@ -857,7 +871,7 @@
                                   ),
 
                                   TextButton.icon(
-                                    onPressed: () => widget.onNavigate?.call(6),
+                                    onPressed: () => widget.onNavigate?.call(7),
                                     icon: const Icon(
                                       Icons.arrow_forward,
                                       size: 18,

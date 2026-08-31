@@ -8,9 +8,9 @@ class InsumosSeed {
       int categoriaId,
       ) async {
 
-    final existentes = await db.select(db.insumos).get();
-
-    if (existentes.isNotEmpty) return;
+    // ==========================================================
+    // INSERTAR SOLO SI EL INSUMO NO EXISTE
+    // ==========================================================
 
     Future<void> agregar({
       required String codigo,
@@ -21,6 +21,14 @@ class InsumosSeed {
       required double costo,
       required String emoji,
     }) async {
+
+      final existente = await (db.select(db.insumos)
+        ..where((i) => i.codigo.equals(codigo)))
+          .getSingleOrNull();
+
+      if (existente != null) {
+        return;
+      }
 
       await db.into(db.insumos).insert(
         InsumosCompanion.insert(
@@ -36,9 +44,9 @@ class InsumosSeed {
       );
     }
 
-    //----------------------------------------
+    // ==========================================================
     // CAFÉ
-    //----------------------------------------
+    // ==========================================================
 
     await agregar(
       codigo: "INS001",
@@ -90,9 +98,9 @@ class InsumosSeed {
       emoji: "🌿",
     );
 
-    //----------------------------------------
+    // ==========================================================
     // JUGOS
-    //----------------------------------------
+    // ==========================================================
 
     await agregar(
       codigo: "INS006",
@@ -144,9 +152,20 @@ class InsumosSeed {
       emoji: "🥭",
     );
 
-    //----------------------------------------
+    // NUEVO
+    await agregar(
+      codigo: "INS016",
+      nombre: "Naranja",
+      unidad: "g",
+      stock: 5000,
+      minimo: 1000,
+      costo: 0.02,
+      emoji: "🍊",
+    );
+
+    // ==========================================================
     // HAMBURGUESAS
-    //----------------------------------------
+    // ==========================================================
 
     await agregar(
       codigo: "INS011",
@@ -197,5 +216,15 @@ class InsumosSeed {
       costo: 0.01,
       emoji: "🍅",
     );
+
+    // ==========================================================
+    // FIN
+    // ==========================================================
+
+    final total = await db.select(db.insumos).get();
+
+    print("====================================");
+    print("TOTAL INSUMOS: ${total.length}");
+    print("====================================");
   }
 }

@@ -16,8 +16,7 @@ class UbicacionPedidoCard extends StatelessWidget {
     required this.onTap,
   });
 
-  bool get ocupada =>
-      pedido != null && !pedido!.estaVacio;
+  bool get ocupada => pedido != null;
 
   bool get esperandoCuenta =>
       pedido?.estado == EstadoPedido.esperandoCuenta;

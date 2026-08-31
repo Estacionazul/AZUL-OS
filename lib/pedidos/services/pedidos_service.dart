@@ -1,4 +1,7 @@
 ﻿import 'package:flutter/foundation.dart';
+import 'package:drift/drift.dart';
+
+import '../../database/app_database.dart';
 
 import '../../models/item_carrito.dart';
 import '../data/ubicaciones_pedido_data.dart';
@@ -7,6 +10,9 @@ import '../models/pedido_abierto.dart';
 import '../models/ubicacion_pedido.dart';
 
 class PedidosService extends ChangeNotifier {
+  final AppDatabase database;
+
+  PedidosService(this.database);
   final Map<String, PedidoAbierto> _pedidos = {};
 
   /// Cantidades que ya fueron enviadas a preparación.
@@ -35,9 +41,9 @@ class PedidosService extends ChangeNotifier {
         pedido.items.isNotEmpty;
   }
 
-  PedidoAbierto abrirPedido(
-    UbicacionPedido ubicacion,
-  ) {
+  Future<PedidoAbierto> abrirPedido(
+      UbicacionPedido ubicacion,
+      ) async {
     final existente = _pedidos[ubicacion.id];
 
     if (existente != null) {
@@ -46,8 +52,10 @@ class PedidosService extends ChangeNotifier {
 
     final ahora = DateTime.now();
 
+    final numeroPedido = await _obtenerSiguienteNumeroPedido();
+
     final numero =
-        'P${ahora.microsecondsSinceEpoch}';
+        'P${numeroPedido.toString().padLeft(6, '0')}';
 
     final pedido = PedidoAbierto(
       id: '${ubicacion.id}_${ahora.microsecondsSinceEpoch}',
@@ -65,10 +73,14 @@ class PedidosService extends ChangeNotifier {
     return pedido;
   }
 
+  /// Agrega productos al pedido.
+  ///
+  /// Si el producto con la misma configuración ya existe,
+  /// aumenta su cantidad en lugar de crear otra línea.
   void agregarProductos(
-    String ubicacionId,
-    List<ItemCarrito> items,
-  ) {
+      String ubicacionId,
+      List<ItemCarrito> items,
+      ) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -84,7 +96,19 @@ class PedidosService extends ChangeNotifier {
       );
     }
 
-    pedido.agregarItems(items);
+    for (final nuevoItem in items) {
+      final indiceExistente = pedido.items.indexWhere(
+            (itemExistente) =>
+        _claveItem(itemExistente) == _claveItem(nuevoItem),
+      );
+
+      if (indiceExistente >= 0) {
+        pedido.items[indiceExistente].cantidad +=
+            nuevoItem.cantidad;
+      } else {
+        pedido.agregarItems([nuevoItem]);
+      }
+    }
 
     if (pedido.estado == EstadoPedido.enviado) {
       pedido.estado = EstadoPedido.abierto;
@@ -93,11 +117,149 @@ class PedidosService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Aumenta en una unidad la cantidad de un producto.
+  void aumentarCantidad(
+      String ubicacionId,
+      ItemCarrito item,
+      ) {
+    final pedido = _pedidos[ubicacionId];
+
+    if (pedido == null) {
+      return;
+    }
+
+    if (pedido.estado == EstadoPedido.esperandoCuenta ||
+        pedido.estado == EstadoPedido.cerrado) {
+      return;
+    }
+
+    final indice = pedido.items.indexWhere(
+          (itemExistente) =>
+      _claveItem(itemExistente) == _claveItem(item),
+    );
+
+    if (indice == -1) {
+      return;
+    }
+
+    pedido.items[indice].cantidad++;
+
+    if (pedido.estado == EstadoPedido.enviado) {
+      pedido.estado = EstadoPedido.abierto;
+    }
+
+    notifyListeners();
+  }
+
+  /// Disminuye en una unidad la cantidad de un producto.
+  ///
+  /// IMPORTANTE:
+  /// Si parte de la cantidad ya fue enviada a preparación,
+  /// nunca permite bajar por debajo de esa cantidad.
+  bool disminuirCantidad(
+      String ubicacionId,
+      ItemCarrito item,
+      ) {
+    final pedido = _pedidos[ubicacionId];
+
+    if (pedido == null) {
+      return false;
+    }
+
+    if (pedido.estado == EstadoPedido.esperandoCuenta ||
+        pedido.estado == EstadoPedido.cerrado) {
+      return false;
+    }
+
+    final indice = pedido.items.indexWhere(
+          (itemExistente) =>
+      _claveItem(itemExistente) == _claveItem(item),
+    );
+
+    if (indice == -1) {
+      return false;
+    }
+
+    final itemActual = pedido.items[indice];
+
+    final cantidadesComandadas =
+        _cantidadesComandadas[ubicacionId] ?? {};
+
+    final cantidadEnviada =
+        cantidadesComandadas[_claveItem(itemActual)] ?? 0;
+
+    // No podemos reducir una cantidad que ya fue
+    // enviada a preparación.
+    if (itemActual.cantidad <= cantidadEnviada) {
+      return false;
+    }
+
+    itemActual.cantidad--;
+
+    // Si llegó a cero, eliminamos la línea.
+    if (itemActual.cantidad <= 0) {
+      pedido.items.removeAt(indice);
+    }
+
+    notifyListeners();
+
+    return true;
+  }
+
+  /// Elimina completamente un producto del pedido.
+  ///
+  /// Solo se permite eliminarlo si todavía NO fue enviado
+  /// a preparación.
+  bool eliminarItem(
+      String ubicacionId,
+      ItemCarrito item,
+      ) {
+    final pedido = _pedidos[ubicacionId];
+
+    if (pedido == null) {
+      return false;
+    }
+
+    if (pedido.estado == EstadoPedido.esperandoCuenta ||
+        pedido.estado == EstadoPedido.cerrado) {
+      return false;
+    }
+
+    final indice = pedido.items.indexWhere(
+          (itemExistente) =>
+      _claveItem(itemExistente) == _claveItem(item),
+    );
+
+    if (indice == -1) {
+      return false;
+    }
+
+    final itemActual = pedido.items[indice];
+
+    final cantidadesComandadas =
+        _cantidadesComandadas[ubicacionId] ?? {};
+
+    final cantidadEnviada =
+        cantidadesComandadas[_claveItem(itemActual)] ?? 0;
+
+    // Si ya fue enviado a cocina, no permitimos
+    // eliminarlo completamente.
+    if (cantidadEnviada > 0) {
+      return false;
+    }
+
+    pedido.items.removeAt(indice);
+
+    notifyListeners();
+
+    return true;
+  }
+
   /// Devuelve SOLO los productos que todavía no fueron enviados
   /// a la impresora.
   List<ItemCarrito> obtenerItemsPendientesParaComanda(
-    String ubicacionId,
-  ) {
+      String ubicacionId,
+      ) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null || pedido.estaVacio) {
@@ -139,11 +301,11 @@ class PedidosService extends ChangeNotifier {
     return pendientes;
   }
 
-  /// Marca como impresos los productos que existen actualmente
-  /// en el pedido.
+  /// Marca como enviados a preparación los productos
+  /// que existen actualmente en el pedido.
   void marcarComandaEnviada(
-    String ubicacionId,
-  ) {
+      String ubicacionId,
+      ) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -165,8 +327,8 @@ class PedidosService extends ChangeNotifier {
   }
 
   int obtenerSiguienteNumeroComanda(
-    String ubicacionId,
-  ) {
+      String ubicacionId,
+      ) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -177,8 +339,8 @@ class PedidosService extends ChangeNotifier {
   }
 
   void pasarAEsperandoCuenta(
-    String ubicacionId,
-  ) {
+      String ubicacionId,
+      ) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -196,9 +358,9 @@ class PedidosService extends ChangeNotifier {
   }
 
   void actualizarObservaciones(
-    String ubicacionId,
-    String observaciones,
-  ) {
+      String ubicacionId,
+      String observaciones,
+      ) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -212,8 +374,8 @@ class PedidosService extends ChangeNotifier {
   }
 
   void cerrarPedido(
-    String ubicacionId,
-  ) {
+      String ubicacionId,
+      ) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -230,8 +392,8 @@ class PedidosService extends ChangeNotifier {
   }
 
   void cancelarPedido(
-    String ubicacionId,
-  ) {
+      String ubicacionId,
+      ) {
     _pedidos.remove(ubicacionId);
     _cantidadesComandadas.remove(ubicacionId);
 
@@ -251,5 +413,37 @@ class PedidosService extends ChangeNotifier {
       item.extraShot.toString(),
       item.observaciones ?? '',
     ].join('|');
+  }
+
+  Future<int> _obtenerSiguienteNumeroPedido() async {
+    return database.transaction(() async {
+      final consulta = database.select(database.correlativos)
+        ..where((t) => t.clave.equals('pedido'));
+
+      final existente = await consulta.getSingleOrNull();
+
+      if (existente == null) {
+        await database.into(database.correlativos).insert(
+          CorrelativosCompanion.insert(
+            clave: 'pedido',
+            ultimoNumero: const Value(1),
+          ),
+        );
+
+        return 1;
+      }
+
+      final siguiente = existente.ultimoNumero + 1;
+
+      await (database.update(database.correlativos)
+        ..where((t) => t.clave.equals('pedido')))
+          .write(
+        CorrelativosCompanion(
+          ultimoNumero: Value(siguiente),
+        ),
+      );
+
+      return siguiente;
+    });
   }
 }

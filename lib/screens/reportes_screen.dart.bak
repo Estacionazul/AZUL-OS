@@ -151,7 +151,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
   }
 
   // ==========================================================
-  // TOTAL POR MÃ‰TODO DE PAGO
+  // TOTAL POR MÉTODO DE PAGO
   // ==========================================================
 
   double _totalPorMetodo(String metodo) {
@@ -278,7 +278,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Resumen y anÃ¡lisis de las ventas de EstaciÃ³n Azul',
+                  'Resumen y análisis de las ventas de Estación Azul',
                   style: TextStyle(
                     color: Colors.grey,
                     fontSize: 14,
@@ -460,7 +460,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
   }
 
   // ==========================================================
-  // MÃ‰TODOS DE PAGO
+  // MÉTODOS DE PAGO
   // ==========================================================
 
   Widget _pagos() {
@@ -480,7 +480,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
                 ),
                 SizedBox(width: 10),
                 Text(
-                  'Ventas por mÃ©todo de pago',
+                  'Ventas por método de pago',
                   style: TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.bold,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../dashboard/dashboard_screen.dart';
 import '../widgets/sidebar_menu.dart';
@@ -9,6 +9,7 @@ import 'productos/productos_screen.dart';
 import 'clientes_screen.dart';
 import 'recetas_screen.dart';
 import 'ventas/ventas_screen.dart';
+import '../pedidos/screens/pedidos_screen.dart';
 import 'produccion/produccion_screen.dart';
 import 'configuracion/configuracion_screen.dart';
 import 'caja/caja_screen.dart';
@@ -39,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const InventarioScreen(),
       const RecetasScreen(),
       const ProduccionScreen(),
+      const PedidosScreen(),
       const VentasScreen(),
       const ClientesScreen(),
 

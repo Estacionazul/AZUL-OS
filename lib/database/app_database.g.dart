@@ -9675,6 +9675,1775 @@ class ComprobantesElectronicosCompanion
   }
 }
 
+class $CorrelativosTable extends Correlativos
+    with TableInfo<$CorrelativosTable, Correlativo> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CorrelativosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _claveMeta = const VerificationMeta('clave');
+  @override
+  late final GeneratedColumn<String> clave = GeneratedColumn<String>(
+    'clave',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _ultimoNumeroMeta = const VerificationMeta(
+    'ultimoNumero',
+  );
+  @override
+  late final GeneratedColumn<int> ultimoNumero = GeneratedColumn<int>(
+    'ultimo_numero',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, clave, ultimoNumero];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'correlativos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Correlativo> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('clave')) {
+      context.handle(
+        _claveMeta,
+        clave.isAcceptableOrUnknown(data['clave']!, _claveMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_claveMeta);
+    }
+    if (data.containsKey('ultimo_numero')) {
+      context.handle(
+        _ultimoNumeroMeta,
+        ultimoNumero.isAcceptableOrUnknown(
+          data['ultimo_numero']!,
+          _ultimoNumeroMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Correlativo map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Correlativo(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      clave: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}clave'],
+      )!,
+      ultimoNumero: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ultimo_numero'],
+      )!,
+    );
+  }
+
+  @override
+  $CorrelativosTable createAlias(String alias) {
+    return $CorrelativosTable(attachedDatabase, alias);
+  }
+}
+
+class Correlativo extends DataClass implements Insertable<Correlativo> {
+  final int id;
+  final String clave;
+  final int ultimoNumero;
+  const Correlativo({
+    required this.id,
+    required this.clave,
+    required this.ultimoNumero,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['clave'] = Variable<String>(clave);
+    map['ultimo_numero'] = Variable<int>(ultimoNumero);
+    return map;
+  }
+
+  CorrelativosCompanion toCompanion(bool nullToAbsent) {
+    return CorrelativosCompanion(
+      id: Value(id),
+      clave: Value(clave),
+      ultimoNumero: Value(ultimoNumero),
+    );
+  }
+
+  factory Correlativo.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Correlativo(
+      id: serializer.fromJson<int>(json['id']),
+      clave: serializer.fromJson<String>(json['clave']),
+      ultimoNumero: serializer.fromJson<int>(json['ultimoNumero']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'clave': serializer.toJson<String>(clave),
+      'ultimoNumero': serializer.toJson<int>(ultimoNumero),
+    };
+  }
+
+  Correlativo copyWith({int? id, String? clave, int? ultimoNumero}) =>
+      Correlativo(
+        id: id ?? this.id,
+        clave: clave ?? this.clave,
+        ultimoNumero: ultimoNumero ?? this.ultimoNumero,
+      );
+  Correlativo copyWithCompanion(CorrelativosCompanion data) {
+    return Correlativo(
+      id: data.id.present ? data.id.value : this.id,
+      clave: data.clave.present ? data.clave.value : this.clave,
+      ultimoNumero: data.ultimoNumero.present
+          ? data.ultimoNumero.value
+          : this.ultimoNumero,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Correlativo(')
+          ..write('id: $id, ')
+          ..write('clave: $clave, ')
+          ..write('ultimoNumero: $ultimoNumero')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, clave, ultimoNumero);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Correlativo &&
+          other.id == this.id &&
+          other.clave == this.clave &&
+          other.ultimoNumero == this.ultimoNumero);
+}
+
+class CorrelativosCompanion extends UpdateCompanion<Correlativo> {
+  final Value<int> id;
+  final Value<String> clave;
+  final Value<int> ultimoNumero;
+  const CorrelativosCompanion({
+    this.id = const Value.absent(),
+    this.clave = const Value.absent(),
+    this.ultimoNumero = const Value.absent(),
+  });
+  CorrelativosCompanion.insert({
+    this.id = const Value.absent(),
+    required String clave,
+    this.ultimoNumero = const Value.absent(),
+  }) : clave = Value(clave);
+  static Insertable<Correlativo> custom({
+    Expression<int>? id,
+    Expression<String>? clave,
+    Expression<int>? ultimoNumero,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (clave != null) 'clave': clave,
+      if (ultimoNumero != null) 'ultimo_numero': ultimoNumero,
+    });
+  }
+
+  CorrelativosCompanion copyWith({
+    Value<int>? id,
+    Value<String>? clave,
+    Value<int>? ultimoNumero,
+  }) {
+    return CorrelativosCompanion(
+      id: id ?? this.id,
+      clave: clave ?? this.clave,
+      ultimoNumero: ultimoNumero ?? this.ultimoNumero,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (clave.present) {
+      map['clave'] = Variable<String>(clave.value);
+    }
+    if (ultimoNumero.present) {
+      map['ultimo_numero'] = Variable<int>(ultimoNumero.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CorrelativosCompanion(')
+          ..write('id: $id, ')
+          ..write('clave: $clave, ')
+          ..write('ultimoNumero: $ultimoNumero')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PedidosTable extends Pedidos with TableInfo<$PedidosTable, Pedido> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PedidosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _numeroMeta = const VerificationMeta('numero');
+  @override
+  late final GeneratedColumn<String> numero = GeneratedColumn<String>(
+    'numero',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _ubicacionIdMeta = const VerificationMeta(
+    'ubicacionId',
+  );
+  @override
+  late final GeneratedColumn<String> ubicacionId = GeneratedColumn<String>(
+    'ubicacion_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ubicacionNombreMeta = const VerificationMeta(
+    'ubicacionNombre',
+  );
+  @override
+  late final GeneratedColumn<String> ubicacionNombre = GeneratedColumn<String>(
+    'ubicacion_nombre',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _esMesaMeta = const VerificationMeta('esMesa');
+  @override
+  late final GeneratedColumn<bool> esMesa = GeneratedColumn<bool>(
+    'es_mesa',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("es_mesa" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _fechaAperturaMeta = const VerificationMeta(
+    'fechaApertura',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fechaApertura =
+      GeneratedColumn<DateTime>(
+        'fecha_apertura',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: currentDateAndTime,
+      );
+  static const VerificationMeta _estadoMeta = const VerificationMeta('estado');
+  @override
+  late final GeneratedColumn<String> estado = GeneratedColumn<String>(
+    'estado',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('abierto'),
+  );
+  static const VerificationMeta _numeroComandaMeta = const VerificationMeta(
+    'numeroComanda',
+  );
+  @override
+  late final GeneratedColumn<int> numeroComanda = GeneratedColumn<int>(
+    'numero_comanda',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _observacionesMeta = const VerificationMeta(
+    'observaciones',
+  );
+  @override
+  late final GeneratedColumn<String> observaciones = GeneratedColumn<String>(
+    'observaciones',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _totalMeta = const VerificationMeta('total');
+  @override
+  late final GeneratedColumn<double> total = GeneratedColumn<double>(
+    'total',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    numero,
+    ubicacionId,
+    ubicacionNombre,
+    esMesa,
+    fechaApertura,
+    estado,
+    numeroComanda,
+    observaciones,
+    total,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pedidos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Pedido> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('numero')) {
+      context.handle(
+        _numeroMeta,
+        numero.isAcceptableOrUnknown(data['numero']!, _numeroMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_numeroMeta);
+    }
+    if (data.containsKey('ubicacion_id')) {
+      context.handle(
+        _ubicacionIdMeta,
+        ubicacionId.isAcceptableOrUnknown(
+          data['ubicacion_id']!,
+          _ubicacionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_ubicacionIdMeta);
+    }
+    if (data.containsKey('ubicacion_nombre')) {
+      context.handle(
+        _ubicacionNombreMeta,
+        ubicacionNombre.isAcceptableOrUnknown(
+          data['ubicacion_nombre']!,
+          _ubicacionNombreMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_ubicacionNombreMeta);
+    }
+    if (data.containsKey('es_mesa')) {
+      context.handle(
+        _esMesaMeta,
+        esMesa.isAcceptableOrUnknown(data['es_mesa']!, _esMesaMeta),
+      );
+    }
+    if (data.containsKey('fecha_apertura')) {
+      context.handle(
+        _fechaAperturaMeta,
+        fechaApertura.isAcceptableOrUnknown(
+          data['fecha_apertura']!,
+          _fechaAperturaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('estado')) {
+      context.handle(
+        _estadoMeta,
+        estado.isAcceptableOrUnknown(data['estado']!, _estadoMeta),
+      );
+    }
+    if (data.containsKey('numero_comanda')) {
+      context.handle(
+        _numeroComandaMeta,
+        numeroComanda.isAcceptableOrUnknown(
+          data['numero_comanda']!,
+          _numeroComandaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('observaciones')) {
+      context.handle(
+        _observacionesMeta,
+        observaciones.isAcceptableOrUnknown(
+          data['observaciones']!,
+          _observacionesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('total')) {
+      context.handle(
+        _totalMeta,
+        total.isAcceptableOrUnknown(data['total']!, _totalMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Pedido map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Pedido(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      numero: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}numero'],
+      )!,
+      ubicacionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ubicacion_id'],
+      )!,
+      ubicacionNombre: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ubicacion_nombre'],
+      )!,
+      esMesa: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}es_mesa'],
+      )!,
+      fechaApertura: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_apertura'],
+      )!,
+      estado: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}estado'],
+      )!,
+      numeroComanda: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}numero_comanda'],
+      )!,
+      observaciones: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}observaciones'],
+      )!,
+      total: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}total'],
+      )!,
+    );
+  }
+
+  @override
+  $PedidosTable createAlias(String alias) {
+    return $PedidosTable(attachedDatabase, alias);
+  }
+}
+
+class Pedido extends DataClass implements Insertable<Pedido> {
+  final int id;
+  final String numero;
+  final String ubicacionId;
+  final String ubicacionNombre;
+  final bool esMesa;
+  final DateTime fechaApertura;
+  final String estado;
+  final int numeroComanda;
+  final String observaciones;
+  final double total;
+  const Pedido({
+    required this.id,
+    required this.numero,
+    required this.ubicacionId,
+    required this.ubicacionNombre,
+    required this.esMesa,
+    required this.fechaApertura,
+    required this.estado,
+    required this.numeroComanda,
+    required this.observaciones,
+    required this.total,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['numero'] = Variable<String>(numero);
+    map['ubicacion_id'] = Variable<String>(ubicacionId);
+    map['ubicacion_nombre'] = Variable<String>(ubicacionNombre);
+    map['es_mesa'] = Variable<bool>(esMesa);
+    map['fecha_apertura'] = Variable<DateTime>(fechaApertura);
+    map['estado'] = Variable<String>(estado);
+    map['numero_comanda'] = Variable<int>(numeroComanda);
+    map['observaciones'] = Variable<String>(observaciones);
+    map['total'] = Variable<double>(total);
+    return map;
+  }
+
+  PedidosCompanion toCompanion(bool nullToAbsent) {
+    return PedidosCompanion(
+      id: Value(id),
+      numero: Value(numero),
+      ubicacionId: Value(ubicacionId),
+      ubicacionNombre: Value(ubicacionNombre),
+      esMesa: Value(esMesa),
+      fechaApertura: Value(fechaApertura),
+      estado: Value(estado),
+      numeroComanda: Value(numeroComanda),
+      observaciones: Value(observaciones),
+      total: Value(total),
+    );
+  }
+
+  factory Pedido.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Pedido(
+      id: serializer.fromJson<int>(json['id']),
+      numero: serializer.fromJson<String>(json['numero']),
+      ubicacionId: serializer.fromJson<String>(json['ubicacionId']),
+      ubicacionNombre: serializer.fromJson<String>(json['ubicacionNombre']),
+      esMesa: serializer.fromJson<bool>(json['esMesa']),
+      fechaApertura: serializer.fromJson<DateTime>(json['fechaApertura']),
+      estado: serializer.fromJson<String>(json['estado']),
+      numeroComanda: serializer.fromJson<int>(json['numeroComanda']),
+      observaciones: serializer.fromJson<String>(json['observaciones']),
+      total: serializer.fromJson<double>(json['total']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'numero': serializer.toJson<String>(numero),
+      'ubicacionId': serializer.toJson<String>(ubicacionId),
+      'ubicacionNombre': serializer.toJson<String>(ubicacionNombre),
+      'esMesa': serializer.toJson<bool>(esMesa),
+      'fechaApertura': serializer.toJson<DateTime>(fechaApertura),
+      'estado': serializer.toJson<String>(estado),
+      'numeroComanda': serializer.toJson<int>(numeroComanda),
+      'observaciones': serializer.toJson<String>(observaciones),
+      'total': serializer.toJson<double>(total),
+    };
+  }
+
+  Pedido copyWith({
+    int? id,
+    String? numero,
+    String? ubicacionId,
+    String? ubicacionNombre,
+    bool? esMesa,
+    DateTime? fechaApertura,
+    String? estado,
+    int? numeroComanda,
+    String? observaciones,
+    double? total,
+  }) => Pedido(
+    id: id ?? this.id,
+    numero: numero ?? this.numero,
+    ubicacionId: ubicacionId ?? this.ubicacionId,
+    ubicacionNombre: ubicacionNombre ?? this.ubicacionNombre,
+    esMesa: esMesa ?? this.esMesa,
+    fechaApertura: fechaApertura ?? this.fechaApertura,
+    estado: estado ?? this.estado,
+    numeroComanda: numeroComanda ?? this.numeroComanda,
+    observaciones: observaciones ?? this.observaciones,
+    total: total ?? this.total,
+  );
+  Pedido copyWithCompanion(PedidosCompanion data) {
+    return Pedido(
+      id: data.id.present ? data.id.value : this.id,
+      numero: data.numero.present ? data.numero.value : this.numero,
+      ubicacionId: data.ubicacionId.present
+          ? data.ubicacionId.value
+          : this.ubicacionId,
+      ubicacionNombre: data.ubicacionNombre.present
+          ? data.ubicacionNombre.value
+          : this.ubicacionNombre,
+      esMesa: data.esMesa.present ? data.esMesa.value : this.esMesa,
+      fechaApertura: data.fechaApertura.present
+          ? data.fechaApertura.value
+          : this.fechaApertura,
+      estado: data.estado.present ? data.estado.value : this.estado,
+      numeroComanda: data.numeroComanda.present
+          ? data.numeroComanda.value
+          : this.numeroComanda,
+      observaciones: data.observaciones.present
+          ? data.observaciones.value
+          : this.observaciones,
+      total: data.total.present ? data.total.value : this.total,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Pedido(')
+          ..write('id: $id, ')
+          ..write('numero: $numero, ')
+          ..write('ubicacionId: $ubicacionId, ')
+          ..write('ubicacionNombre: $ubicacionNombre, ')
+          ..write('esMesa: $esMesa, ')
+          ..write('fechaApertura: $fechaApertura, ')
+          ..write('estado: $estado, ')
+          ..write('numeroComanda: $numeroComanda, ')
+          ..write('observaciones: $observaciones, ')
+          ..write('total: $total')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    numero,
+    ubicacionId,
+    ubicacionNombre,
+    esMesa,
+    fechaApertura,
+    estado,
+    numeroComanda,
+    observaciones,
+    total,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Pedido &&
+          other.id == this.id &&
+          other.numero == this.numero &&
+          other.ubicacionId == this.ubicacionId &&
+          other.ubicacionNombre == this.ubicacionNombre &&
+          other.esMesa == this.esMesa &&
+          other.fechaApertura == this.fechaApertura &&
+          other.estado == this.estado &&
+          other.numeroComanda == this.numeroComanda &&
+          other.observaciones == this.observaciones &&
+          other.total == this.total);
+}
+
+class PedidosCompanion extends UpdateCompanion<Pedido> {
+  final Value<int> id;
+  final Value<String> numero;
+  final Value<String> ubicacionId;
+  final Value<String> ubicacionNombre;
+  final Value<bool> esMesa;
+  final Value<DateTime> fechaApertura;
+  final Value<String> estado;
+  final Value<int> numeroComanda;
+  final Value<String> observaciones;
+  final Value<double> total;
+  const PedidosCompanion({
+    this.id = const Value.absent(),
+    this.numero = const Value.absent(),
+    this.ubicacionId = const Value.absent(),
+    this.ubicacionNombre = const Value.absent(),
+    this.esMesa = const Value.absent(),
+    this.fechaApertura = const Value.absent(),
+    this.estado = const Value.absent(),
+    this.numeroComanda = const Value.absent(),
+    this.observaciones = const Value.absent(),
+    this.total = const Value.absent(),
+  });
+  PedidosCompanion.insert({
+    this.id = const Value.absent(),
+    required String numero,
+    required String ubicacionId,
+    required String ubicacionNombre,
+    this.esMesa = const Value.absent(),
+    this.fechaApertura = const Value.absent(),
+    this.estado = const Value.absent(),
+    this.numeroComanda = const Value.absent(),
+    this.observaciones = const Value.absent(),
+    this.total = const Value.absent(),
+  }) : numero = Value(numero),
+       ubicacionId = Value(ubicacionId),
+       ubicacionNombre = Value(ubicacionNombre);
+  static Insertable<Pedido> custom({
+    Expression<int>? id,
+    Expression<String>? numero,
+    Expression<String>? ubicacionId,
+    Expression<String>? ubicacionNombre,
+    Expression<bool>? esMesa,
+    Expression<DateTime>? fechaApertura,
+    Expression<String>? estado,
+    Expression<int>? numeroComanda,
+    Expression<String>? observaciones,
+    Expression<double>? total,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (numero != null) 'numero': numero,
+      if (ubicacionId != null) 'ubicacion_id': ubicacionId,
+      if (ubicacionNombre != null) 'ubicacion_nombre': ubicacionNombre,
+      if (esMesa != null) 'es_mesa': esMesa,
+      if (fechaApertura != null) 'fecha_apertura': fechaApertura,
+      if (estado != null) 'estado': estado,
+      if (numeroComanda != null) 'numero_comanda': numeroComanda,
+      if (observaciones != null) 'observaciones': observaciones,
+      if (total != null) 'total': total,
+    });
+  }
+
+  PedidosCompanion copyWith({
+    Value<int>? id,
+    Value<String>? numero,
+    Value<String>? ubicacionId,
+    Value<String>? ubicacionNombre,
+    Value<bool>? esMesa,
+    Value<DateTime>? fechaApertura,
+    Value<String>? estado,
+    Value<int>? numeroComanda,
+    Value<String>? observaciones,
+    Value<double>? total,
+  }) {
+    return PedidosCompanion(
+      id: id ?? this.id,
+      numero: numero ?? this.numero,
+      ubicacionId: ubicacionId ?? this.ubicacionId,
+      ubicacionNombre: ubicacionNombre ?? this.ubicacionNombre,
+      esMesa: esMesa ?? this.esMesa,
+      fechaApertura: fechaApertura ?? this.fechaApertura,
+      estado: estado ?? this.estado,
+      numeroComanda: numeroComanda ?? this.numeroComanda,
+      observaciones: observaciones ?? this.observaciones,
+      total: total ?? this.total,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (numero.present) {
+      map['numero'] = Variable<String>(numero.value);
+    }
+    if (ubicacionId.present) {
+      map['ubicacion_id'] = Variable<String>(ubicacionId.value);
+    }
+    if (ubicacionNombre.present) {
+      map['ubicacion_nombre'] = Variable<String>(ubicacionNombre.value);
+    }
+    if (esMesa.present) {
+      map['es_mesa'] = Variable<bool>(esMesa.value);
+    }
+    if (fechaApertura.present) {
+      map['fecha_apertura'] = Variable<DateTime>(fechaApertura.value);
+    }
+    if (estado.present) {
+      map['estado'] = Variable<String>(estado.value);
+    }
+    if (numeroComanda.present) {
+      map['numero_comanda'] = Variable<int>(numeroComanda.value);
+    }
+    if (observaciones.present) {
+      map['observaciones'] = Variable<String>(observaciones.value);
+    }
+    if (total.present) {
+      map['total'] = Variable<double>(total.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PedidosCompanion(')
+          ..write('id: $id, ')
+          ..write('numero: $numero, ')
+          ..write('ubicacionId: $ubicacionId, ')
+          ..write('ubicacionNombre: $ubicacionNombre, ')
+          ..write('esMesa: $esMesa, ')
+          ..write('fechaApertura: $fechaApertura, ')
+          ..write('estado: $estado, ')
+          ..write('numeroComanda: $numeroComanda, ')
+          ..write('observaciones: $observaciones, ')
+          ..write('total: $total')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PedidoDetallesTable extends PedidoDetalles
+    with TableInfo<$PedidoDetallesTable, PedidoDetalle> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PedidoDetallesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _pedidoIdMeta = const VerificationMeta(
+    'pedidoId',
+  );
+  @override
+  late final GeneratedColumn<int> pedidoId = GeneratedColumn<int>(
+    'pedido_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _productoIdMeta = const VerificationMeta(
+    'productoId',
+  );
+  @override
+  late final GeneratedColumn<int> productoId = GeneratedColumn<int>(
+    'producto_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _codigoProductoMeta = const VerificationMeta(
+    'codigoProducto',
+  );
+  @override
+  late final GeneratedColumn<String> codigoProducto = GeneratedColumn<String>(
+    'codigo_producto',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nombreProductoMeta = const VerificationMeta(
+    'nombreProducto',
+  );
+  @override
+  late final GeneratedColumn<String> nombreProducto = GeneratedColumn<String>(
+    'nombre_producto',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cantidadMeta = const VerificationMeta(
+    'cantidad',
+  );
+  @override
+  late final GeneratedColumn<int> cantidad = GeneratedColumn<int>(
+    'cantidad',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _cantidadComandadaMeta = const VerificationMeta(
+    'cantidadComandada',
+  );
+  @override
+  late final GeneratedColumn<int> cantidadComandada = GeneratedColumn<int>(
+    'cantidad_comandada',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _precioUnitarioMeta = const VerificationMeta(
+    'precioUnitario',
+  );
+  @override
+  late final GeneratedColumn<double> precioUnitario = GeneratedColumn<double>(
+    'precio_unitario',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _subtotalMeta = const VerificationMeta(
+    'subtotal',
+  );
+  @override
+  late final GeneratedColumn<double> subtotal = GeneratedColumn<double>(
+    'subtotal',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _tamanoMeta = const VerificationMeta('tamano');
+  @override
+  late final GeneratedColumn<String> tamano = GeneratedColumn<String>(
+    'tamano',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tipoLecheMeta = const VerificationMeta(
+    'tipoLeche',
+  );
+  @override
+  late final GeneratedColumn<String> tipoLeche = GeneratedColumn<String>(
+    'tipo_leche',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _endulzanteMeta = const VerificationMeta(
+    'endulzante',
+  );
+  @override
+  late final GeneratedColumn<String> endulzante = GeneratedColumn<String>(
+    'endulzante',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _infusionMeta = const VerificationMeta(
+    'infusion',
+  );
+  @override
+  late final GeneratedColumn<String> infusion = GeneratedColumn<String>(
+    'infusion',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _extraShotMeta = const VerificationMeta(
+    'extraShot',
+  );
+  @override
+  late final GeneratedColumn<bool> extraShot = GeneratedColumn<bool>(
+    'extra_shot',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("extra_shot" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _observacionesMeta = const VerificationMeta(
+    'observaciones',
+  );
+  @override
+  late final GeneratedColumn<String> observaciones = GeneratedColumn<String>(
+    'observaciones',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ordenMeta = const VerificationMeta('orden');
+  @override
+  late final GeneratedColumn<int> orden = GeneratedColumn<int>(
+    'orden',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    pedidoId,
+    productoId,
+    codigoProducto,
+    nombreProducto,
+    cantidad,
+    cantidadComandada,
+    precioUnitario,
+    subtotal,
+    tamano,
+    tipoLeche,
+    endulzante,
+    infusion,
+    extraShot,
+    observaciones,
+    orden,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pedido_detalles';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PedidoDetalle> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('pedido_id')) {
+      context.handle(
+        _pedidoIdMeta,
+        pedidoId.isAcceptableOrUnknown(data['pedido_id']!, _pedidoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pedidoIdMeta);
+    }
+    if (data.containsKey('producto_id')) {
+      context.handle(
+        _productoIdMeta,
+        productoId.isAcceptableOrUnknown(data['producto_id']!, _productoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_productoIdMeta);
+    }
+    if (data.containsKey('codigo_producto')) {
+      context.handle(
+        _codigoProductoMeta,
+        codigoProducto.isAcceptableOrUnknown(
+          data['codigo_producto']!,
+          _codigoProductoMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_codigoProductoMeta);
+    }
+    if (data.containsKey('nombre_producto')) {
+      context.handle(
+        _nombreProductoMeta,
+        nombreProducto.isAcceptableOrUnknown(
+          data['nombre_producto']!,
+          _nombreProductoMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_nombreProductoMeta);
+    }
+    if (data.containsKey('cantidad')) {
+      context.handle(
+        _cantidadMeta,
+        cantidad.isAcceptableOrUnknown(data['cantidad']!, _cantidadMeta),
+      );
+    }
+    if (data.containsKey('cantidad_comandada')) {
+      context.handle(
+        _cantidadComandadaMeta,
+        cantidadComandada.isAcceptableOrUnknown(
+          data['cantidad_comandada']!,
+          _cantidadComandadaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('precio_unitario')) {
+      context.handle(
+        _precioUnitarioMeta,
+        precioUnitario.isAcceptableOrUnknown(
+          data['precio_unitario']!,
+          _precioUnitarioMeta,
+        ),
+      );
+    }
+    if (data.containsKey('subtotal')) {
+      context.handle(
+        _subtotalMeta,
+        subtotal.isAcceptableOrUnknown(data['subtotal']!, _subtotalMeta),
+      );
+    }
+    if (data.containsKey('tamano')) {
+      context.handle(
+        _tamanoMeta,
+        tamano.isAcceptableOrUnknown(data['tamano']!, _tamanoMeta),
+      );
+    }
+    if (data.containsKey('tipo_leche')) {
+      context.handle(
+        _tipoLecheMeta,
+        tipoLeche.isAcceptableOrUnknown(data['tipo_leche']!, _tipoLecheMeta),
+      );
+    }
+    if (data.containsKey('endulzante')) {
+      context.handle(
+        _endulzanteMeta,
+        endulzante.isAcceptableOrUnknown(data['endulzante']!, _endulzanteMeta),
+      );
+    }
+    if (data.containsKey('infusion')) {
+      context.handle(
+        _infusionMeta,
+        infusion.isAcceptableOrUnknown(data['infusion']!, _infusionMeta),
+      );
+    }
+    if (data.containsKey('extra_shot')) {
+      context.handle(
+        _extraShotMeta,
+        extraShot.isAcceptableOrUnknown(data['extra_shot']!, _extraShotMeta),
+      );
+    }
+    if (data.containsKey('observaciones')) {
+      context.handle(
+        _observacionesMeta,
+        observaciones.isAcceptableOrUnknown(
+          data['observaciones']!,
+          _observacionesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('orden')) {
+      context.handle(
+        _ordenMeta,
+        orden.isAcceptableOrUnknown(data['orden']!, _ordenMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PedidoDetalle map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PedidoDetalle(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      pedidoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pedido_id'],
+      )!,
+      productoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}producto_id'],
+      )!,
+      codigoProducto: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}codigo_producto'],
+      )!,
+      nombreProducto: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nombre_producto'],
+      )!,
+      cantidad: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cantidad'],
+      )!,
+      cantidadComandada: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cantidad_comandada'],
+      )!,
+      precioUnitario: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}precio_unitario'],
+      )!,
+      subtotal: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}subtotal'],
+      )!,
+      tamano: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tamano'],
+      ),
+      tipoLeche: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tipo_leche'],
+      ),
+      endulzante: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}endulzante'],
+      ),
+      infusion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}infusion'],
+      ),
+      extraShot: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}extra_shot'],
+      )!,
+      observaciones: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}observaciones'],
+      ),
+      orden: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}orden'],
+      )!,
+    );
+  }
+
+  @override
+  $PedidoDetallesTable createAlias(String alias) {
+    return $PedidoDetallesTable(attachedDatabase, alias);
+  }
+}
+
+class PedidoDetalle extends DataClass implements Insertable<PedidoDetalle> {
+  final int id;
+  final int pedidoId;
+  final int productoId;
+  final String codigoProducto;
+  final String nombreProducto;
+  final int cantidad;
+  final int cantidadComandada;
+  final double precioUnitario;
+  final double subtotal;
+  final String? tamano;
+  final String? tipoLeche;
+  final String? endulzante;
+  final String? infusion;
+  final bool extraShot;
+  final String? observaciones;
+  final int orden;
+  const PedidoDetalle({
+    required this.id,
+    required this.pedidoId,
+    required this.productoId,
+    required this.codigoProducto,
+    required this.nombreProducto,
+    required this.cantidad,
+    required this.cantidadComandada,
+    required this.precioUnitario,
+    required this.subtotal,
+    this.tamano,
+    this.tipoLeche,
+    this.endulzante,
+    this.infusion,
+    required this.extraShot,
+    this.observaciones,
+    required this.orden,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['pedido_id'] = Variable<int>(pedidoId);
+    map['producto_id'] = Variable<int>(productoId);
+    map['codigo_producto'] = Variable<String>(codigoProducto);
+    map['nombre_producto'] = Variable<String>(nombreProducto);
+    map['cantidad'] = Variable<int>(cantidad);
+    map['cantidad_comandada'] = Variable<int>(cantidadComandada);
+    map['precio_unitario'] = Variable<double>(precioUnitario);
+    map['subtotal'] = Variable<double>(subtotal);
+    if (!nullToAbsent || tamano != null) {
+      map['tamano'] = Variable<String>(tamano);
+    }
+    if (!nullToAbsent || tipoLeche != null) {
+      map['tipo_leche'] = Variable<String>(tipoLeche);
+    }
+    if (!nullToAbsent || endulzante != null) {
+      map['endulzante'] = Variable<String>(endulzante);
+    }
+    if (!nullToAbsent || infusion != null) {
+      map['infusion'] = Variable<String>(infusion);
+    }
+    map['extra_shot'] = Variable<bool>(extraShot);
+    if (!nullToAbsent || observaciones != null) {
+      map['observaciones'] = Variable<String>(observaciones);
+    }
+    map['orden'] = Variable<int>(orden);
+    return map;
+  }
+
+  PedidoDetallesCompanion toCompanion(bool nullToAbsent) {
+    return PedidoDetallesCompanion(
+      id: Value(id),
+      pedidoId: Value(pedidoId),
+      productoId: Value(productoId),
+      codigoProducto: Value(codigoProducto),
+      nombreProducto: Value(nombreProducto),
+      cantidad: Value(cantidad),
+      cantidadComandada: Value(cantidadComandada),
+      precioUnitario: Value(precioUnitario),
+      subtotal: Value(subtotal),
+      tamano: tamano == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tamano),
+      tipoLeche: tipoLeche == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tipoLeche),
+      endulzante: endulzante == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endulzante),
+      infusion: infusion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(infusion),
+      extraShot: Value(extraShot),
+      observaciones: observaciones == null && nullToAbsent
+          ? const Value.absent()
+          : Value(observaciones),
+      orden: Value(orden),
+    );
+  }
+
+  factory PedidoDetalle.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PedidoDetalle(
+      id: serializer.fromJson<int>(json['id']),
+      pedidoId: serializer.fromJson<int>(json['pedidoId']),
+      productoId: serializer.fromJson<int>(json['productoId']),
+      codigoProducto: serializer.fromJson<String>(json['codigoProducto']),
+      nombreProducto: serializer.fromJson<String>(json['nombreProducto']),
+      cantidad: serializer.fromJson<int>(json['cantidad']),
+      cantidadComandada: serializer.fromJson<int>(json['cantidadComandada']),
+      precioUnitario: serializer.fromJson<double>(json['precioUnitario']),
+      subtotal: serializer.fromJson<double>(json['subtotal']),
+      tamano: serializer.fromJson<String?>(json['tamano']),
+      tipoLeche: serializer.fromJson<String?>(json['tipoLeche']),
+      endulzante: serializer.fromJson<String?>(json['endulzante']),
+      infusion: serializer.fromJson<String?>(json['infusion']),
+      extraShot: serializer.fromJson<bool>(json['extraShot']),
+      observaciones: serializer.fromJson<String?>(json['observaciones']),
+      orden: serializer.fromJson<int>(json['orden']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'pedidoId': serializer.toJson<int>(pedidoId),
+      'productoId': serializer.toJson<int>(productoId),
+      'codigoProducto': serializer.toJson<String>(codigoProducto),
+      'nombreProducto': serializer.toJson<String>(nombreProducto),
+      'cantidad': serializer.toJson<int>(cantidad),
+      'cantidadComandada': serializer.toJson<int>(cantidadComandada),
+      'precioUnitario': serializer.toJson<double>(precioUnitario),
+      'subtotal': serializer.toJson<double>(subtotal),
+      'tamano': serializer.toJson<String?>(tamano),
+      'tipoLeche': serializer.toJson<String?>(tipoLeche),
+      'endulzante': serializer.toJson<String?>(endulzante),
+      'infusion': serializer.toJson<String?>(infusion),
+      'extraShot': serializer.toJson<bool>(extraShot),
+      'observaciones': serializer.toJson<String?>(observaciones),
+      'orden': serializer.toJson<int>(orden),
+    };
+  }
+
+  PedidoDetalle copyWith({
+    int? id,
+    int? pedidoId,
+    int? productoId,
+    String? codigoProducto,
+    String? nombreProducto,
+    int? cantidad,
+    int? cantidadComandada,
+    double? precioUnitario,
+    double? subtotal,
+    Value<String?> tamano = const Value.absent(),
+    Value<String?> tipoLeche = const Value.absent(),
+    Value<String?> endulzante = const Value.absent(),
+    Value<String?> infusion = const Value.absent(),
+    bool? extraShot,
+    Value<String?> observaciones = const Value.absent(),
+    int? orden,
+  }) => PedidoDetalle(
+    id: id ?? this.id,
+    pedidoId: pedidoId ?? this.pedidoId,
+    productoId: productoId ?? this.productoId,
+    codigoProducto: codigoProducto ?? this.codigoProducto,
+    nombreProducto: nombreProducto ?? this.nombreProducto,
+    cantidad: cantidad ?? this.cantidad,
+    cantidadComandada: cantidadComandada ?? this.cantidadComandada,
+    precioUnitario: precioUnitario ?? this.precioUnitario,
+    subtotal: subtotal ?? this.subtotal,
+    tamano: tamano.present ? tamano.value : this.tamano,
+    tipoLeche: tipoLeche.present ? tipoLeche.value : this.tipoLeche,
+    endulzante: endulzante.present ? endulzante.value : this.endulzante,
+    infusion: infusion.present ? infusion.value : this.infusion,
+    extraShot: extraShot ?? this.extraShot,
+    observaciones: observaciones.present
+        ? observaciones.value
+        : this.observaciones,
+    orden: orden ?? this.orden,
+  );
+  PedidoDetalle copyWithCompanion(PedidoDetallesCompanion data) {
+    return PedidoDetalle(
+      id: data.id.present ? data.id.value : this.id,
+      pedidoId: data.pedidoId.present ? data.pedidoId.value : this.pedidoId,
+      productoId: data.productoId.present
+          ? data.productoId.value
+          : this.productoId,
+      codigoProducto: data.codigoProducto.present
+          ? data.codigoProducto.value
+          : this.codigoProducto,
+      nombreProducto: data.nombreProducto.present
+          ? data.nombreProducto.value
+          : this.nombreProducto,
+      cantidad: data.cantidad.present ? data.cantidad.value : this.cantidad,
+      cantidadComandada: data.cantidadComandada.present
+          ? data.cantidadComandada.value
+          : this.cantidadComandada,
+      precioUnitario: data.precioUnitario.present
+          ? data.precioUnitario.value
+          : this.precioUnitario,
+      subtotal: data.subtotal.present ? data.subtotal.value : this.subtotal,
+      tamano: data.tamano.present ? data.tamano.value : this.tamano,
+      tipoLeche: data.tipoLeche.present ? data.tipoLeche.value : this.tipoLeche,
+      endulzante: data.endulzante.present
+          ? data.endulzante.value
+          : this.endulzante,
+      infusion: data.infusion.present ? data.infusion.value : this.infusion,
+      extraShot: data.extraShot.present ? data.extraShot.value : this.extraShot,
+      observaciones: data.observaciones.present
+          ? data.observaciones.value
+          : this.observaciones,
+      orden: data.orden.present ? data.orden.value : this.orden,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PedidoDetalle(')
+          ..write('id: $id, ')
+          ..write('pedidoId: $pedidoId, ')
+          ..write('productoId: $productoId, ')
+          ..write('codigoProducto: $codigoProducto, ')
+          ..write('nombreProducto: $nombreProducto, ')
+          ..write('cantidad: $cantidad, ')
+          ..write('cantidadComandada: $cantidadComandada, ')
+          ..write('precioUnitario: $precioUnitario, ')
+          ..write('subtotal: $subtotal, ')
+          ..write('tamano: $tamano, ')
+          ..write('tipoLeche: $tipoLeche, ')
+          ..write('endulzante: $endulzante, ')
+          ..write('infusion: $infusion, ')
+          ..write('extraShot: $extraShot, ')
+          ..write('observaciones: $observaciones, ')
+          ..write('orden: $orden')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    pedidoId,
+    productoId,
+    codigoProducto,
+    nombreProducto,
+    cantidad,
+    cantidadComandada,
+    precioUnitario,
+    subtotal,
+    tamano,
+    tipoLeche,
+    endulzante,
+    infusion,
+    extraShot,
+    observaciones,
+    orden,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PedidoDetalle &&
+          other.id == this.id &&
+          other.pedidoId == this.pedidoId &&
+          other.productoId == this.productoId &&
+          other.codigoProducto == this.codigoProducto &&
+          other.nombreProducto == this.nombreProducto &&
+          other.cantidad == this.cantidad &&
+          other.cantidadComandada == this.cantidadComandada &&
+          other.precioUnitario == this.precioUnitario &&
+          other.subtotal == this.subtotal &&
+          other.tamano == this.tamano &&
+          other.tipoLeche == this.tipoLeche &&
+          other.endulzante == this.endulzante &&
+          other.infusion == this.infusion &&
+          other.extraShot == this.extraShot &&
+          other.observaciones == this.observaciones &&
+          other.orden == this.orden);
+}
+
+class PedidoDetallesCompanion extends UpdateCompanion<PedidoDetalle> {
+  final Value<int> id;
+  final Value<int> pedidoId;
+  final Value<int> productoId;
+  final Value<String> codigoProducto;
+  final Value<String> nombreProducto;
+  final Value<int> cantidad;
+  final Value<int> cantidadComandada;
+  final Value<double> precioUnitario;
+  final Value<double> subtotal;
+  final Value<String?> tamano;
+  final Value<String?> tipoLeche;
+  final Value<String?> endulzante;
+  final Value<String?> infusion;
+  final Value<bool> extraShot;
+  final Value<String?> observaciones;
+  final Value<int> orden;
+  const PedidoDetallesCompanion({
+    this.id = const Value.absent(),
+    this.pedidoId = const Value.absent(),
+    this.productoId = const Value.absent(),
+    this.codigoProducto = const Value.absent(),
+    this.nombreProducto = const Value.absent(),
+    this.cantidad = const Value.absent(),
+    this.cantidadComandada = const Value.absent(),
+    this.precioUnitario = const Value.absent(),
+    this.subtotal = const Value.absent(),
+    this.tamano = const Value.absent(),
+    this.tipoLeche = const Value.absent(),
+    this.endulzante = const Value.absent(),
+    this.infusion = const Value.absent(),
+    this.extraShot = const Value.absent(),
+    this.observaciones = const Value.absent(),
+    this.orden = const Value.absent(),
+  });
+  PedidoDetallesCompanion.insert({
+    this.id = const Value.absent(),
+    required int pedidoId,
+    required int productoId,
+    required String codigoProducto,
+    required String nombreProducto,
+    this.cantidad = const Value.absent(),
+    this.cantidadComandada = const Value.absent(),
+    this.precioUnitario = const Value.absent(),
+    this.subtotal = const Value.absent(),
+    this.tamano = const Value.absent(),
+    this.tipoLeche = const Value.absent(),
+    this.endulzante = const Value.absent(),
+    this.infusion = const Value.absent(),
+    this.extraShot = const Value.absent(),
+    this.observaciones = const Value.absent(),
+    this.orden = const Value.absent(),
+  }) : pedidoId = Value(pedidoId),
+       productoId = Value(productoId),
+       codigoProducto = Value(codigoProducto),
+       nombreProducto = Value(nombreProducto);
+  static Insertable<PedidoDetalle> custom({
+    Expression<int>? id,
+    Expression<int>? pedidoId,
+    Expression<int>? productoId,
+    Expression<String>? codigoProducto,
+    Expression<String>? nombreProducto,
+    Expression<int>? cantidad,
+    Expression<int>? cantidadComandada,
+    Expression<double>? precioUnitario,
+    Expression<double>? subtotal,
+    Expression<String>? tamano,
+    Expression<String>? tipoLeche,
+    Expression<String>? endulzante,
+    Expression<String>? infusion,
+    Expression<bool>? extraShot,
+    Expression<String>? observaciones,
+    Expression<int>? orden,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (pedidoId != null) 'pedido_id': pedidoId,
+      if (productoId != null) 'producto_id': productoId,
+      if (codigoProducto != null) 'codigo_producto': codigoProducto,
+      if (nombreProducto != null) 'nombre_producto': nombreProducto,
+      if (cantidad != null) 'cantidad': cantidad,
+      if (cantidadComandada != null) 'cantidad_comandada': cantidadComandada,
+      if (precioUnitario != null) 'precio_unitario': precioUnitario,
+      if (subtotal != null) 'subtotal': subtotal,
+      if (tamano != null) 'tamano': tamano,
+      if (tipoLeche != null) 'tipo_leche': tipoLeche,
+      if (endulzante != null) 'endulzante': endulzante,
+      if (infusion != null) 'infusion': infusion,
+      if (extraShot != null) 'extra_shot': extraShot,
+      if (observaciones != null) 'observaciones': observaciones,
+      if (orden != null) 'orden': orden,
+    });
+  }
+
+  PedidoDetallesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? pedidoId,
+    Value<int>? productoId,
+    Value<String>? codigoProducto,
+    Value<String>? nombreProducto,
+    Value<int>? cantidad,
+    Value<int>? cantidadComandada,
+    Value<double>? precioUnitario,
+    Value<double>? subtotal,
+    Value<String?>? tamano,
+    Value<String?>? tipoLeche,
+    Value<String?>? endulzante,
+    Value<String?>? infusion,
+    Value<bool>? extraShot,
+    Value<String?>? observaciones,
+    Value<int>? orden,
+  }) {
+    return PedidoDetallesCompanion(
+      id: id ?? this.id,
+      pedidoId: pedidoId ?? this.pedidoId,
+      productoId: productoId ?? this.productoId,
+      codigoProducto: codigoProducto ?? this.codigoProducto,
+      nombreProducto: nombreProducto ?? this.nombreProducto,
+      cantidad: cantidad ?? this.cantidad,
+      cantidadComandada: cantidadComandada ?? this.cantidadComandada,
+      precioUnitario: precioUnitario ?? this.precioUnitario,
+      subtotal: subtotal ?? this.subtotal,
+      tamano: tamano ?? this.tamano,
+      tipoLeche: tipoLeche ?? this.tipoLeche,
+      endulzante: endulzante ?? this.endulzante,
+      infusion: infusion ?? this.infusion,
+      extraShot: extraShot ?? this.extraShot,
+      observaciones: observaciones ?? this.observaciones,
+      orden: orden ?? this.orden,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (pedidoId.present) {
+      map['pedido_id'] = Variable<int>(pedidoId.value);
+    }
+    if (productoId.present) {
+      map['producto_id'] = Variable<int>(productoId.value);
+    }
+    if (codigoProducto.present) {
+      map['codigo_producto'] = Variable<String>(codigoProducto.value);
+    }
+    if (nombreProducto.present) {
+      map['nombre_producto'] = Variable<String>(nombreProducto.value);
+    }
+    if (cantidad.present) {
+      map['cantidad'] = Variable<int>(cantidad.value);
+    }
+    if (cantidadComandada.present) {
+      map['cantidad_comandada'] = Variable<int>(cantidadComandada.value);
+    }
+    if (precioUnitario.present) {
+      map['precio_unitario'] = Variable<double>(precioUnitario.value);
+    }
+    if (subtotal.present) {
+      map['subtotal'] = Variable<double>(subtotal.value);
+    }
+    if (tamano.present) {
+      map['tamano'] = Variable<String>(tamano.value);
+    }
+    if (tipoLeche.present) {
+      map['tipo_leche'] = Variable<String>(tipoLeche.value);
+    }
+    if (endulzante.present) {
+      map['endulzante'] = Variable<String>(endulzante.value);
+    }
+    if (infusion.present) {
+      map['infusion'] = Variable<String>(infusion.value);
+    }
+    if (extraShot.present) {
+      map['extra_shot'] = Variable<bool>(extraShot.value);
+    }
+    if (observaciones.present) {
+      map['observaciones'] = Variable<String>(observaciones.value);
+    }
+    if (orden.present) {
+      map['orden'] = Variable<int>(orden.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PedidoDetallesCompanion(')
+          ..write('id: $id, ')
+          ..write('pedidoId: $pedidoId, ')
+          ..write('productoId: $productoId, ')
+          ..write('codigoProducto: $codigoProducto, ')
+          ..write('nombreProducto: $nombreProducto, ')
+          ..write('cantidad: $cantidad, ')
+          ..write('cantidadComandada: $cantidadComandada, ')
+          ..write('precioUnitario: $precioUnitario, ')
+          ..write('subtotal: $subtotal, ')
+          ..write('tamano: $tamano, ')
+          ..write('tipoLeche: $tipoLeche, ')
+          ..write('endulzante: $endulzante, ')
+          ..write('infusion: $infusion, ')
+          ..write('extraShot: $extraShot, ')
+          ..write('observaciones: $observaciones, ')
+          ..write('orden: $orden')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -9699,6 +11468,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $ComprobantesElectronicosTable comprobantesElectronicos =
       $ComprobantesElectronicosTable(this);
+  late final $CorrelativosTable correlativos = $CorrelativosTable(this);
+  late final $PedidosTable pedidos = $PedidosTable(this);
+  late final $PedidoDetallesTable pedidoDetalles = $PedidoDetallesTable(this);
   late final ProductosDao productosDao = ProductosDao(this as AppDatabase);
   late final InsumosDao insumosDao = InsumosDao(this as AppDatabase);
   late final RecetasDao recetasDao = RecetasDao(this as AppDatabase);
@@ -9737,6 +11509,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     usuarios,
     permisosUsuario,
     comprobantesElectronicos,
+    correlativos,
+    pedidos,
+    pedidoDetalles,
   ];
 }
 
@@ -14647,6 +16422,876 @@ typedef $$ComprobantesElectronicosTableProcessedTableManager =
       ComprobantesElectronico,
       PrefetchHooks Function()
     >;
+typedef $$CorrelativosTableCreateCompanionBuilder =
+    CorrelativosCompanion Function({
+      Value<int> id,
+      required String clave,
+      Value<int> ultimoNumero,
+    });
+typedef $$CorrelativosTableUpdateCompanionBuilder =
+    CorrelativosCompanion Function({
+      Value<int> id,
+      Value<String> clave,
+      Value<int> ultimoNumero,
+    });
+
+class $$CorrelativosTableFilterComposer
+    extends Composer<_$AppDatabase, $CorrelativosTable> {
+  $$CorrelativosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clave => $composableBuilder(
+    column: $table.clave,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ultimoNumero => $composableBuilder(
+    column: $table.ultimoNumero,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CorrelativosTableOrderingComposer
+    extends Composer<_$AppDatabase, $CorrelativosTable> {
+  $$CorrelativosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clave => $composableBuilder(
+    column: $table.clave,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ultimoNumero => $composableBuilder(
+    column: $table.ultimoNumero,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CorrelativosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CorrelativosTable> {
+  $$CorrelativosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get clave =>
+      $composableBuilder(column: $table.clave, builder: (column) => column);
+
+  GeneratedColumn<int> get ultimoNumero => $composableBuilder(
+    column: $table.ultimoNumero,
+    builder: (column) => column,
+  );
+}
+
+class $$CorrelativosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CorrelativosTable,
+          Correlativo,
+          $$CorrelativosTableFilterComposer,
+          $$CorrelativosTableOrderingComposer,
+          $$CorrelativosTableAnnotationComposer,
+          $$CorrelativosTableCreateCompanionBuilder,
+          $$CorrelativosTableUpdateCompanionBuilder,
+          (
+            Correlativo,
+            BaseReferences<_$AppDatabase, $CorrelativosTable, Correlativo>,
+          ),
+          Correlativo,
+          PrefetchHooks Function()
+        > {
+  $$CorrelativosTableTableManager(_$AppDatabase db, $CorrelativosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CorrelativosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CorrelativosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CorrelativosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> clave = const Value.absent(),
+                Value<int> ultimoNumero = const Value.absent(),
+              }) => CorrelativosCompanion(
+                id: id,
+                clave: clave,
+                ultimoNumero: ultimoNumero,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String clave,
+                Value<int> ultimoNumero = const Value.absent(),
+              }) => CorrelativosCompanion.insert(
+                id: id,
+                clave: clave,
+                ultimoNumero: ultimoNumero,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CorrelativosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CorrelativosTable,
+      Correlativo,
+      $$CorrelativosTableFilterComposer,
+      $$CorrelativosTableOrderingComposer,
+      $$CorrelativosTableAnnotationComposer,
+      $$CorrelativosTableCreateCompanionBuilder,
+      $$CorrelativosTableUpdateCompanionBuilder,
+      (
+        Correlativo,
+        BaseReferences<_$AppDatabase, $CorrelativosTable, Correlativo>,
+      ),
+      Correlativo,
+      PrefetchHooks Function()
+    >;
+typedef $$PedidosTableCreateCompanionBuilder =
+    PedidosCompanion Function({
+      Value<int> id,
+      required String numero,
+      required String ubicacionId,
+      required String ubicacionNombre,
+      Value<bool> esMesa,
+      Value<DateTime> fechaApertura,
+      Value<String> estado,
+      Value<int> numeroComanda,
+      Value<String> observaciones,
+      Value<double> total,
+    });
+typedef $$PedidosTableUpdateCompanionBuilder =
+    PedidosCompanion Function({
+      Value<int> id,
+      Value<String> numero,
+      Value<String> ubicacionId,
+      Value<String> ubicacionNombre,
+      Value<bool> esMesa,
+      Value<DateTime> fechaApertura,
+      Value<String> estado,
+      Value<int> numeroComanda,
+      Value<String> observaciones,
+      Value<double> total,
+    });
+
+class $$PedidosTableFilterComposer
+    extends Composer<_$AppDatabase, $PedidosTable> {
+  $$PedidosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get numero => $composableBuilder(
+    column: $table.numero,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ubicacionId => $composableBuilder(
+    column: $table.ubicacionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ubicacionNombre => $composableBuilder(
+    column: $table.ubicacionNombre,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get esMesa => $composableBuilder(
+    column: $table.esMesa,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaApertura => $composableBuilder(
+    column: $table.fechaApertura,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get estado => $composableBuilder(
+    column: $table.estado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get numeroComanda => $composableBuilder(
+    column: $table.numeroComanda,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get total => $composableBuilder(
+    column: $table.total,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PedidosTableOrderingComposer
+    extends Composer<_$AppDatabase, $PedidosTable> {
+  $$PedidosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get numero => $composableBuilder(
+    column: $table.numero,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ubicacionId => $composableBuilder(
+    column: $table.ubicacionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ubicacionNombre => $composableBuilder(
+    column: $table.ubicacionNombre,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get esMesa => $composableBuilder(
+    column: $table.esMesa,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaApertura => $composableBuilder(
+    column: $table.fechaApertura,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get estado => $composableBuilder(
+    column: $table.estado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get numeroComanda => $composableBuilder(
+    column: $table.numeroComanda,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get total => $composableBuilder(
+    column: $table.total,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PedidosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PedidosTable> {
+  $$PedidosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get numero =>
+      $composableBuilder(column: $table.numero, builder: (column) => column);
+
+  GeneratedColumn<String> get ubicacionId => $composableBuilder(
+    column: $table.ubicacionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get ubicacionNombre => $composableBuilder(
+    column: $table.ubicacionNombre,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get esMesa =>
+      $composableBuilder(column: $table.esMesa, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fechaApertura => $composableBuilder(
+    column: $table.fechaApertura,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get estado =>
+      $composableBuilder(column: $table.estado, builder: (column) => column);
+
+  GeneratedColumn<int> get numeroComanda => $composableBuilder(
+    column: $table.numeroComanda,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get total =>
+      $composableBuilder(column: $table.total, builder: (column) => column);
+}
+
+class $$PedidosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PedidosTable,
+          Pedido,
+          $$PedidosTableFilterComposer,
+          $$PedidosTableOrderingComposer,
+          $$PedidosTableAnnotationComposer,
+          $$PedidosTableCreateCompanionBuilder,
+          $$PedidosTableUpdateCompanionBuilder,
+          (Pedido, BaseReferences<_$AppDatabase, $PedidosTable, Pedido>),
+          Pedido,
+          PrefetchHooks Function()
+        > {
+  $$PedidosTableTableManager(_$AppDatabase db, $PedidosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PedidosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PedidosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PedidosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> numero = const Value.absent(),
+                Value<String> ubicacionId = const Value.absent(),
+                Value<String> ubicacionNombre = const Value.absent(),
+                Value<bool> esMesa = const Value.absent(),
+                Value<DateTime> fechaApertura = const Value.absent(),
+                Value<String> estado = const Value.absent(),
+                Value<int> numeroComanda = const Value.absent(),
+                Value<String> observaciones = const Value.absent(),
+                Value<double> total = const Value.absent(),
+              }) => PedidosCompanion(
+                id: id,
+                numero: numero,
+                ubicacionId: ubicacionId,
+                ubicacionNombre: ubicacionNombre,
+                esMesa: esMesa,
+                fechaApertura: fechaApertura,
+                estado: estado,
+                numeroComanda: numeroComanda,
+                observaciones: observaciones,
+                total: total,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String numero,
+                required String ubicacionId,
+                required String ubicacionNombre,
+                Value<bool> esMesa = const Value.absent(),
+                Value<DateTime> fechaApertura = const Value.absent(),
+                Value<String> estado = const Value.absent(),
+                Value<int> numeroComanda = const Value.absent(),
+                Value<String> observaciones = const Value.absent(),
+                Value<double> total = const Value.absent(),
+              }) => PedidosCompanion.insert(
+                id: id,
+                numero: numero,
+                ubicacionId: ubicacionId,
+                ubicacionNombre: ubicacionNombre,
+                esMesa: esMesa,
+                fechaApertura: fechaApertura,
+                estado: estado,
+                numeroComanda: numeroComanda,
+                observaciones: observaciones,
+                total: total,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PedidosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PedidosTable,
+      Pedido,
+      $$PedidosTableFilterComposer,
+      $$PedidosTableOrderingComposer,
+      $$PedidosTableAnnotationComposer,
+      $$PedidosTableCreateCompanionBuilder,
+      $$PedidosTableUpdateCompanionBuilder,
+      (Pedido, BaseReferences<_$AppDatabase, $PedidosTable, Pedido>),
+      Pedido,
+      PrefetchHooks Function()
+    >;
+typedef $$PedidoDetallesTableCreateCompanionBuilder =
+    PedidoDetallesCompanion Function({
+      Value<int> id,
+      required int pedidoId,
+      required int productoId,
+      required String codigoProducto,
+      required String nombreProducto,
+      Value<int> cantidad,
+      Value<int> cantidadComandada,
+      Value<double> precioUnitario,
+      Value<double> subtotal,
+      Value<String?> tamano,
+      Value<String?> tipoLeche,
+      Value<String?> endulzante,
+      Value<String?> infusion,
+      Value<bool> extraShot,
+      Value<String?> observaciones,
+      Value<int> orden,
+    });
+typedef $$PedidoDetallesTableUpdateCompanionBuilder =
+    PedidoDetallesCompanion Function({
+      Value<int> id,
+      Value<int> pedidoId,
+      Value<int> productoId,
+      Value<String> codigoProducto,
+      Value<String> nombreProducto,
+      Value<int> cantidad,
+      Value<int> cantidadComandada,
+      Value<double> precioUnitario,
+      Value<double> subtotal,
+      Value<String?> tamano,
+      Value<String?> tipoLeche,
+      Value<String?> endulzante,
+      Value<String?> infusion,
+      Value<bool> extraShot,
+      Value<String?> observaciones,
+      Value<int> orden,
+    });
+
+class $$PedidoDetallesTableFilterComposer
+    extends Composer<_$AppDatabase, $PedidoDetallesTable> {
+  $$PedidoDetallesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pedidoId => $composableBuilder(
+    column: $table.pedidoId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get productoId => $composableBuilder(
+    column: $table.productoId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get codigoProducto => $composableBuilder(
+    column: $table.codigoProducto,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nombreProducto => $composableBuilder(
+    column: $table.nombreProducto,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cantidad => $composableBuilder(
+    column: $table.cantidad,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cantidadComandada => $composableBuilder(
+    column: $table.cantidadComandada,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get precioUnitario => $composableBuilder(
+    column: $table.precioUnitario,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get subtotal => $composableBuilder(
+    column: $table.subtotal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tamano => $composableBuilder(
+    column: $table.tamano,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tipoLeche => $composableBuilder(
+    column: $table.tipoLeche,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get endulzante => $composableBuilder(
+    column: $table.endulzante,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get infusion => $composableBuilder(
+    column: $table.infusion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get extraShot => $composableBuilder(
+    column: $table.extraShot,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get orden => $composableBuilder(
+    column: $table.orden,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PedidoDetallesTableOrderingComposer
+    extends Composer<_$AppDatabase, $PedidoDetallesTable> {
+  $$PedidoDetallesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pedidoId => $composableBuilder(
+    column: $table.pedidoId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get productoId => $composableBuilder(
+    column: $table.productoId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get codigoProducto => $composableBuilder(
+    column: $table.codigoProducto,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nombreProducto => $composableBuilder(
+    column: $table.nombreProducto,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cantidad => $composableBuilder(
+    column: $table.cantidad,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cantidadComandada => $composableBuilder(
+    column: $table.cantidadComandada,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get precioUnitario => $composableBuilder(
+    column: $table.precioUnitario,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get subtotal => $composableBuilder(
+    column: $table.subtotal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tamano => $composableBuilder(
+    column: $table.tamano,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tipoLeche => $composableBuilder(
+    column: $table.tipoLeche,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get endulzante => $composableBuilder(
+    column: $table.endulzante,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get infusion => $composableBuilder(
+    column: $table.infusion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get extraShot => $composableBuilder(
+    column: $table.extraShot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get orden => $composableBuilder(
+    column: $table.orden,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PedidoDetallesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PedidoDetallesTable> {
+  $$PedidoDetallesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get pedidoId =>
+      $composableBuilder(column: $table.pedidoId, builder: (column) => column);
+
+  GeneratedColumn<int> get productoId => $composableBuilder(
+    column: $table.productoId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get codigoProducto => $composableBuilder(
+    column: $table.codigoProducto,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get nombreProducto => $composableBuilder(
+    column: $table.nombreProducto,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get cantidad =>
+      $composableBuilder(column: $table.cantidad, builder: (column) => column);
+
+  GeneratedColumn<int> get cantidadComandada => $composableBuilder(
+    column: $table.cantidadComandada,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get precioUnitario => $composableBuilder(
+    column: $table.precioUnitario,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get subtotal =>
+      $composableBuilder(column: $table.subtotal, builder: (column) => column);
+
+  GeneratedColumn<String> get tamano =>
+      $composableBuilder(column: $table.tamano, builder: (column) => column);
+
+  GeneratedColumn<String> get tipoLeche =>
+      $composableBuilder(column: $table.tipoLeche, builder: (column) => column);
+
+  GeneratedColumn<String> get endulzante => $composableBuilder(
+    column: $table.endulzante,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get infusion =>
+      $composableBuilder(column: $table.infusion, builder: (column) => column);
+
+  GeneratedColumn<bool> get extraShot =>
+      $composableBuilder(column: $table.extraShot, builder: (column) => column);
+
+  GeneratedColumn<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get orden =>
+      $composableBuilder(column: $table.orden, builder: (column) => column);
+}
+
+class $$PedidoDetallesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PedidoDetallesTable,
+          PedidoDetalle,
+          $$PedidoDetallesTableFilterComposer,
+          $$PedidoDetallesTableOrderingComposer,
+          $$PedidoDetallesTableAnnotationComposer,
+          $$PedidoDetallesTableCreateCompanionBuilder,
+          $$PedidoDetallesTableUpdateCompanionBuilder,
+          (
+            PedidoDetalle,
+            BaseReferences<_$AppDatabase, $PedidoDetallesTable, PedidoDetalle>,
+          ),
+          PedidoDetalle,
+          PrefetchHooks Function()
+        > {
+  $$PedidoDetallesTableTableManager(
+    _$AppDatabase db,
+    $PedidoDetallesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PedidoDetallesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PedidoDetallesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PedidoDetallesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> pedidoId = const Value.absent(),
+                Value<int> productoId = const Value.absent(),
+                Value<String> codigoProducto = const Value.absent(),
+                Value<String> nombreProducto = const Value.absent(),
+                Value<int> cantidad = const Value.absent(),
+                Value<int> cantidadComandada = const Value.absent(),
+                Value<double> precioUnitario = const Value.absent(),
+                Value<double> subtotal = const Value.absent(),
+                Value<String?> tamano = const Value.absent(),
+                Value<String?> tipoLeche = const Value.absent(),
+                Value<String?> endulzante = const Value.absent(),
+                Value<String?> infusion = const Value.absent(),
+                Value<bool> extraShot = const Value.absent(),
+                Value<String?> observaciones = const Value.absent(),
+                Value<int> orden = const Value.absent(),
+              }) => PedidoDetallesCompanion(
+                id: id,
+                pedidoId: pedidoId,
+                productoId: productoId,
+                codigoProducto: codigoProducto,
+                nombreProducto: nombreProducto,
+                cantidad: cantidad,
+                cantidadComandada: cantidadComandada,
+                precioUnitario: precioUnitario,
+                subtotal: subtotal,
+                tamano: tamano,
+                tipoLeche: tipoLeche,
+                endulzante: endulzante,
+                infusion: infusion,
+                extraShot: extraShot,
+                observaciones: observaciones,
+                orden: orden,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int pedidoId,
+                required int productoId,
+                required String codigoProducto,
+                required String nombreProducto,
+                Value<int> cantidad = const Value.absent(),
+                Value<int> cantidadComandada = const Value.absent(),
+                Value<double> precioUnitario = const Value.absent(),
+                Value<double> subtotal = const Value.absent(),
+                Value<String?> tamano = const Value.absent(),
+                Value<String?> tipoLeche = const Value.absent(),
+                Value<String?> endulzante = const Value.absent(),
+                Value<String?> infusion = const Value.absent(),
+                Value<bool> extraShot = const Value.absent(),
+                Value<String?> observaciones = const Value.absent(),
+                Value<int> orden = const Value.absent(),
+              }) => PedidoDetallesCompanion.insert(
+                id: id,
+                pedidoId: pedidoId,
+                productoId: productoId,
+                codigoProducto: codigoProducto,
+                nombreProducto: nombreProducto,
+                cantidad: cantidad,
+                cantidadComandada: cantidadComandada,
+                precioUnitario: precioUnitario,
+                subtotal: subtotal,
+                tamano: tamano,
+                tipoLeche: tipoLeche,
+                endulzante: endulzante,
+                infusion: infusion,
+                extraShot: extraShot,
+                observaciones: observaciones,
+                orden: orden,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PedidoDetallesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PedidoDetallesTable,
+      PedidoDetalle,
+      $$PedidoDetallesTableFilterComposer,
+      $$PedidoDetallesTableOrderingComposer,
+      $$PedidoDetallesTableAnnotationComposer,
+      $$PedidoDetallesTableCreateCompanionBuilder,
+      $$PedidoDetallesTableUpdateCompanionBuilder,
+      (
+        PedidoDetalle,
+        BaseReferences<_$AppDatabase, $PedidoDetallesTable, PedidoDetalle>,
+      ),
+      PedidoDetalle,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -14684,4 +17329,10 @@ class $AppDatabaseManager {
         _db,
         _db.comprobantesElectronicos,
       );
+  $$CorrelativosTableTableManager get correlativos =>
+      $$CorrelativosTableTableManager(_db, _db.correlativos);
+  $$PedidosTableTableManager get pedidos =>
+      $$PedidosTableTableManager(_db, _db.pedidos);
+  $$PedidoDetallesTableTableManager get pedidoDetalles =>
+      $$PedidoDetallesTableTableManager(_db, _db.pedidoDetalles);
 }

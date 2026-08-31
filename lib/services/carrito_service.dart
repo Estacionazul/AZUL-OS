@@ -1,12 +1,16 @@
+import 'package:flutter/foundation.dart';
+
 import '../models/item_carrito.dart';
 import '../models/producto_model.dart';
-
-import 'package:flutter/foundation.dart';
 
 class CarritoService extends ChangeNotifier {
   final List<ItemCarrito> _items = [];
 
   List<ItemCarrito> get items => _items;
+
+  // ==========================================================
+  // AGREGAR PRODUCTO
+  // ==========================================================
 
   void agregarProducto(
       ProductoModel producto, {
@@ -43,18 +47,70 @@ class CarritoService extends ChangeNotifier {
         ),
       );
     }
-    debugPrint("Items en carrito: ${_items.length}");
+
+    debugPrint('Items en carrito: ${_items.length}');
 
     for (final item in _items) {
-      debugPrint("${item.producto.nombre} - Cantidad: ${item.cantidad}");
+      debugPrint(
+        '${item.producto.nombre} - Cantidad: ${item.cantidad}',
+      );
     }
+
     notifyListeners();
   }
+
+  // ==========================================================
+  // CARGAR PRODUCTOS DESDE UN PEDIDO
+  // ==========================================================
+
+  /// Reemplaza el contenido actual del carrito con una copia
+  /// de los productos recibidos.
+  ///
+  /// Se utiliza principalmente para llevar un PedidoAbierto
+  /// al flujo normal de cobro.
+  void cargarItems(List<ItemCarrito> items) {
+    _items
+      ..clear()
+      ..addAll(
+        items.map(
+              (item) => ItemCarrito(
+            producto: item.producto,
+            cantidad: item.cantidad,
+            tamano: item.tamano,
+            tipoLeche: item.tipoLeche,
+            endulzante: item.endulzante,
+            infusion: item.infusion,
+            observaciones: item.observaciones,
+            extraShot: item.extraShot,
+          ),
+        ),
+      );
+
+    debugPrint(
+      '========== CARRITO CARGADO DESDE PEDIDO ==========',
+    );
+
+    for (final item in _items) {
+      debugPrint(
+        '${item.producto.nombre} - Cantidad: ${item.cantidad}',
+      );
+    }
+
+    notifyListeners();
+  }
+
+  // ==========================================================
+  // AUMENTAR CANTIDAD
+  // ==========================================================
 
   void aumentarCantidad(ItemCarrito item) {
     item.cantidad++;
     notifyListeners();
   }
+
+  // ==========================================================
+  // DISMINUIR CANTIDAD
+  // ==========================================================
 
   void disminuirCantidad(ItemCarrito item) {
     if (item.cantidad > 1) {
@@ -66,15 +122,27 @@ class CarritoService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ==========================================================
+  // ELIMINAR PRODUCTO
+  // ==========================================================
+
   void eliminarProducto(ItemCarrito item) {
     _items.remove(item);
     notifyListeners();
   }
 
+  // ==========================================================
+  // VACIAR CARRITO
+  // ==========================================================
+
   void vaciarCarrito() {
     _items.clear();
     notifyListeners();
   }
+
+  // ==========================================================
+  // TOTAL
+  // ==========================================================
 
   double get total {
     double suma = 0;

@@ -33,9 +33,12 @@ import 'dao/cajas_dao.dart';
 import 'dao/usuarios_dao.dart';
 import 'dao/permisos_usuario_dao.dart';
 import 'dao/comprobantes_electronicos_dao.dart';
+import 'tables/correlativos_table.dart';
 
 import 'tables/permisos_usuario_table.dart';
 import 'tables/comprobantes_electronicos_table.dart';
+import 'tables/pedidos_table.dart';
+import 'tables/pedido_detalles_table.dart';
 
 part 'app_database.g.dart';
 
@@ -56,6 +59,9 @@ part 'app_database.g.dart';
     Usuarios,
     PermisosUsuario,
     ComprobantesElectronicos,
+    Correlativos,
+    Pedidos,
+    PedidoDetalles,
   ],
   daos: [
     ProductosDao,
@@ -76,7 +82,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -100,6 +106,15 @@ class AppDatabase extends _$AppDatabase {
 
       if (from < 14) {
         await m.createTable(comprobantesElectronicos);
+      }
+
+      if (from < 15) {
+        await m.createTable(correlativos);
+      }
+
+      if (from < 16) {
+        await m.createTable(pedidos);
+        await m.createTable(pedidoDetalles);
       }
     },
   );
