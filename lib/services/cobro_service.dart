@@ -145,17 +145,17 @@ class CobroService {
     final idGuardado = await ventasRepository.guardarVenta(venta);
 
     // ==========================================================
-    // CREAR COMPROBANTE ELECTRÃ“NICO
+    // CREAR COMPROBANTE ELECTRONICO
     // ==========================================================
     //
-    // Boleta y Factura requieren registro electrÃ³nico.
-    // Se utiliza EXACTAMENTE el mismo nÃºmero de la venta.
+    // Boleta y Factura requieren registro electronico.
+    // Se utiliza EXACTAMENTE el mismo numero de la venta.
     //
     // Ejemplo:
     //   Venta:       B001-00000001
     //   Comprobante: B001-00000001
     //
-    // Nota de Venta no genera comprobante electrÃ³nico SUNAT.
+    // Nota de Venta no genera comprobante electronico SUNAT.
     // ==========================================================
 
     if (venta.tipoDocumento == 'Boleta' ||
@@ -193,6 +193,7 @@ class CobroService {
       debugPrint('SERIE: $serie');
       debugPrint('NÃšMERO: $numero');
       debugPrint('COMPLETO: ${venta.numero}');
+
       // ==========================================================
       // GENERAR Y GUARDAR XML DEL COMPROBANTE
       // ==========================================================
@@ -227,6 +228,21 @@ class CobroService {
 
       final numeroSunat = int.parse(partesNumero[1]);
 
+      // RESERVAR CORRELATIVO ANTES DEL ENVIO A SUNAT
+      switch (venta.tipoDocumento) {
+        case 'Boleta':
+          await empresaRepository.incrementarCorrelativoBoleta();
+          break;
+
+        case 'Factura':
+          await empresaRepository.incrementarCorrelativoFactura();
+          break;
+
+        case 'Nota de Venta':
+        default:
+          break;
+      }
+
       final respuestaSunat = await sunatService.enviarComprobante(
         xmlFirmado: xmlFirmado,
         tipoComprobante: tipoSunat,
@@ -257,6 +273,8 @@ class CobroService {
         debugPrint('Código: ${respuestaSunat.codigo}');
         debugPrint('Mensaje: ${respuestaSunat.mensaje}');
         debugPrint('=====================================');
+
+        await ventasRepository.eliminarVenta(idGuardado);
 
         throw StateError(
           'SUNAT rechazó el comprobante ${venta.numero}. '
@@ -318,38 +336,6 @@ class CobroService {
     debugPrint('NOMBRE: ${ventaVerificada?.nombreCliente}');
     debugPrint('RAZON SOCIAL: ${ventaVerificada?.razonSocial}');
     debugPrint('DIRECCION: ${ventaVerificada?.direccionFiscal}');
-
-    // ==========================================================
-    // INCREMENTAR CORRELATIVO
-    // ==========================================================
-    //
-    // Solo se incrementa DESPUÃ‰S de guardar correctamente
-    // la venta.
-    //
-    // Nota de Venta:
-    //   utiliza su propio correlativo V000001, V000002...
-    //
-    // Boleta:
-    //   B001-00000001, B001-00000002...
-    //
-    // Factura:
-    //   F001-00000001, F001-00000002...
-    //
-    // ==========================================================
-
-    switch (venta.tipoDocumento) {
-      case 'Boleta':
-        await empresaRepository.incrementarCorrelativoBoleta();
-        break;
-
-      case 'Factura':
-        await empresaRepository.incrementarCorrelativoFactura();
-        break;
-
-      case 'Nota de Venta':
-      default:
-        break;
-    }
 
     // ==========================================================
     // REGISTRAR VENTA EN EL SERVICIO
