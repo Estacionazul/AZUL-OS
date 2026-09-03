@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -18,7 +18,7 @@ class SunatService {
       'https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService';
 
   // ==========================================================
-  // CONFIGURACIÓN
+  // CONFIGURACIÃ“N
   // ==========================================================
 
   final String ruc;
@@ -49,7 +49,7 @@ class SunatService {
 
     print('');
     print('==================================================');
-    print('🚀 ENVÍO DE COMPROBANTE A SUNAT');
+    print('ðŸš€ ENVÃO DE COMPROBANTE A SUNAT');
     print('==================================================');
 
     // --------------------------------------------------------
@@ -57,7 +57,7 @@ class SunatService {
     // --------------------------------------------------------
 
     if (xmlFirmado.trim().isEmpty) {
-      throw StateError('No se puede enviar un XML vacío a SUNAT.');
+      throw StateError('No se puede enviar un XML vacÃ­o a SUNAT.');
     }
 
     if (!xmlFirmado.contains('<ds:Signature')) {
@@ -83,33 +83,21 @@ class SunatService {
 
     final nombreZip = '$nombreBase.zip';
 
-    print('📄 XML: $nombreXml');
-    print('📦 ZIP: $nombreZip');
+    print('ðŸ“„ XML: $nombreXml');
+    print('ðŸ“¦ ZIP: $nombreZip');
 
     // --------------------------------------------------------
-    // 3. XML → BYTES
+    // 3. XML â†’ BYTES
     // --------------------------------------------------------
 
     final xmlBytes = utf8.encode(xmlFirmado);
-
-    final archivoDiagnostico = File(
-      '${Directory.systemTemp.path}\\azul_os_xml_firmado_diagnostico.xml',
-    );
-
-    await archivoDiagnostico.writeAsString(
-      xmlFirmado,
-      encoding: utf8,
-    );
-
-    print('🔎 XML FIRMADO GUARDADO EN: ${archivoDiagnostico.path}');
-
-    // --------------------------------------------------------
+// --------------------------------------------------------
     // 4. CREAR ZIP
     // --------------------------------------------------------
 
     final zipBytes = _crearZip(nombreXml, xmlBytes);
 
-    print('📦 ZIP generado: ${zipBytes.length} bytes');
+    print('ðŸ“¦ ZIP generado: ${zipBytes.length} bytes');
 
     // --------------------------------------------------------
     // 5. ENVIAR A SUNAT
@@ -120,7 +108,7 @@ class SunatService {
       zipBytes: zipBytes,
     );
 
-    print('📡 HTTP SUNAT: ${respuestaHttp.statusCode}');
+    print('ðŸ“¡ HTTP SUNAT: ${respuestaHttp.statusCode}');
 
     // --------------------------------------------------------
     // 6. PROCESAR RESPUESTA
@@ -132,11 +120,11 @@ class SunatService {
 
     print('');
     print('==================================================');
-    print('📨 RESPUESTA SUNAT');
+    print('ðŸ“¨ RESPUESTA SUNAT');
     print('==================================================');
 
     print(
-      '⏱ Tiempo: '
+      'â± Tiempo: '
       '${fechaFin.difference(fechaInicio).inMilliseconds} ms',
     );
 
@@ -145,7 +133,7 @@ class SunatService {
       '${respuesta.aceptado ? 'ACEPTADO' : 'RECHAZADO'}',
     );
 
-    print('Código: ${respuesta.codigo ?? '-'}');
+    print('CÃ³digo: ${respuesta.codigo ?? '-'}');
 
     print('Mensaje: ${respuesta.mensaje ?? '-'}');
 
@@ -188,7 +176,7 @@ class SunatService {
       final uri = Uri.parse(endpoint);
 
       print('');
-      print('🌐 Endpoint SUNAT:');
+      print('ðŸŒ Endpoint SUNAT:');
       print(endpoint);
 
       // ==========================================================
@@ -198,9 +186,9 @@ class SunatService {
 
       final contentFileBase64 = base64Encode(zipBytes);
 
-      print('📦 ZIP original: ${zipBytes.length} bytes');
+      print('ðŸ“¦ ZIP original: ${zipBytes.length} bytes');
       print(
-        '📦 ZIP Base64: ${contentFileBase64.length} caracteres',
+        'ðŸ“¦ ZIP Base64: ${contentFileBase64.length} caracteres',
       );
 
       // ==========================================================
@@ -236,7 +224,7 @@ class SunatService {
       final body = utf8.encode(soapEnvelope);
 
       // ==========================================================
-      // PETICIÓN HTTP
+      // PETICIÃ“N HTTP
       // ==========================================================
 
       final request = await client.postUrl(uri);
@@ -263,11 +251,11 @@ class SunatService {
 
       request.contentLength = body.length;
 
-      print('📄 SOAP generado: ${body.length} bytes');
-      print('🔐 Usuario SUNAT: $_usuarioSunat');
-      print('📤 Enviando sendBill a SUNAT...');
-      print('📡 Content-Type: text/xml; charset=UTF-8');
-      print('📡 SOAPAction: "urn:sendBill"');
+      print('ðŸ“„ SOAP generado: ${body.length} bytes');
+      print('ðŸ” Usuario SUNAT: $_usuarioSunat');
+      print('ðŸ“¤ Enviando sendBill a SUNAT...');
+      print('ðŸ“¡ Content-Type: text/xml; charset=UTF-8');
+      print('ðŸ“¡ SOAPAction: "urn:sendBill"');
 
       request.add(body);
 
@@ -279,12 +267,12 @@ class SunatService {
       );
 
       print(
-        '📥 Respuesta recibida: '
+        'ðŸ“¥ Respuesta recibida: '
             '${responseBytes.length} bytes',
       );
 
       print(
-        '📡 HTTP SUNAT: ${response.statusCode}',
+        'ðŸ“¡ HTTP SUNAT: ${response.statusCode}',
       );
 
       if (response.statusCode != 200) {
@@ -325,7 +313,7 @@ class SunatService {
         codigo: 'HTTP-${respuestaHttp.statusCode}',
         mensaje:
             _extraerMensajeSoap(texto) ??
-            'SUNAT respondió HTTP '
+            'SUNAT respondiÃ³ HTTP '
                 '${respuestaHttp.statusCode}.',
         xmlRespuesta: texto,
       );
@@ -356,7 +344,7 @@ class SunatService {
 
         return _procesarCdrZip(cdrZip, xmlRespuesta: texto);
       } catch (_) {
-        // Continúa con el procesamiento como XML.
+        // ContinÃºa con el procesamiento como XML.
       }
     }
 
@@ -413,7 +401,7 @@ class SunatService {
         return RespuestaSunat.rechazada(
           codigo: 'CDR_SIN_XML',
           mensaje:
-              'SUNAT respondió un ZIP, '
+              'SUNAT respondiÃ³ un ZIP, '
               'pero no contiene un XML de CDR.',
           xmlRespuesta: xmlRespuesta,
         );
@@ -446,7 +434,7 @@ class SunatService {
 
     final mensaje = description?.trim();
 
-    // SUNAT utiliza 0 como código de aceptación.
+    // SUNAT utiliza 0 como cÃ³digo de aceptaciÃ³n.
     final aceptado = codigo == '0';
 
     if (aceptado) {
@@ -618,3 +606,5 @@ class _RespuestaHttp {
     required this.body,
   });
 }
+
+
