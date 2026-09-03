@@ -17,11 +17,18 @@ class VentasRepository {
   VentasRepository(AppDatabase database)
     : _dao = VentasDao(database),
       _productoRepository = ProductoRepository(database);
+  // ==========================================================
+  // ELIMINAR VENTA COMPLETA
+  // ==========================================================
+
+  Future<void> eliminarVenta(int ventaId) {
+    return _dao.eliminarVenta(ventaId);
+  }
 
   // ==========================================================
   // GUARDAR VENTA COMPLETA
   //
-  // Método normal.
+  // MÃ©todo normal.
   //
   // Mantiene la compatibilidad con las partes del sistema que
   // necesiten guardar una venta de forma independiente.
@@ -36,14 +43,14 @@ class VentasRepository {
   }
 
   // ==========================================================
-  // GUARDAR VENTA SIN TRANSACCIÓN
+  // GUARDAR VENTA SIN TRANSACCIÃ“N
   //
   // IMPORTANTE:
   //
-  // Este método NO abre una transacción.
+  // Este mÃ©todo NO abre una transacciÃ³n.
   //
-  // Será utilizado posteriormente por CobroService dentro de
-  // una única transacción que incluirá:
+  // SerÃ¡ utilizado posteriormente por CobroService dentro de
+  // una Ãºnica transacciÃ³n que incluirÃ¡:
   //
   // VENTA
   // +
@@ -53,7 +60,7 @@ class VentasRepository {
   // +
   // KARDEX
   //
-  // Si cualquier parte falla, todo podrá revertirse.
+  // Si cualquier parte falla, todo podrÃ¡ revertirse.
   // ==========================================================
 
   Future<int> guardarVentaSinTransaccion(model.Venta venta) async {
@@ -120,8 +127,8 @@ class VentasRepository {
 
     if (producto == null) {
       debugPrint(
-        '⚠️ No se encontró el producto '
-        '${detalle.productoId} para la reimpresión.',
+        'âš ï¸ No se encontrÃ³ el producto '
+        '${detalle.productoId} para la reimpresiÃ³n.',
       );
 
       return null;
@@ -316,7 +323,7 @@ class VentasRepository {
   }
 
   // ==========================================================
-  // SIGUIENTE NÚMERO DE VENTA
+  // SIGUIENTE NÃšMERO DE VENTA
   // ==========================================================
 
   Future<String> obtenerSiguienteNumeroVenta() async {
