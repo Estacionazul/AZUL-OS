@@ -6,10 +6,7 @@ import 'widgets/panel_cliente.dart';
 class CobroScreen extends StatelessWidget {
   final double total;
 
-  const CobroScreen({
-    super.key,
-    required this.total,
-  });
+  const CobroScreen({super.key, required this.total});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +26,6 @@ class CobroScreen extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             /// PANEL IZQUIERDO
             Expanded(
               flex: 2,
@@ -43,7 +39,6 @@ class CobroScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       const Text(
                         "Resumen",
                         style: TextStyle(
@@ -62,11 +57,7 @@ class CobroScreen extends StatelessWidget {
 
                       const Divider(height: 40),
 
-                      fila(
-                        "TOTAL",
-                        totalFinal,
-                        grande: true,
-                      ),
+                      fila("TOTAL", totalFinal, grande: true),
                     ],
                   ),
                 ),
@@ -79,20 +70,11 @@ class CobroScreen extends StatelessWidget {
               flex: 3,
               child: Column(
                 children: [
-
-                  Expanded(
-                    flex: 2,
-                    child: PanelPago(
-                      total: totalFinal,
-                    ),
-                  ),
+                  Expanded(flex: 2, child: PanelPago(total: totalFinal)),
 
                   const SizedBox(height: 20),
 
-                  const Expanded(
-                    child: PanelCliente(),
-                  ),
-
+                  const Expanded(child: PanelCliente()),
                 ],
               ),
             ),
@@ -102,21 +84,15 @@ class CobroScreen extends StatelessWidget {
     );
   }
 
-  Widget fila(
-      String titulo,
-      double monto, {
-        bool grande = false,
-      }) {
+  Widget fila(String titulo, double monto, {bool grande = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-
         Text(
           titulo,
           style: TextStyle(
             fontSize: grande ? 24 : 18,
-            fontWeight:
-            grande ? FontWeight.bold : FontWeight.w500,
+            fontWeight: grande ? FontWeight.bold : FontWeight.w500,
           ),
         ),
 

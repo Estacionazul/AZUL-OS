@@ -17,10 +17,7 @@ class MetodoPago extends StatelessWidget {
       children: [
         const Text(
           "Método de pago",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
 
         const SizedBox(height: 15),
@@ -29,29 +26,13 @@ class MetodoPago extends StatelessWidget {
           spacing: 15,
           runSpacing: 15,
           children: [
-            _tarjeta(
-              icono: Icons.payments,
-              emoji: "💵",
-              titulo: "Efectivo",
-            ),
+            _tarjeta(icono: Icons.payments, emoji: "💵", titulo: "Efectivo"),
 
-            _tarjeta(
-              icono: Icons.qr_code,
-              emoji: "📱",
-              titulo: "Yape",
-            ),
+            _tarjeta(icono: Icons.qr_code, emoji: "📱", titulo: "Yape"),
 
-            _tarjeta(
-              icono: Icons.qr_code_2,
-              emoji: "💙",
-              titulo: "Plin",
-            ),
+            _tarjeta(icono: Icons.qr_code_2, emoji: "💙", titulo: "Plin"),
 
-            _tarjeta(
-              icono: Icons.credit_card,
-              emoji: "💳",
-              titulo: "Tarjeta",
-            ),
+            _tarjeta(icono: Icons.credit_card, emoji: "💳", titulo: "Tarjeta"),
 
             _tarjeta(
               icono: Icons.account_balance,
@@ -79,9 +60,7 @@ class MetodoPago extends StatelessWidget {
         width: 145,
         height: 115,
         decoration: BoxDecoration(
-          color: seleccionado
-              ? const Color(0xff0A2E6E)
-              : Colors.white,
+          color: seleccionado ? const Color(0xff0A2E6E) : Colors.white,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: seleccionado
@@ -100,21 +79,14 @@ class MetodoPago extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              emoji,
-              style: const TextStyle(
-                fontSize: 28,
-              ),
-            ),
+            Text(emoji, style: const TextStyle(fontSize: 28)),
 
             const SizedBox(height: 8),
 
             Icon(
               icono,
               size: 30,
-              color: seleccionado
-                  ? Colors.white
-                  : const Color(0xff0A2E6E),
+              color: seleccionado ? Colors.white : const Color(0xff0A2E6E),
             ),
 
             const SizedBox(height: 8),
@@ -125,9 +97,7 @@ class MetodoPago extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: seleccionado
-                    ? Colors.white
-                    : Colors.black87,
+                color: seleccionado ? Colors.white : Colors.black87,
               ),
             ),
           ],

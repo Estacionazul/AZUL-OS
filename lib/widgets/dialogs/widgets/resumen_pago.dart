@@ -17,9 +17,7 @@ class ResumenPago extends StatelessWidget {
     return Card(
       elevation: 0,
       color: const Color(0xffF7F9FC),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
@@ -27,10 +25,7 @@ class ResumenPago extends StatelessWidget {
           children: [
             const Row(
               children: [
-                Icon(
-                  Icons.receipt_long,
-                  color: Color(0xff0A2E6E),
-                ),
+                Icon(Icons.receipt_long, color: Color(0xff0A2E6E)),
                 SizedBox(width: 8),
                 Text(
                   "Resumen de Pago",
@@ -45,36 +40,22 @@ class ResumenPago extends StatelessWidget {
 
             const SizedBox(height: 25),
 
-            _fila(
-              "Subtotal",
-              subtotal,
-            ),
+            _fila("Subtotal", subtotal),
 
             const SizedBox(height: 12),
 
-            _fila(
-              "IGV (18%)",
-              igv,
-            ),
+            _fila("IGV (18%)", igv),
 
             const Divider(height: 30),
 
-            _fila(
-              "TOTAL",
-              total,
-              grande: true,
-            ),
+            _fila("TOTAL", total, grande: true),
           ],
         ),
       ),
     );
   }
 
-  Widget _fila(
-      String titulo,
-      double monto, {
-        bool grande = false,
-      }) {
+  Widget _fila(String titulo, double monto, {bool grande = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -82,8 +63,7 @@ class ResumenPago extends StatelessWidget {
           titulo,
           style: TextStyle(
             fontSize: grande ? 20 : 16,
-            fontWeight:
-            grande ? FontWeight.bold : FontWeight.w500,
+            fontWeight: grande ? FontWeight.bold : FontWeight.w500,
           ),
         ),
         Text(

@@ -8,9 +8,7 @@ class CheckoutDialog extends StatelessWidget {
     return AlertDialog(
       title: const Text(
         "Cobrar Venta",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(fontWeight: FontWeight.bold),
       ),
 
       content: SizedBox(
@@ -18,22 +16,13 @@ class CheckoutDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-
-            const Text(
-              "TOTAL",
-              style: TextStyle(
-                color: Colors.grey,
-              ),
-            ),
+            const Text("TOTAL", style: TextStyle(color: Colors.grey)),
 
             const SizedBox(height: 8),
 
             const Text(
               "S/ 0.00",
-              style: TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 30),
@@ -44,26 +33,13 @@ class CheckoutDialog extends StatelessWidget {
                 border: OutlineInputBorder(),
               ),
               items: const [
+                DropdownMenuItem(value: "EFECTIVO", child: Text("💵 Efectivo")),
 
-                DropdownMenuItem(
-                  value: "EFECTIVO",
-                  child: Text("💵 Efectivo"),
-                ),
+                DropdownMenuItem(value: "YAPE", child: Text("📱 Yape")),
 
-                DropdownMenuItem(
-                  value: "YAPE",
-                  child: Text("📱 Yape"),
-                ),
+                DropdownMenuItem(value: "PLIN", child: Text("📱 Plin")),
 
-                DropdownMenuItem(
-                  value: "PLIN",
-                  child: Text("📱 Plin"),
-                ),
-
-                DropdownMenuItem(
-                  value: "TARJETA",
-                  child: Text("💳 Tarjeta"),
-                ),
+                DropdownMenuItem(value: "TARJETA", child: Text("💳 Tarjeta")),
               ],
               onChanged: (_) {},
             ),
@@ -76,21 +52,11 @@ class CheckoutDialog extends StatelessWidget {
                 border: OutlineInputBorder(),
               ),
               items: const [
+                DropdownMenuItem(value: "TICKET", child: Text("Ticket")),
 
-                DropdownMenuItem(
-                  value: "TICKET",
-                  child: Text("Ticket"),
-                ),
+                DropdownMenuItem(value: "BOLETA", child: Text("Boleta")),
 
-                DropdownMenuItem(
-                  value: "BOLETA",
-                  child: Text("Boleta"),
-                ),
-
-                DropdownMenuItem(
-                  value: "FACTURA",
-                  child: Text("Factura"),
-                ),
+                DropdownMenuItem(value: "FACTURA", child: Text("Factura")),
               ],
               onChanged: (_) {},
             ),
@@ -99,7 +65,6 @@ class CheckoutDialog extends StatelessWidget {
       ),
 
       actions: [
-
         TextButton(
           onPressed: () {
             Navigator.pop(context);
@@ -107,10 +72,7 @@ class CheckoutDialog extends StatelessWidget {
           child: const Text("Cancelar"),
         ),
 
-        ElevatedButton(
-          onPressed: () {},
-          child: const Text("Cobrar"),
-        ),
+        ElevatedButton(onPressed: () {}, child: const Text("Cobrar")),
       ],
     );
   }

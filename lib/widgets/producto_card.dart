@@ -38,9 +38,7 @@ class ProductoCard extends StatelessWidget {
     return Card(
       elevation: 3,
       margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
@@ -74,9 +72,7 @@ class ProductoCard extends StatelessWidget {
                   const SizedBox(height: 5),
                   Text(
                     _nombreCategoria(producto.categoriaId),
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 8),
                   Text(

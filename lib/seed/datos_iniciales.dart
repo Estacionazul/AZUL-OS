@@ -37,37 +37,37 @@ class DatosIniciales {
 
     if (categorias.isNotEmpty) return;
 
-    await db.into(db.categorias).insert(
-      CategoriasCompanion.insert(nombre: 'Cafés'),
-    );
+    await db
+        .into(db.categorias)
+        .insert(CategoriasCompanion.insert(nombre: 'Cafés'));
 
-    await db.into(db.categorias).insert(
-      CategoriasCompanion.insert(nombre: 'Jugos Naturales'),
-    );
+    await db
+        .into(db.categorias)
+        .insert(CategoriasCompanion.insert(nombre: 'Jugos Naturales'));
 
-    await db.into(db.categorias).insert(
-      CategoriasCompanion.insert(nombre: 'Bebidas Frías'),
-    );
+    await db
+        .into(db.categorias)
+        .insert(CategoriasCompanion.insert(nombre: 'Bebidas Frías'));
 
-    await db.into(db.categorias).insert(
-      CategoriasCompanion.insert(nombre: 'Snacks'),
-    );
+    await db
+        .into(db.categorias)
+        .insert(CategoriasCompanion.insert(nombre: 'Snacks'));
 
-    await db.into(db.categorias).insert(
-      CategoriasCompanion.insert(nombre: 'Hamburguesas'),
-    );
+    await db
+        .into(db.categorias)
+        .insert(CategoriasCompanion.insert(nombre: 'Hamburguesas'));
 
-    await db.into(db.categorias).insert(
-      CategoriasCompanion.insert(nombre: 'Postres'),
-    );
+    await db
+        .into(db.categorias)
+        .insert(CategoriasCompanion.insert(nombre: 'Postres'));
 
-    await db.into(db.categorias).insert(
-      CategoriasCompanion.insert(nombre: 'Combos'),
-    );
+    await db
+        .into(db.categorias)
+        .insert(CategoriasCompanion.insert(nombre: 'Combos'));
 
-    await db.into(db.categorias).insert(
-      CategoriasCompanion.insert(nombre: 'Insumos'),
-    );
+    await db
+        .into(db.categorias)
+        .insert(CategoriasCompanion.insert(nombre: 'Insumos'));
   }
 
   //==================================================
@@ -93,9 +93,9 @@ class DatosIniciales {
   }
 
   Future<int> _categoriaId(String nombre) async {
-    final categoria = await (db.select(db.categorias)
-      ..where((c) => c.nombre.equals(nombre)))
-        .getSingle();
+    final categoria = await (db.select(
+      db.categorias,
+    )..where((c) => c.nombre.equals(nombre))).getSingle();
 
     return categoria.id;
   }

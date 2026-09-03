@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -16,8 +16,7 @@ class FirstSetupScreen extends StatefulWidget {
 class _FirstSetupScreenState extends State<FirstSetupScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final _nombreController =
-      TextEditingController(text: 'CEO');
+  final _nombreController = TextEditingController(text: 'CEO');
 
   final _pinController = TextEditingController();
   final _confirmarPinController = TextEditingController();
@@ -56,9 +55,7 @@ class _FirstSetupScreenState extends State<FirstSetupScreen> {
       final usuario = await repository.obtenerPorId(idUsuario);
 
       if (usuario == null) {
-        throw Exception(
-          'No se pudo recuperar el usuario CEO recién creado.',
-        );
+        throw Exception('No se pudo recuperar el usuario CEO recién creado.');
       }
 
       // Iniciar sesión automáticamente como CEO.
@@ -67,26 +64,18 @@ class _FirstSetupScreenState extends State<FirstSetupScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Usuario CEO creado correctamente.',
-          ),
-        ),
+        const SnackBar(content: Text('Usuario CEO creado correctamente.')),
       );
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const HomeScreen(),
-        ),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'No se pudo crear el usuario: $e',
-          ),
+          content: Text('No se pudo crear el usuario: $e'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -107,17 +96,14 @@ class _FirstSetupScreenState extends State<FirstSetupScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 460,
-            ),
+            constraints: const BoxConstraints(maxWidth: 460),
             child: Card(
               child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Form(
                   key: _formKey,
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.stretch,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const Icon(
                         Icons.admin_panel_settings_rounded,
@@ -153,9 +139,7 @@ class _FirstSetupScreenState extends State<FirstSetupScreen> {
                       const Text(
                         'Crea el usuario CEO que administrará el sistema.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                        ),
+                        style: TextStyle(color: AppColors.textSecondary),
                       ),
 
                       const SizedBox(height: 28),
@@ -164,12 +148,10 @@ class _FirstSetupScreenState extends State<FirstSetupScreen> {
                         controller: _nombreController,
                         decoration: const InputDecoration(
                           labelText: 'Usuario',
-                          prefixIcon:
-                              Icon(Icons.person_outline),
+                          prefixIcon: Icon(Icons.person_outline),
                         ),
                         validator: (value) {
-                          if (value == null ||
-                              value.trim().isEmpty) {
+                          if (value == null || value.trim().isEmpty) {
                             return 'Ingresa el usuario.';
                           }
 
@@ -185,8 +167,7 @@ class _FirstSetupScreenState extends State<FirstSetupScreen> {
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           labelText: 'PIN',
-                          prefixIcon:
-                              const Icon(Icons.lock_outline),
+                          prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             onPressed: () {
                               setState(() {
@@ -201,8 +182,7 @@ class _FirstSetupScreenState extends State<FirstSetupScreen> {
                           ),
                         ),
                         validator: (value) {
-                          if (value == null ||
-                              value.isEmpty) {
+                          if (value == null || value.isEmpty) {
                             return 'Ingresa un PIN.';
                           }
 
@@ -217,19 +197,16 @@ class _FirstSetupScreenState extends State<FirstSetupScreen> {
                       const SizedBox(height: 16),
 
                       TextFormField(
-                        controller:
-                            _confirmarPinController,
+                        controller: _confirmarPinController,
                         obscureText: !_mostrarConfirmacion,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           labelText: 'Confirmar PIN',
-                          prefixIcon:
-                              const Icon(Icons.lock_outline),
+                          prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             onPressed: () {
                               setState(() {
-                                _mostrarConfirmacion =
-                                    !_mostrarConfirmacion;
+                                _mostrarConfirmacion = !_mostrarConfirmacion;
                               });
                             },
                             icon: Icon(
@@ -240,13 +217,11 @@ class _FirstSetupScreenState extends State<FirstSetupScreen> {
                           ),
                         ),
                         validator: (value) {
-                          if (value == null ||
-                              value.isEmpty) {
+                          if (value == null || value.isEmpty) {
                             return 'Confirma el PIN.';
                           }
 
-                          if (value !=
-                              _pinController.text) {
+                          if (value != _pinController.text) {
                             return 'Los PIN no coinciden.';
                           }
 
@@ -259,25 +234,19 @@ class _FirstSetupScreenState extends State<FirstSetupScreen> {
                       SizedBox(
                         height: 52,
                         child: ElevatedButton.icon(
-                          onPressed:
-                              _guardando ? null : _crearCEO,
+                          onPressed: _guardando ? null : _crearCEO,
                           icon: _guardando
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child:
-                                      CircularProgressIndicator(
+                                  child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Icon(
-                                  Icons.admin_panel_settings,
-                                ),
+                              : const Icon(Icons.admin_panel_settings),
                           label: Text(
-                            _guardando
-                                ? 'CREANDO...'
-                                : 'CREAR CUENTA CEO',
+                            _guardando ? 'CREANDO...' : 'CREAR CUENTA CEO',
                           ),
                         ),
                       ),

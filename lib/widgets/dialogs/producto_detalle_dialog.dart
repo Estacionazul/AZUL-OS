@@ -31,19 +31,13 @@ class ProductoDetalleDialog extends StatelessWidget {
     }
   }
 
-  Widget _item(
-      IconData icono,
-      String titulo,
-      String valor,
-      ) {
+  Widget _item(IconData icono, String titulo, String valor) {
     return ListTile(
       leading: Icon(icono),
       title: Text(titulo),
       subtitle: Text(
         valor,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -51,15 +45,10 @@ class ProductoDetalleDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       title: Row(
         children: [
-          Text(
-            producto.emoji,
-            style: const TextStyle(fontSize: 28),
-          ),
+          Text(producto.emoji, style: const TextStyle(fontSize: 28)),
           const SizedBox(width: 10),
           const Text("Detalle del Producto"),
         ],
@@ -70,24 +59,11 @@ class ProductoDetalleDialog extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              _item(Icons.shopping_bag, "Nombre", producto.nombre),
 
-              _item(
-                Icons.shopping_bag,
-                "Nombre",
-                producto.nombre,
-              ),
+              _item(Icons.qr_code, "Código", producto.codigo),
 
-              _item(
-                Icons.qr_code,
-                "Código",
-                producto.codigo,
-              ),
-
-              _item(
-                Icons.category,
-                "Categoría",
-                _categoria(),
-              ),
+              _item(Icons.category, "Categoría", _categoria()),
 
               _item(
                 Icons.attach_money,
@@ -101,11 +77,7 @@ class ProductoDetalleDialog extends StatelessWidget {
                 "S/. ${producto.costo.toStringAsFixed(2)}",
               ),
 
-              _item(
-                Icons.inventory_2,
-                "Stock",
-                producto.stock.toString(),
-              ),
+              _item(Icons.inventory_2, "Stock", producto.stock.toString()),
 
               _item(
                 Icons.warning_amber,
@@ -123,7 +95,6 @@ class ProductoDetalleDialog extends StatelessWidget {
         ),
       ),
       actions: [
-
         TextButton.icon(
           onPressed: () {
             Navigator.pop(context);
@@ -144,14 +115,8 @@ class ProductoDetalleDialog extends StatelessWidget {
               onEliminar!();
             }
           },
-          icon: const Icon(
-            Icons.delete,
-            color: Colors.red,
-          ),
-          label: const Text(
-            "Eliminar",
-            style: TextStyle(color: Colors.red),
-          ),
+          icon: const Icon(Icons.delete, color: Colors.red),
+          label: const Text("Eliminar", style: TextStyle(color: Colors.red)),
         ),
 
         FilledButton(

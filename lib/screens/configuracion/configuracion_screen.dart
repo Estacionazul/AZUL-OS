@@ -33,9 +33,7 @@ class ConfiguracionScreen extends StatelessWidget {
               _UsuariosPermisosCard(
                 onPressed: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const UsuariosScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const UsuariosScreen()),
                   );
                 },
               ),
@@ -50,9 +48,7 @@ class ConfiguracionScreen extends StatelessWidget {
 class _UsuariosPermisosCard extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const _UsuariosPermisosCard({
-    required this.onPressed,
-  });
+  const _UsuariosPermisosCard({required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -97,10 +93,7 @@ class _UsuariosPermisosCard extends StatelessWidget {
 
                     Text(
                       'Administra usuarios, roles y permisos del sistema.',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                   ],
                 ),

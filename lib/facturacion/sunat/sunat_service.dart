@@ -33,8 +33,7 @@ class SunatService {
     this.produccion = false,
   });
 
-  String get endpoint =>
-      produccion ? endpointProduccion : endpointBeta;
+  String get endpoint => produccion ? endpointProduccion : endpointBeta;
 
   // ==========================================================
   // ENVIAR COMPROBANTE
@@ -58,41 +57,31 @@ class SunatService {
     // --------------------------------------------------------
 
     if (xmlFirmado.trim().isEmpty) {
-      throw StateError(
-        'No se puede enviar un XML vacío a SUNAT.',
-      );
+      throw StateError('No se puede enviar un XML vacío a SUNAT.');
     }
 
     if (!xmlFirmado.contains('<ds:Signature')) {
-      throw StateError(
-        'El XML no contiene una firma digital ds:Signature.',
-      );
+      throw StateError('El XML no contiene una firma digital ds:Signature.');
     }
 
     if (!xmlFirmado.contains('<ds:SignatureValue>')) {
-      throw StateError(
-        'El XML no contiene ds:SignatureValue.',
-      );
+      throw StateError('El XML no contiene ds:SignatureValue.');
     }
 
     if (!xmlFirmado.contains('<ds:X509Certificate>')) {
-      throw StateError(
-        'El XML no contiene ds:X509Certificate.',
-      );
+      throw StateError('El XML no contiene ds:X509Certificate.');
     }
 
     // --------------------------------------------------------
     // 2. NOMBRE DEL DOCUMENTO
     // --------------------------------------------------------
 
-    final nombreBase =
-        '$ruc-$tipoComprobante-$serie-$numero';
+    final numeroFormateado = numero.toString().padLeft(8, '0');
+    final nombreBase = '$ruc-$tipoComprobante-$serie-$numeroFormateado';
 
-    final nombreXml =
-        '$nombreBase.xml';
+    final nombreXml = '$nombreBase.xml';
 
-    final nombreZip =
-        '$nombreBase.zip';
+    final nombreZip = '$nombreBase.zip';
 
     print('📄 XML: $nombreXml');
     print('📦 ZIP: $nombreZip');
@@ -101,45 +90,43 @@ class SunatService {
     // 3. XML → BYTES
     // --------------------------------------------------------
 
-    final xmlBytes =
-    utf8.encode(xmlFirmado);
+    final xmlBytes = utf8.encode(xmlFirmado);
+
+    final archivoDiagnostico = File(
+      '${Directory.systemTemp.path}\\azul_os_xml_firmado_diagnostico.xml',
+    );
+
+    await archivoDiagnostico.writeAsString(
+      xmlFirmado,
+      encoding: utf8,
+    );
+
+    print('🔎 XML FIRMADO GUARDADO EN: ${archivoDiagnostico.path}');
 
     // --------------------------------------------------------
     // 4. CREAR ZIP
     // --------------------------------------------------------
 
-    final zipBytes =
-    _crearZip(
-      nombreXml,
-      xmlBytes,
-    );
+    final zipBytes = _crearZip(nombreXml, xmlBytes);
 
-    print(
-      '📦 ZIP generado: ${zipBytes.length} bytes',
-    );
+    print('📦 ZIP generado: ${zipBytes.length} bytes');
 
     // --------------------------------------------------------
     // 5. ENVIAR A SUNAT
     // --------------------------------------------------------
 
-    final respuestaHttp =
-    await _enviarSoap(
+    final respuestaHttp = await _enviarSoap(
       nombreZip: nombreZip,
       zipBytes: zipBytes,
     );
 
-    print(
-      '📡 HTTP SUNAT: ${respuestaHttp.statusCode}',
-    );
+    print('📡 HTTP SUNAT: ${respuestaHttp.statusCode}');
 
     // --------------------------------------------------------
     // 6. PROCESAR RESPUESTA
     // --------------------------------------------------------
 
-    final respuesta =
-    _procesarRespuesta(
-      respuestaHttp,
-    );
+    final respuesta = _procesarRespuesta(respuestaHttp);
 
     final fechaFin = DateTime.now();
 
@@ -150,21 +137,17 @@ class SunatService {
 
     print(
       '⏱ Tiempo: '
-          '${fechaFin.difference(fechaInicio).inMilliseconds} ms',
+      '${fechaFin.difference(fechaInicio).inMilliseconds} ms',
     );
 
     print(
       'Estado: '
-          '${respuesta.aceptado ? 'ACEPTADO' : 'RECHAZADO'}',
+      '${respuesta.aceptado ? 'ACEPTADO' : 'RECHAZADO'}',
     );
 
-    print(
-      'Código: ${respuesta.codigo ?? '-'}',
-    );
+    print('Código: ${respuesta.codigo ?? '-'}');
 
-    print(
-      'Mensaje: ${respuesta.mensaje ?? '-'}',
-    );
+    print('Mensaje: ${respuesta.mensaje ?? '-'}');
 
     print('==================================================');
 
@@ -175,28 +158,17 @@ class SunatService {
   // CREAR ZIP
   // ==========================================================
 
-  Uint8List _crearZip(
-      String nombreXml,
-      List<int> xmlBytes,
-      ) {
+  Uint8List _crearZip(String nombreXml, List<int> xmlBytes) {
     final archive = Archive();
 
-    archive.addFile(
-      ArchiveFile(
-        nombreXml,
-        xmlBytes.length,
-        xmlBytes,
-      ),
-    );
+    archive.addFile(ArchiveFile(nombreXml, xmlBytes.length, xmlBytes));
 
     final encoder = ZipEncoder();
 
     final encoded = encoder.encode(archive);
 
     if (encoded.isEmpty) {
-      throw StateError(
-        'No se pudo generar el archivo ZIP.',
-      );
+      throw StateError('No se pudo generar el archivo ZIP.');
     }
 
     return Uint8List.fromList(encoded);
@@ -210,30 +182,30 @@ class SunatService {
     required String nombreZip,
     required Uint8List zipBytes,
   }) async {
-    final client =
-    HttpClient();
+    final client = HttpClient();
 
     try {
-      final uri =
-      Uri.parse(endpoint);
+      final uri = Uri.parse(endpoint);
 
       print('');
       print('🌐 Endpoint SUNAT:');
       print(endpoint);
 
-      final request =
-      await client.postUrl(uri);
+      // ==========================================================
+      // ZIP -> BASE64
+      // SUNAT define contentFile como base64Binary
+      // ==========================================================
 
-      // ------------------------------------------------------
-      // CONTENT-ID DEL ARCHIVO ZIP
-      // ------------------------------------------------------
+      final contentFileBase64 = base64Encode(zipBytes);
 
-      final contentId =
-          '<$nombreZip>';
+      print('📦 ZIP original: ${zipBytes.length} bytes');
+      print(
+        '📦 ZIP Base64: ${contentFileBase64.length} caracteres',
+      );
 
-      // ------------------------------------------------------
-      // SOAP
-      // ------------------------------------------------------
+      // ==========================================================
+      // SOAP 1.1
+      // ==========================================================
 
       final soapEnvelope = '''
 <?xml version="1.0" encoding="UTF-8"?>
@@ -253,139 +225,25 @@ class SunatService {
 
   <soapenv:Body>
     <ser:sendBill>
-      <fileName>$nombreZip</fileName>
-      <contentFile>cid:$contentId</contentFile>
+      <fileName>${_escapeXml(nombreZip)}</fileName>
+      <contentFile>$contentFileBase64</contentFile>
     </ser:sendBill>
   </soapenv:Body>
 
 </soapenv:Envelope>
 ''';
 
-      // ------------------------------------------------------
-      // MULTIPART/RELATED
-      // ------------------------------------------------------
+      final body = utf8.encode(soapEnvelope);
 
-      final boundary =
-          '----=_Part_${DateTime.now().microsecondsSinceEpoch}';
+      // ==========================================================
+      // PETICIÓN HTTP
+      // ==========================================================
 
-      final soapContentId =
-          '<rootpart@azulos>';
-
-      final buffer =
-      BytesBuilder();
-
-      // ------------------------------------------------------
-      // PARTE SOAP
-      // ------------------------------------------------------
-
-      buffer.add(
-        utf8.encode(
-          '--$boundary\r\n',
-        ),
-      );
-
-      buffer.add(
-        utf8.encode(
-          'Content-Type: application/xop+xml; '
-              'charset=UTF-8; type="text/xml"\r\n',
-        ),
-      );
-
-      buffer.add(
-        utf8.encode(
-          'Content-ID: $soapContentId\r\n',
-        ),
-      );
-
-      buffer.add(
-        utf8.encode(
-          '\r\n',
-        ),
-      );
-
-      buffer.add(
-        utf8.encode(
-          soapEnvelope,
-        ),
-      );
-
-      buffer.add(
-        utf8.encode(
-          '\r\n',
-        ),
-      );
-
-      // ------------------------------------------------------
-      // PARTE ZIP
-      // ------------------------------------------------------
-
-      buffer.add(
-        utf8.encode(
-          '--$boundary\r\n',
-        ),
-      );
-
-      buffer.add(
-        utf8.encode(
-          'Content-Type: application/zip\r\n',
-        ),
-      );
-
-      buffer.add(
-        utf8.encode(
-          'Content-Transfer-Encoding: binary\r\n',
-        ),
-      );
-
-      buffer.add(
-        utf8.encode(
-          'Content-ID: $contentId\r\n',
-        ),
-      );
-
-      buffer.add(
-        utf8.encode(
-          'Content-Disposition: attachment; '
-              'filename="$nombreZip"\r\n',
-        ),
-      );
-
-      buffer.add(
-        utf8.encode(
-          '\r\n',
-        ),
-      );
-
-      buffer.add(
-        zipBytes,
-      );
-
-      buffer.add(
-        utf8.encode(
-          '\r\n',
-        ),
-      );
-
-      // ------------------------------------------------------
-      // FIN MULTIPART
-      // ------------------------------------------------------
-
-      buffer.add(
-        utf8.encode(
-          '--$boundary--\r\n',
-        ),
-      );
-
-      final body =
-      buffer.takeBytes();
+      final request = await client.postUrl(uri);
 
       request.headers.set(
         HttpHeaders.contentTypeHeader,
-        'multipart/related; '
-            'type="application/xop+xml"; '
-            'start="$soapContentId"; '
-            'start-info="text/xml"; '
-            'boundary="$boundary"',
+        'text/xml; charset=UTF-8',
       );
 
       request.headers.set(
@@ -395,27 +253,29 @@ class SunatService {
 
       request.headers.set(
         'SOAPAction',
-        'urn:sendBill',
+        '"urn:sendBill"',
       );
 
-      request.contentLength =
-          body.length;
+      request.headers.set(
+        HttpHeaders.connectionHeader,
+        'close',
+      );
+
+      request.contentLength = body.length;
+
+      print('📄 SOAP generado: ${body.length} bytes');
+      print('🔐 Usuario SUNAT: $_usuarioSunat');
+      print('📤 Enviando sendBill a SUNAT...');
+      print('📡 Content-Type: text/xml; charset=UTF-8');
+      print('📡 SOAPAction: "urn:sendBill"');
 
       request.add(body);
 
-      print('📤 Enviando ZIP a SUNAT...');
+      final response = await request.close();
 
-      final response =
-      await request.close();
-
-      final responseBytes =
-      await response.fold<List<int>>(
+      final responseBytes = await response.fold<List<int>>(
         <int>[],
-            (
-            previous,
-            element,
-            ) =>
-        previous..addAll(element),
+            (previous, element) => previous..addAll(element),
       );
 
       print(
@@ -423,17 +283,29 @@ class SunatService {
             '${responseBytes.length} bytes',
       );
 
+      print(
+        '📡 HTTP SUNAT: ${response.statusCode}',
+      );
+
+      if (response.statusCode != 200) {
+        print('===== RESPUESTA RAW SUNAT =====');
+
+        try {
+          print(utf8.decode(responseBytes));
+        } catch (_) {
+          print('No se pudo interpretar la respuesta como UTF-8.');
+        }
+
+        print('===== FIN RESPUESTA RAW SUNAT =====');
+      }
+
       return _RespuestaHttp(
         statusCode: response.statusCode,
         headers: response.headers,
-        body: Uint8List.fromList(
-          responseBytes,
-        ),
+        body: Uint8List.fromList(responseBytes),
       );
     } finally {
-      client.close(
-        force: true,
-      );
+      client.close(force: true);
     }
   }
 
@@ -441,22 +313,18 @@ class SunatService {
   // PROCESAR RESPUESTA SUNAT
   // ==========================================================
 
-  RespuestaSunat _procesarRespuesta(
-      _RespuestaHttp respuestaHttp,
-      ) {
-    if (respuestaHttp.statusCode < 200 ||
-        respuestaHttp.statusCode >= 300) {
-      final texto =
-      utf8.decode(
-        respuestaHttp.body,
-        allowMalformed: true,
-      );
+  RespuestaSunat _procesarRespuesta(_RespuestaHttp respuestaHttp) {
+    if (respuestaHttp.statusCode < 200 || respuestaHttp.statusCode >= 300) {
+      final texto = utf8.decode(respuestaHttp.body, allowMalformed: true);
+
+      print('===== RESPUESTA RAW SUNAT =====');
+      print(texto);
+      print('===== FIN RESPUESTA RAW SUNAT =====');
 
       return RespuestaSunat.rechazada(
-        codigo:
-        'HTTP-${respuestaHttp.statusCode}',
+        codigo: 'HTTP-${respuestaHttp.statusCode}',
         mensaje:
-        _extraerMensajeSoap(texto) ??
+            _extraerMensajeSoap(texto) ??
             'SUNAT respondió HTTP '
                 '${respuestaHttp.statusCode}.',
         xmlRespuesta: texto,
@@ -464,58 +332,35 @@ class SunatService {
     }
 
     final contentType =
-        respuestaHttp.headers.contentType
-            ?.toString()
-            .toLowerCase() ??
-            '';
+        respuestaHttp.headers.contentType?.toString().toLowerCase() ?? '';
 
     // --------------------------------------------------------
     // RESPUESTA MULTIPART
     // --------------------------------------------------------
 
-    if (contentType.contains(
-      'multipart/',
-    )) {
-      return _procesarRespuestaMultipart(
-        respuestaHttp.body,
-        contentType,
-      );
+    if (contentType.contains('multipart/')) {
+      return _procesarRespuestaMultipart(respuestaHttp.body, contentType);
     }
 
     // --------------------------------------------------------
     // RESPUESTA XML NORMAL
     // --------------------------------------------------------
 
-    final texto =
-    utf8.decode(
-      respuestaHttp.body,
-      allowMalformed: true,
-    );
+    final texto = utf8.decode(respuestaHttp.body, allowMalformed: true);
 
-    final contenido =
-    _extraerApplicationResponse(
-      texto,
-    );
+    final contenido = _extraerApplicationResponse(texto);
 
     if (contenido != null) {
       try {
-        final cdrZip =
-        base64.decode(
-          contenido,
-        );
+        final cdrZip = base64.decode(contenido);
 
-        return _procesarCdrZip(
-          cdrZip,
-          xmlRespuesta: texto,
-        );
+        return _procesarCdrZip(cdrZip, xmlRespuesta: texto);
       } catch (_) {
         // Continúa con el procesamiento como XML.
       }
     }
 
-    return _procesarRespuestaXml(
-      texto,
-    );
+    return _procesarRespuestaXml(texto);
   }
 
   // ==========================================================
@@ -523,52 +368,31 @@ class SunatService {
   // ==========================================================
 
   RespuestaSunat _procesarRespuestaMultipart(
-      Uint8List body,
-      String contentType,
-      ) {
-    final texto =
-    utf8.decode(
-      body,
-      allowMalformed: true,
-    );
+    Uint8List body,
+    String contentType,
+  ) {
+    final texto = utf8.decode(body, allowMalformed: true);
 
-    final applicationResponse =
-    _extraerApplicationResponse(
-      texto,
-    );
+    final applicationResponse = _extraerApplicationResponse(texto);
 
     if (applicationResponse != null) {
       try {
-        final bytes =
-        base64.decode(
-          applicationResponse,
-        );
+        final bytes = base64.decode(applicationResponse);
 
-        return _procesarCdrZip(
-          bytes,
-          xmlRespuesta: texto,
-        );
+        return _procesarCdrZip(bytes, xmlRespuesta: texto);
       } catch (_) {}
     }
 
-    return _procesarRespuestaXml(
-      texto,
-    );
+    return _procesarRespuestaXml(texto);
   }
 
   // ==========================================================
   // PROCESAR CDR ZIP
   // ==========================================================
 
-  RespuestaSunat _procesarCdrZip(
-      List<int> zipBytes, {
-        String? xmlRespuesta,
-      }) {
+  RespuestaSunat _procesarCdrZip(List<int> zipBytes, {String? xmlRespuesta}) {
     try {
-      final archive =
-      ZipDecoder().decodeBytes(
-        zipBytes,
-      );
+      final archive = ZipDecoder().decodeBytes(zipBytes);
 
       ArchiveFile? cdrFile;
 
@@ -577,8 +401,7 @@ class SunatService {
           continue;
         }
 
-        final nombre =
-        file.name.toLowerCase();
+        final nombre = file.name.toLowerCase();
 
         if (nombre.endsWith('.xml')) {
           cdrFile = file;
@@ -590,30 +413,21 @@ class SunatService {
         return RespuestaSunat.rechazada(
           codigo: 'CDR_SIN_XML',
           mensaje:
-          'SUNAT respondió un ZIP, '
+              'SUNAT respondió un ZIP, '
               'pero no contiene un XML de CDR.',
           xmlRespuesta: xmlRespuesta,
         );
       }
 
-      final cdrBytes =
-          cdrFile.content;
+      final cdrBytes = cdrFile.content;
 
-      final cdrXml =
-      utf8.decode(
-        cdrBytes,
-        allowMalformed: true,
-      );
+      final cdrXml = utf8.decode(cdrBytes, allowMalformed: true);
 
-      return _procesarCdrXml(
-        cdrXml,
-        xmlRespuesta: xmlRespuesta,
-      );
+      return _procesarCdrXml(cdrXml, xmlRespuesta: xmlRespuesta);
     } catch (e) {
       return RespuestaSunat.rechazada(
         codigo: 'CDR_ERROR',
-        mensaje:
-        'No se pudo interpretar el CDR: $e',
+        mensaje: 'No se pudo interpretar el CDR: $e',
         xmlRespuesta: xmlRespuesta,
       );
     }
@@ -623,31 +437,17 @@ class SunatService {
   // PROCESAR XML DEL CDR
   // ==========================================================
 
-  RespuestaSunat _procesarCdrXml(
-      String cdrXml, {
-        String? xmlRespuesta,
-      }) {
-    final responseCode =
-    _extraerTag(
-      cdrXml,
-      'ResponseCode',
-    );
+  RespuestaSunat _procesarCdrXml(String cdrXml, {String? xmlRespuesta}) {
+    final responseCode = _extraerTag(cdrXml, 'ResponseCode');
 
-    final description =
-    _extraerTag(
-      cdrXml,
-      'Description',
-    );
+    final description = _extraerTag(cdrXml, 'Description');
 
-    final codigo =
-    responseCode?.trim();
+    final codigo = responseCode?.trim();
 
-    final mensaje =
-    description?.trim();
+    final mensaje = description?.trim();
 
     // SUNAT utiliza 0 como código de aceptación.
-    final aceptado =
-        codigo == '0';
+    final aceptado = codigo == '0';
 
     if (aceptado) {
       return RespuestaSunat.aceptada(
@@ -670,17 +470,10 @@ class SunatService {
   // RESPUESTA SOAP SIN ZIP
   // ==========================================================
 
-  RespuestaSunat _procesarRespuestaXml(
-      String xml,
-      ) {
-    final fault =
-    _extraerTag(
-      xml,
-      'faultstring',
-    );
+  RespuestaSunat _procesarRespuestaXml(String xml) {
+    final fault = _extraerTag(xml, 'faultstring');
 
-    if (fault != null &&
-        fault.trim().isNotEmpty) {
+    if (fault != null && fault.trim().isNotEmpty) {
       return RespuestaSunat.rechazada(
         codigo: 'SOAP_FAULT',
         mensaje: fault.trim(),
@@ -688,41 +481,30 @@ class SunatService {
       );
     }
 
-    final codigo =
-    _extraerTag(
-      xml,
-      'statusCode',
-    );
+    final codigo = _extraerTag(xml, 'statusCode');
 
-    final mensaje =
-    _extraerTag(
-      xml,
-      'statusMessage',
-    );
+    final mensaje = _extraerTag(xml, 'statusMessage');
 
     if (codigo != null) {
-      final aceptado =
-          codigo.trim() == '0';
+      final aceptado = codigo.trim() == '0';
 
       return aceptado
           ? RespuestaSunat.aceptada(
-        codigo: codigo.trim(),
-        mensaje:
-        mensaje?.trim(),
-        xmlRespuesta: xml,
-      )
+              codigo: codigo.trim(),
+              mensaje: mensaje?.trim(),
+              xmlRespuesta: xml,
+            )
           : RespuestaSunat.rechazada(
-        codigo: codigo.trim(),
-        mensaje:
-        mensaje?.trim(),
-        xmlRespuesta: xml,
-      );
+              codigo: codigo.trim(),
+              mensaje: mensaje?.trim(),
+              xmlRespuesta: xml,
+            );
     }
 
     return RespuestaSunat.rechazada(
       codigo: 'RESPUESTA_NO_RECONOCIDA',
       mensaje:
-      _extraerMensajeSoap(xml) ??
+          _extraerMensajeSoap(xml) ??
           'No se pudo interpretar '
               'la respuesta de SUNAT.',
       xmlRespuesta: xml,
@@ -733,26 +515,14 @@ class SunatService {
   // EXTRAER applicationResponse
   // ==========================================================
 
-  String? _extraerApplicationResponse(
-      String xml,
-      ) {
-    final value =
-    _extraerTag(
-      xml,
-      'applicationResponse',
-    );
+  String? _extraerApplicationResponse(String xml) {
+    final value = _extraerTag(xml, 'applicationResponse');
 
     if (value == null) {
       return null;
     }
 
-    final limpio =
-    value
-        .replaceAll(
-      RegExp(r'\s+'),
-      '',
-    )
-        .trim();
+    final limpio = value.replaceAll(RegExp(r'\s+'), '').trim();
 
     if (limpio.isEmpty) {
       return null;
@@ -765,33 +535,18 @@ class SunatService {
   // EXTRAER MENSAJE SOAP
   // ==========================================================
 
-  String? _extraerMensajeSoap(
-      String xml,
-      ) {
-    return _extraerTag(
-      xml,
-      'faultstring',
-    ) ??
-        _extraerTag(
-          xml,
-          'Description',
-        ) ??
-        _extraerTag(
-          xml,
-          'description',
-        );
+  String? _extraerMensajeSoap(String xml) {
+    return _extraerTag(xml, 'faultstring') ??
+        _extraerTag(xml, 'Description') ??
+        _extraerTag(xml, 'description');
   }
 
   // ==========================================================
   // EXTRAER TAG XML SIMPLE
   // ==========================================================
 
-  String? _extraerTag(
-      String xml,
-      String tag,
-      ) {
-    final expresion =
-    RegExp(
+  String? _extraerTag(String xml, String tag) {
+    final expresion = RegExp(
       '<(?:[A-Za-z0-9_\\-]+:)?$tag'
       r'(?:\s[^>]*)?>'
       r'([\s\S]*?)'
@@ -799,76 +554,39 @@ class SunatService {
       caseSensitive: false,
     );
 
-    final match =
-    expresion.firstMatch(xml);
+    final match = expresion.firstMatch(xml);
 
     if (match == null) {
       return null;
     }
 
-    return _decodeXml(
-      match.group(1)?.trim() ?? '',
-    );
+    return _decodeXml(match.group(1)?.trim() ?? '');
   }
 
   // ==========================================================
   // ESCAPAR XML
   // ==========================================================
 
-  String _escapeXml(
-      String value,
-      ) {
+  String _escapeXml(String value) {
     return value
-        .replaceAll(
-      '&',
-      '&amp;',
-    )
-        .replaceAll(
-      '<',
-      '&lt;',
-    )
-        .replaceAll(
-      '>',
-      '&gt;',
-    )
-        .replaceAll(
-      '"',
-      '&quot;',
-    )
-        .replaceAll(
-      "'",
-      '&apos;',
-    );
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&apos;');
   }
 
   // ==========================================================
   // DECODIFICAR XML
   // ==========================================================
 
-  String _decodeXml(
-      String value,
-      ) {
+  String _decodeXml(String value) {
     return value
-        .replaceAll(
-      '&lt;',
-      '<',
-    )
-        .replaceAll(
-      '&gt;',
-      '>',
-    )
-        .replaceAll(
-      '&quot;',
-      '"',
-    )
-        .replaceAll(
-      '&apos;',
-      "'",
-    )
-        .replaceAll(
-      '&amp;',
-      '&',
-    );
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&apos;', "'")
+        .replaceAll('&amp;', '&');
   }
 
   // ==========================================================
@@ -877,7 +595,8 @@ class SunatService {
 
   String get _usuarioSunat {
     if (usuarioSol.trim().isEmpty) {
-      return '$ruc' 'MODDATOS';
+      return '$ruc'
+          'MODDATOS';
     }
 
     return usuarioSol;

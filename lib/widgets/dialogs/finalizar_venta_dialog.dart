@@ -20,32 +20,24 @@ class FinalizarVentaDialog extends StatefulWidget {
   });
 
   @override
-  State<FinalizarVentaDialog> createState() =>
-      _FinalizarVentaDialogState();
+  State<FinalizarVentaDialog> createState() => _FinalizarVentaDialogState();
 }
 
-class _FinalizarVentaDialogState
-    extends State<FinalizarVentaDialog> {
+class _FinalizarVentaDialogState extends State<FinalizarVentaDialog> {
   String _metodoPago = "Efectivo";
   String _tipoDocumento = "Nota de Venta";
 
-  final TextEditingController _montoController =
-  TextEditingController();
+  final TextEditingController _montoController = TextEditingController();
 
-  final TextEditingController _dniController =
-  TextEditingController();
+  final TextEditingController _dniController = TextEditingController();
 
-  final TextEditingController _nombreController =
-  TextEditingController();
+  final TextEditingController _nombreController = TextEditingController();
 
-  final TextEditingController _rucController =
-  TextEditingController();
+  final TextEditingController _rucController = TextEditingController();
 
-  final TextEditingController _razonSocialController =
-  TextEditingController();
+  final TextEditingController _razonSocialController = TextEditingController();
 
-  final TextEditingController _direccionController =
-  TextEditingController();
+  final TextEditingController _direccionController = TextEditingController();
 
   @override
   void dispose() {
@@ -65,9 +57,7 @@ class _FinalizarVentaDialogState
     final igv = totalFinal - subtotal;
 
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: SizedBox(
         width: 650,
         child: SingleChildScrollView(
@@ -77,29 +67,18 @@ class _FinalizarVentaDialogState
             children: [
               const Row(
                 children: [
-                  Icon(
-                    Icons.point_of_sale,
-                    color: Color(0xff0A2E6E),
-                    size: 34,
-                  ),
+                  Icon(Icons.point_of_sale, color: Color(0xff0A2E6E), size: 34),
                   SizedBox(width: 12),
                   Text(
                     "Finalizar Venta",
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
 
               const SizedBox(height: 25),
 
-              ResumenPago(
-                subtotal: subtotal,
-                igv: igv,
-                total: totalFinal,
-              ),
+              ResumenPago(subtotal: subtotal, igv: igv, total: totalFinal),
 
               const SizedBox(height: 25),
 
@@ -205,26 +184,42 @@ class _FinalizarVentaDialogState
                           razonSocial: _razonSocialController.text.trim(),
                           direccionFiscal: _direccionController.text.trim(),
                         );
-                        debugPrint("========== DATOS CLIENTE ANTES DE COBRAR ==========");
+                        debugPrint(
+                          "========== DATOS CLIENTE ANTES DE COBRAR ==========",
+                        );
                         debugPrint("TIPO: $_tipoDocumento");
                         debugPrint("DNI: ${_dniController.text.trim()}");
                         debugPrint("NOMBRE: ${_nombreController.text.trim()}");
                         debugPrint("RUC: ${_rucController.text.trim()}");
-                        debugPrint("RAZON SOCIAL: ${_razonSocialController.text.trim()}");
-                        debugPrint("DIRECCION: ${_direccionController.text.trim()}");
+                        debugPrint(
+                          "RAZON SOCIAL: ${_razonSocialController.text.trim()}",
+                        );
+                        debugPrint(
+                          "DIRECCION: ${_direccionController.text.trim()}",
+                        );
 
-                        debugPrint("========== DATOS EN VENTA SERVICE ==========");
+                        debugPrint(
+                          "========== DATOS EN VENTA SERVICE ==========",
+                        );
                         debugPrint("TIPO: ${ventaService.venta.tipoDocumento}");
                         debugPrint("DNI: ${ventaService.venta.dni}");
-                        debugPrint("NOMBRE: ${ventaService.venta.clienteNombre}");
+                        debugPrint(
+                          "NOMBRE: ${ventaService.venta.clienteNombre}",
+                        );
                         debugPrint("RUC: ${ventaService.venta.ruc}");
-                        debugPrint("RAZON SOCIAL: ${ventaService.venta.razonSocial}");
-                        debugPrint("DIRECCION: ${ventaService.venta.direccionFiscal}");
+                        debugPrint(
+                          "RAZON SOCIAL: ${ventaService.venta.razonSocial}",
+                        );
+                        debugPrint(
+                          "DIRECCION: ${ventaService.venta.direccionFiscal}",
+                        );
                         debugPrint("Documento: $_tipoDocumento");
                         debugPrint("DNI: ${_dniController.text}");
                         debugPrint("Nombre: ${_nombreController.text}");
                         debugPrint("RUC: ${_rucController.text}");
-                        debugPrint("Razón Social: ${_razonSocialController.text}");
+                        debugPrint(
+                          "Razón Social: ${_razonSocialController.text}",
+                        );
                         debugPrint("Dirección: ${_direccionController.text}");
 
                         Navigator.pop(context);
@@ -236,9 +231,7 @@ class _FinalizarVentaDialogState
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xff0A2E6E),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 18,
-                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 18),
                       ),
                     ),
                   ),

@@ -52,13 +52,13 @@ class BluetoothPrinterTest {
       print('📡 Registrando receptor de dispositivos BLE...');
 
       subscription = _central.discovered.listen(
-            (event) {
+        (event) {
           final name = event.advertisement.name ?? '';
 
           print(
             '📡 BLE detectado: '
-                '${name.isEmpty ? "(sin nombre)" : name} '
-                '| RSSI: ${event.rssi}',
+            '${name.isEmpty ? "(sin nombre)" : name} '
+            '| RSSI: ${event.rssi}',
           );
 
           if (name == printerName && !completer.isCompleted) {
@@ -83,9 +83,7 @@ class BluetoothPrinterTest {
       // Damos tiempo al plugin de Windows para registrar
       // correctamente el controlador nativo antes de iniciar
       // el observador.
-      await Future<void>.delayed(
-        const Duration(milliseconds: 500),
-      );
+      await Future<void>.delayed(const Duration(milliseconds: 500));
 
       // =====================================================
       // 3. INICIAR BÚSQUEDA
@@ -130,7 +128,7 @@ class BluetoothPrinterTest {
 
       print(
         'Nombre: '
-            '${event.advertisement.name ?? "(sin nombre)"}',
+        '${event.advertisement.name ?? "(sin nombre)"}',
       );
 
       print('UUID: ${peripheral.uuid}');
@@ -174,7 +172,7 @@ class BluetoothPrinterTest {
         print('Primario: ${service.isPrimary}');
         print(
           'Características: '
-              '${service.characteristics.length}',
+          '${service.characteristics.length}',
         );
 
         for (final characteristic in service.characteristics) {
@@ -183,16 +181,16 @@ class BluetoothPrinterTest {
           print('   UUID: ${characteristic.uuid}');
           print(
             '   Propiedades: '
-                '${characteristic.properties}',
+            '${characteristic.properties}',
           );
 
           final serviceMatches =
               service.uuid.toString().toLowerCase() ==
-                  targetServiceUuid.toLowerCase();
+              targetServiceUuid.toLowerCase();
 
           final characteristicMatches =
               characteristic.uuid.toString().toLowerCase() ==
-                  targetCharacteristicUuid.toLowerCase();
+              targetCharacteristicUuid.toLowerCase();
 
           if (serviceMatches && characteristicMatches) {
             printerCharacteristic = characteristic;
@@ -234,12 +232,12 @@ class BluetoothPrinterTest {
       print('Característica: $targetCharacteristicUuid');
       print(
         'Propiedades: '
-            '${printerCharacteristic.properties}',
+        '${printerCharacteristic.properties}',
       );
 
       // =====================================================
-// 10. PREPARAR PRUEBA ESC/POS
-// =====================================================
+      // 10. PREPARAR PRUEBA ESC/POS
+      // =====================================================
 
       final List<int> bytes = [
         // ESC @ - Inicializar impresora
@@ -264,10 +262,9 @@ class BluetoothPrinterTest {
       print('');
       print('📦 Bytes preparados: ${data.length}');
 
-
-// =====================================================
-// 11. CONSULTAR TAMAÑO MAXIMO DE ESCRITURA
-// =====================================================
+      // =====================================================
+      // 11. CONSULTAR TAMAÑO MAXIMO DE ESCRITURA
+      // =====================================================
 
       print('');
       print('==============================================');
@@ -281,10 +278,9 @@ class BluetoothPrinterTest {
 
       print('📏 Máximo sin respuesta: $maxWriteLength bytes');
 
-
-// =====================================================
-// 12. ENVIAR DATOS POR BLOQUES
-// =====================================================
+      // =====================================================
+      // 12. ENVIAR DATOS POR BLOQUES
+      // =====================================================
 
       print('');
       print('==============================================');
@@ -303,8 +299,8 @@ class BluetoothPrinterTest {
 
           print(
             '📤 Enviando bytes '
-                '${enviados + 1}-$fin '
-                '(${bloque.length} bytes)...',
+            '${enviados + 1}-$fin '
+            '(${bloque.length} bytes)...',
           );
 
           await _central.writeCharacteristic(
@@ -317,9 +313,7 @@ class BluetoothPrinterTest {
           enviados = fin;
 
           // Pequeña pausa para darle tiempo a la impresora
-          await Future<void>.delayed(
-            const Duration(milliseconds: 50),
-          );
+          await Future<void>.delayed(const Duration(milliseconds: 50));
         }
 
         print('');
@@ -338,24 +332,19 @@ class BluetoothPrinterTest {
         print(writeStack);
       }
 
-
-// =====================================================
-// 13. ESPERAR A QUE LA IMPRESORA PROCESE
-// =====================================================
+      // =====================================================
+      // 13. ESPERAR A QUE LA IMPRESORA PROCESE
+      // =====================================================
 
       print('');
       print('⏳ Esperando procesamiento de la impresora...');
 
-      await Future<void>.delayed(
-        const Duration(seconds: 3),
-      );
+      await Future<void>.delayed(const Duration(seconds: 3));
 
       print('✅ Tiempo de procesamiento terminado.');
 
       // Esperar antes de desconectar.
-      await Future<void>.delayed(
-        const Duration(seconds: 2),
-      );
+      await Future<void>.delayed(const Duration(seconds: 2));
 
       // =====================================================
       // 12. DESCONECTAR

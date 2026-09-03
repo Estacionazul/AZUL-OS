@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -51,9 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (usuario == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Usuario o PIN incorrecto.',
-            ),
+            content: Text('Usuario o PIN incorrecto.'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -63,19 +61,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
       SesionService.instancia.iniciarSesion(usuario);
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const HomeScreen(),
-        ),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'No se pudo iniciar sesión: $e',
-          ),
+          content: Text('No se pudo iniciar sesión: $e'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -96,17 +90,14 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 420,
-            ),
+            constraints: const BoxConstraints(maxWidth: 420),
             child: Card(
               child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Form(
                   key: _formKey,
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.stretch,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const Icon(
                         Icons.lock_person_rounded,
@@ -142,9 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const Text(
                         'Ingresa tus datos para acceder al sistema.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                        ),
+                        style: TextStyle(color: AppColors.textSecondary),
                       ),
 
                       const SizedBox(height: 28),
@@ -153,13 +142,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _usuarioController,
                         decoration: const InputDecoration(
                           labelText: 'Usuario',
-                          prefixIcon: Icon(
-                            Icons.person_outline,
-                          ),
+                          prefixIcon: Icon(Icons.person_outline),
                         ),
                         validator: (value) {
-                          if (value == null ||
-                              value.trim().isEmpty) {
+                          if (value == null || value.trim().isEmpty) {
                             return 'Ingresa el usuario.';
                           }
 
@@ -175,9 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           labelText: 'PIN',
-                          prefixIcon: const Icon(
-                            Icons.lock_outline,
-                          ),
+                          prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             onPressed: () {
                               setState(() {
@@ -192,8 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         validator: (value) {
-                          if (value == null ||
-                              value.isEmpty) {
+                          if (value == null || value.isEmpty) {
                             return 'Ingresa el PIN.';
                           }
 
@@ -206,27 +189,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(
                         height: 52,
                         child: ElevatedButton.icon(
-                          onPressed:
-                              _ingresando
-                                  ? null
-                                  : _iniciarSesion,
+                          onPressed: _ingresando ? null : _iniciarSesion,
                           icon: _ingresando
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child:
-                                      CircularProgressIndicator(
+                                  child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Icon(
-                                  Icons.login_rounded,
-                                ),
+                              : const Icon(Icons.login_rounded),
                           label: Text(
-                            _ingresando
-                                ? 'INGRESANDO...'
-                                : 'INGRESAR',
+                            _ingresando ? 'INGRESANDO...' : 'INGRESAR',
                           ),
                         ),
                       ),

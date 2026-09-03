@@ -6,14 +6,8 @@ import '../tables/detalle_ventas_table.dart';
 
 part 'ventas_dao.g.dart';
 
-@DriftAccessor(
-  tables: [
-    Ventas,
-    DetalleVentas,
-  ],
-)
-class VentasDao extends DatabaseAccessor<AppDatabase>
-    with _$VentasDaoMixin {
+@DriftAccessor(tables: [Ventas, DetalleVentas])
+class VentasDao extends DatabaseAccessor<AppDatabase> with _$VentasDaoMixin {
   VentasDao(AppDatabase db) : super(db);
 
   // ==========================================================
@@ -23,9 +17,7 @@ class VentasDao extends DatabaseAccessor<AppDatabase>
   // operaciones de base de datos dentro de UNA SOLA transacción.
   // ==========================================================
 
-  Future<T> ejecutarEnTransaccion<T>(
-      Future<T> Function() accion,
-      ) {
+  Future<T> ejecutarEnTransaccion<T>(Future<T> Function() accion) {
     return transaction(accion);
   }
 
@@ -62,16 +54,12 @@ class VentasDao extends DatabaseAccessor<AppDatabase>
     required VentasCompanion venta,
     required List<DetalleVentasCompanion> detalles,
   }) async {
-    final ventaId = await into(ventas).insert(
-      venta,
-    );
+    final ventaId = await into(ventas).insert(venta);
 
     for (final detalle in detalles) {
-      await into(detalleVentas).insert(
-        detalle.copyWith(
-          ventaId: Value(ventaId),
-        ),
-      );
+      await into(
+        detalleVentas,
+      ).insert(detalle.copyWith(ventaId: Value(ventaId)));
     }
 
     return ventaId;
@@ -82,11 +70,7 @@ class VentasDao extends DatabaseAccessor<AppDatabase>
   // ==========================================================
 
   Future<List<Venta>> obtenerVentas() {
-    return (select(ventas)
-      ..orderBy([
-            (t) => OrderingTerm.desc(t.fecha),
-      ]))
-        .get();
+    return (select(ventas)..orderBy([(t) => OrderingTerm.desc(t.fecha)])).get();
   }
 
   // ==========================================================
@@ -94,21 +78,17 @@ class VentasDao extends DatabaseAccessor<AppDatabase>
   // ==========================================================
 
   Future<Venta?> obtenerVenta(int id) {
-    return (select(ventas)
-      ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    return (select(ventas)..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 
   // ==========================================================
   // OBTENER DETALLE DE UNA VENTA
   // ==========================================================
 
-  Future<List<DetalleVenta>> obtenerDetalleVenta(
-      int ventaId,
-      ) {
-    return (select(detalleVentas)
-      ..where((t) => t.ventaId.equals(ventaId)))
-        .get();
+  Future<List<DetalleVenta>> obtenerDetalleVenta(int ventaId) {
+    return (select(
+      detalleVentas,
+    )..where((t) => t.ventaId.equals(ventaId))).get();
   }
 
   // ==========================================================
@@ -117,17 +97,11 @@ class VentasDao extends DatabaseAccessor<AppDatabase>
 
   Future<void> eliminarVenta(int ventaId) async {
     await transaction(() async {
-      await (delete(detalleVentas)
-        ..where(
-              (t) => t.ventaId.equals(ventaId),
-        ))
-          .go();
+      await (delete(
+        detalleVentas,
+      )..where((t) => t.ventaId.equals(ventaId))).go();
 
-      await (delete(ventas)
-        ..where(
-              (t) => t.id.equals(ventaId),
-        ))
-          .go();
+      await (delete(ventas)..where((t) => t.id.equals(ventaId))).go();
     });
   }
 
@@ -147,15 +121,12 @@ class VentasDao extends DatabaseAccessor<AppDatabase>
   // ==========================================================
 
   Future<String?> obtenerUltimoNumeroVenta() async {
-    final ultimaVenta = await (select(ventas)
-      ..where(
-            (t) => t.tipoDocumento.equals('Nota de Venta'),
-      )
-      ..orderBy([
-            (t) => OrderingTerm.desc(t.id),
-      ])
-      ..limit(1))
-        .getSingleOrNull();
+    final ultimaVenta =
+        await (select(ventas)
+              ..where((t) => t.tipoDocumento.equals('Nota de Venta'))
+              ..orderBy([(t) => OrderingTerm.desc(t.id)])
+              ..limit(1))
+            .getSingleOrNull();
 
     return ultimaVenta?.numero;
   }

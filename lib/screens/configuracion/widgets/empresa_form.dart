@@ -86,9 +86,7 @@ class _EmpresaFormState extends State<EmpresaForm> {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Configuración guardada correctamente"),
-      ),
+      const SnackBar(content: Text("Configuración guardada correctamente")),
     );
   }
 
@@ -114,9 +112,7 @@ class _EmpresaFormState extends State<EmpresaForm> {
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
     );
@@ -129,10 +125,7 @@ class _EmpresaFormState extends State<EmpresaForm> {
       children: [
         const Text(
           "CAFETERÍA ESTACIÓN AZUL",
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 25),
         _campo(
@@ -140,11 +133,7 @@ class _EmpresaFormState extends State<EmpresaForm> {
           label: "Nombre Comercial",
           icon: Icons.store,
         ),
-        _campo(
-          controller: _rucController,
-          label: "RUC",
-          icon: Icons.badge,
-        ),
+        _campo(controller: _rucController, label: "RUC", icon: Icons.badge),
         _campo(
           controller: _direccionController,
           label: "Dirección",

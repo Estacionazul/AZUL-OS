@@ -1,4 +1,4 @@
-﻿import 'package:drift/drift.dart';
+import 'package:drift/drift.dart';
 
 import '../app_database.dart';
 import '../tables/permisos_usuario_table.dart';
@@ -14,9 +14,7 @@ class PermisosUsuarioDao extends DatabaseAccessor<AppDatabase>
   // CREAR PERMISO
   // ==========================================================
 
-  Future<int> crearPermiso(
-    PermisosUsuarioCompanion permiso,
-  ) {
+  Future<int> crearPermiso(PermisosUsuarioCompanion permiso) {
     return into(permisosUsuario).insert(permiso);
   }
 
@@ -24,14 +22,10 @@ class PermisosUsuarioDao extends DatabaseAccessor<AppDatabase>
   // OBTENER TODOS LOS PERMISOS DE UN USUARIO
   // ==========================================================
 
-  Future<List<PermisosUsuarioData>> obtenerPorUsuario(
-    int usuarioId,
-  ) {
+  Future<List<PermisosUsuarioData>> obtenerPorUsuario(int usuarioId) {
     return (select(permisosUsuario)
           ..where((p) => p.usuarioId.equals(usuarioId))
-          ..orderBy([
-            (p) => OrderingTerm(expression: p.modulo),
-          ]))
+          ..orderBy([(p) => OrderingTerm(expression: p.modulo)]))
         .get();
   }
 
@@ -39,16 +33,10 @@ class PermisosUsuarioDao extends DatabaseAccessor<AppDatabase>
   // OBTENER UN PERMISO ESPECIFICO
   // ==========================================================
 
-  Future<PermisosUsuarioData?> obtenerPermiso(
-    int usuarioId,
-    String modulo,
-  ) {
-    return (select(permisosUsuario)
-          ..where(
-            (p) =>
-                p.usuarioId.equals(usuarioId) &
-                p.modulo.equals(modulo),
-          ))
+  Future<PermisosUsuarioData?> obtenerPermiso(int usuarioId, String modulo) {
+    return (select(permisosUsuario)..where(
+          (p) => p.usuarioId.equals(usuarioId) & p.modulo.equals(modulo),
+        ))
         .getSingleOrNull();
   }
 
@@ -56,14 +44,8 @@ class PermisosUsuarioDao extends DatabaseAccessor<AppDatabase>
   // COMPROBAR PERMISO
   // ==========================================================
 
-  Future<bool> tienePermiso(
-    int usuarioId,
-    String modulo,
-  ) async {
-    final permiso = await obtenerPermiso(
-      usuarioId,
-      modulo,
-    );
+  Future<bool> tienePermiso(int usuarioId, String modulo) async {
+    final permiso = await obtenerPermiso(usuarioId, modulo);
 
     return permiso?.permitido ?? false;
   }
@@ -77,10 +59,7 @@ class PermisosUsuarioDao extends DatabaseAccessor<AppDatabase>
     String modulo,
     bool permitido,
   ) async {
-    final existente = await obtenerPermiso(
-      usuarioId,
-      modulo,
-    );
+    final existente = await obtenerPermiso(usuarioId, modulo);
 
     if (existente == null) {
       await crearPermiso(
@@ -94,13 +73,8 @@ class PermisosUsuarioDao extends DatabaseAccessor<AppDatabase>
       return true;
     }
 
-    await (update(permisosUsuario)
-          ..where((p) => p.id.equals(existente.id)))
-        .write(
-      PermisosUsuarioCompanion(
-        permitido: Value(permitido),
-      ),
-    );
+    await (update(permisosUsuario)..where((p) => p.id.equals(existente.id)))
+        .write(PermisosUsuarioCompanion(permitido: Value(permitido)));
 
     return true;
   }
@@ -109,11 +83,9 @@ class PermisosUsuarioDao extends DatabaseAccessor<AppDatabase>
   // ELIMINAR PERMISOS DE UN USUARIO
   // ==========================================================
 
-  Future<int> eliminarPermisosUsuario(
-    int usuarioId,
-  ) {
-    return (delete(permisosUsuario)
-          ..where((p) => p.usuarioId.equals(usuarioId)))
-        .go();
+  Future<int> eliminarPermisosUsuario(int usuarioId) {
+    return (delete(
+      permisosUsuario,
+    )..where((p) => p.usuarioId.equals(usuarioId))).go();
   }
 }

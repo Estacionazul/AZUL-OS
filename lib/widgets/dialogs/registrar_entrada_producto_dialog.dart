@@ -8,10 +8,7 @@ import '../../models/movimiento_inventario_model.dart';
 class RegistrarEntradaProductoDialog extends StatefulWidget {
   final ProductoModel producto;
 
-  const RegistrarEntradaProductoDialog({
-    super.key,
-    required this.producto,
-  });
+  const RegistrarEntradaProductoDialog({super.key, required this.producto});
 
   @override
   State<RegistrarEntradaProductoDialog> createState() =>
@@ -33,34 +30,27 @@ class _RegistrarEntradaProductoDialogState
   }
 
   Future<void> _registrarEntrada() async {
-    final cantidad =
-        int.tryParse(_cantidadController.text.trim()) ?? 0;
+    final cantidad = int.tryParse(_cantidadController.text.trim()) ?? 0;
 
     final motivo = _motivoController.text.trim();
 
     if (cantidad <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Ingresa una cantidad válida mayor a 0."),
-        ),
+        const SnackBar(content: Text("Ingresa una cantidad válida mayor a 0.")),
       );
       return;
     }
 
     if (motivo.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Ingresa el motivo de la entrada."),
-        ),
+        const SnackBar(content: Text("Ingresa el motivo de la entrada.")),
       );
       return;
     }
 
     if (widget.producto.id == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("El producto no tiene un ID válido."),
-        ),
+        const SnackBar(content: Text("El producto no tiene un ID válido.")),
       );
       return;
     }
@@ -70,8 +60,7 @@ class _RegistrarEntradaProductoDialogState
     });
 
     try {
-      final movimientoService =
-      context.read<MovimientoInventarioService>();
+      final movimientoService = context.read<MovimientoInventarioService>();
 
       final stockAnterior = widget.producto.stock;
 
@@ -87,8 +76,7 @@ class _RegistrarEntradaProductoDialogState
           productoId: widget.producto.id,
           cantidad: cantidad.toDouble(),
           signo: 1,
-          observacion:
-          "$motivo - Stock anterior: $stockAnterior",
+          observacion: "$motivo - Stock anterior: $stockAnterior",
         ),
       );
 
@@ -104,8 +92,7 @@ class _RegistrarEntradaProductoDialogState
           productoId: widget.producto.id,
           cantidad: cantidad.toDouble(),
           signo: 1,
-          observacion:
-          "$motivo - Stock anterior: $stockAnterior",
+          observacion: "$motivo - Stock anterior: $stockAnterior",
         ),
       );
 
@@ -128,9 +115,7 @@ class _RegistrarEntradaProductoDialogState
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("No se pudo registrar la entrada: $e"),
-        ),
+        SnackBar(content: Text("No se pudo registrar la entrada: $e")),
       );
     }
   }
@@ -138,22 +123,15 @@ class _RegistrarEntradaProductoDialogState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(22),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
       title: Row(
         children: [
-          const Icon(
-            Icons.move_to_inbox,
-            color: Color(0xff0A2E6E),
-          ),
+          const Icon(Icons.move_to_inbox, color: Color(0xff0A2E6E)),
           const SizedBox(width: 10),
           const Expanded(
             child: Text(
               "Registrar entrada",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -189,9 +167,7 @@ class _RegistrarEntradaProductoDialogState
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          "Stock actual: ${widget.producto.stock} und",
-                        ),
+                        Text("Stock actual: ${widget.producto.stock} und"),
                       ],
                     ),
                   ),
@@ -233,9 +209,7 @@ class _RegistrarEntradaProductoDialogState
       ),
       actions: [
         TextButton.icon(
-          onPressed: _guardando
-              ? null
-              : () => Navigator.pop(context),
+          onPressed: _guardando ? null : () => Navigator.pop(context),
           icon: const Icon(Icons.close),
           label: const Text("Cancelar"),
         ),
@@ -243,17 +217,15 @@ class _RegistrarEntradaProductoDialogState
           onPressed: _guardando ? null : _registrarEntrada,
           icon: _guardando
               ? const SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Colors.white,
-            ),
-          )
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
               : const Icon(Icons.save),
-          label: Text(
-            _guardando ? "Guardando..." : "Registrar",
-          ),
+          label: Text(_guardando ? "Guardando..." : "Registrar"),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xff0A2E6E),
             foregroundColor: Colors.white,

@@ -19,14 +19,12 @@ final class RawPrinter {
   final String printerName;
 
   Future<void> send(
-      List<int> bytes, {
-        String documentName = 'Ticket Estación Azul',
-        PrinterDataType dataType = PrinterDataType.raw,
-      }) async {
+    List<int> bytes, {
+    String documentName = 'Ticket Estación Azul',
+    PrinterDataType dataType = PrinterDataType.raw,
+  }) async {
     if (bytes.isEmpty) {
-      throw ArgumentError(
-        'No se puede imprimir un documento vacío.',
-      );
+      throw ArgumentError('No se puede imprimir un documento vacío.');
     }
 
     print('');
@@ -43,18 +41,13 @@ final class RawPrinter {
       print('');
       print('1️⃣ Preparando nombre de impresora...');
 
-      final printerNamePtr =
-      printerName.toNativeUtf16(allocator: arena);
+      final printerNamePtr = printerName.toNativeUtf16(allocator: arena);
 
       final printerHandlePtr = arena<IntPtr>();
 
       print('2️⃣ Ejecutando OpenPrinter()...');
 
-      final opened = OpenPrinter(
-        printerNamePtr,
-        printerHandlePtr,
-        nullptr,
-      );
+      final opened = OpenPrinter(printerNamePtr, printerHandlePtr, nullptr);
 
       print('3️⃣ OpenPrinter() terminó.');
       print('   Resultado: $opened');
@@ -64,7 +57,7 @@ final class RawPrinter {
 
         throw Exception(
           'No se pudo abrir la impresora "$printerName". '
-              'Código de Windows: $error',
+          'Código de Windows: $error',
         );
       }
 
@@ -83,21 +76,15 @@ final class RawPrinter {
 
         final docInfo = arena<DOC_INFO_1>();
 
-        docInfo.ref.pDocName =
-            documentName.toNativeUtf16(allocator: arena);
+        docInfo.ref.pDocName = documentName.toNativeUtf16(allocator: arena);
 
-        docInfo.ref.pDatatype =
-            dataType.value.toNativeUtf16(allocator: arena);
+        docInfo.ref.pDatatype = dataType.value.toNativeUtf16(allocator: arena);
 
         docInfo.ref.pOutputFile = nullptr;
 
         print('5️⃣ Ejecutando StartDocPrinter()...');
 
-        final jobId = StartDocPrinter(
-          printerHandle,
-          1,
-          docInfo,
-        );
+        final jobId = StartDocPrinter(printerHandle, 1, docInfo);
 
         print('6️⃣ StartDocPrinter() terminó.');
         print('   Job ID: $jobId');
@@ -107,7 +94,7 @@ final class RawPrinter {
 
           throw Exception(
             'No se pudo iniciar el trabajo de impresión. '
-                'Código de Windows: $error',
+            'Código de Windows: $error',
           );
         }
 
@@ -118,9 +105,7 @@ final class RawPrinter {
         print('');
         print('7️⃣ Ejecutando StartPagePrinter()...');
 
-        final pageResult = StartPagePrinter(
-          printerHandle,
-        );
+        final pageResult = StartPagePrinter(printerHandle);
 
         print('8️⃣ StartPagePrinter() terminó.');
         print('   Resultado: $pageResult');
@@ -130,7 +115,7 @@ final class RawPrinter {
 
           throw Exception(
             'No se pudo iniciar la página de impresión. '
-                'Código de Windows: $error',
+            'Código de Windows: $error',
           );
         }
 
@@ -172,14 +157,14 @@ final class RawPrinter {
 
           throw Exception(
             'No se pudieron enviar los datos a la impresora. '
-                'Código de Windows: $error',
+            'Código de Windows: $error',
           );
         }
 
         if (written.value != bytes.length) {
           throw Exception(
             'La impresora recibió ${written.value} bytes '
-                'de ${bytes.length} bytes esperados.',
+            'de ${bytes.length} bytes esperados.',
           );
         }
 
@@ -188,9 +173,7 @@ final class RawPrinter {
         print('');
         print('1️⃣3️⃣ Ejecutando EndPagePrinter()...');
 
-        final pageEnded = EndPagePrinter(
-          printerHandle,
-        );
+        final pageEnded = EndPagePrinter(printerHandle);
 
         print('1️⃣4️⃣ EndPagePrinter() terminó.');
         print('   Resultado: $pageEnded');
@@ -200,7 +183,7 @@ final class RawPrinter {
 
           throw Exception(
             'No se pudo finalizar la página de impresión. '
-                'Código de Windows: $error',
+            'Código de Windows: $error',
           );
         }
 
@@ -211,9 +194,7 @@ final class RawPrinter {
         print('');
         print('1️⃣5️⃣ Ejecutando EndDocPrinter()...');
 
-        final documentEnded = EndDocPrinter(
-          printerHandle,
-        );
+        final documentEnded = EndDocPrinter(printerHandle);
 
         print('1️⃣6️⃣ EndDocPrinter() terminó.');
         print('   Resultado: $documentEnded');
@@ -223,7 +204,7 @@ final class RawPrinter {
 
           throw Exception(
             'No se pudo finalizar el trabajo de impresión. '
-                'Código de Windows: $error',
+            'Código de Windows: $error',
           );
         }
 

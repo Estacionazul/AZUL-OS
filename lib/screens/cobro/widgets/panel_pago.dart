@@ -5,10 +5,7 @@ import '../../../services/venta_service.dart';
 class PanelPago extends StatefulWidget {
   final double total;
 
-  const PanelPago({
-    super.key,
-    required this.total,
-  });
+  const PanelPago({super.key, required this.total});
 
   @override
   State<PanelPago> createState() => _PanelPagoState();
@@ -19,14 +16,10 @@ class _PanelPagoState extends State<PanelPago> {
 
   final ventaService = VentaService.instance;
 
-  final TextEditingController controller =
-  TextEditingController();
+  final TextEditingController controller = TextEditingController();
 
   double get montoPagado {
-    return double.tryParse(
-      controller.text.replaceAll(",", "."),
-    ) ??
-        0;
+    return double.tryParse(controller.text.replaceAll(",", ".")) ?? 0;
   }
 
   double get vuelto {
@@ -51,20 +44,14 @@ class _PanelPagoState extends State<PanelPago> {
   Widget build(BuildContext context) {
     return Card(
       elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: ListView(
           children: [
-
             const Text(
               "Cobro",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 20),
@@ -146,8 +133,7 @@ class _PanelPagoState extends State<PanelPago> {
             if (metodo == "Efectivo") ...[
               TextField(
                 controller: controller,
-                keyboardType:
-                const TextInputType.numberWithOptions(
+                keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
                 decoration: const InputDecoration(
@@ -166,9 +152,7 @@ class _PanelPagoState extends State<PanelPago> {
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: pagoCompleto
-                      ? Colors.green
-                      : Colors.red,
+                  color: pagoCompleto ? Colors.green : Colors.red,
                 ),
               ),
             ],

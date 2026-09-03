@@ -10,16 +10,12 @@ class PosSearch extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       onChanged: (texto) {
-        context
-            .read<ProductoService>()
-            .buscarProductos(texto);
+        context.read<ProductoService>().buscarProductos(texto);
       },
       decoration: InputDecoration(
         hintText: 'Buscar producto...',
         prefixIcon: const Icon(Icons.search),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

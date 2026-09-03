@@ -49,8 +49,7 @@ class ClienteMapper {
       telefono: cliente.telefono,
       correo: cliente.correo,
       direccion: cliente.direccion,
-      fechaRegistro:
-      cliente.fechaRegistro ?? DateTime.now(),
+      fechaRegistro: cliente.fechaRegistro ?? DateTime.now(),
       ultimaVisita: cliente.ultimaVisita,
       totalGastado: cliente.totalGastado,
       cantidadCompras: cliente.cantidadCompras,

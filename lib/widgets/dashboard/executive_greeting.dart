@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 class ExecutiveGreeting extends StatelessWidget {
   const ExecutiveGreeting({super.key});
 
@@ -25,43 +24,30 @@ class ExecutiveGreeting extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         Text(
           _greeting(),
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
 
         const SizedBox(height: 8),
 
         const Text(
           "Centro de Control",
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
         ),
 
         const SizedBox(height: 8),
 
         Text(
           "${now.day}/${now.month}/${now.year}",
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-          ),
+          style: const TextStyle(fontSize: 16, color: Colors.grey),
         ),
 
         const SizedBox(height: 16),
 
         const Text(
           "Bienvenida a la plataforma integral para Estación Azul.",
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black54,
-          ),
+          style: TextStyle(fontSize: 16, color: Colors.black54),
         ),
       ],
     );

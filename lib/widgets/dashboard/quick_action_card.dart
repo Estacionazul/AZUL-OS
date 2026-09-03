@@ -21,9 +21,7 @@ class QuickActionCard extends StatelessWidget {
       onTap: onTap,
       child: Card(
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -32,11 +30,7 @@ class QuickActionCard extends StatelessWidget {
               CircleAvatar(
                 radius: 30,
                 backgroundColor: color.withValues(alpha: 0.15),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 30,
-                ),
+                child: Icon(icon, color: color, size: 30),
               ),
 
               const SizedBox(height: 18),

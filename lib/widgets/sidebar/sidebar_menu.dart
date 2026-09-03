@@ -56,37 +56,72 @@ class SidebarMenu extends StatelessWidget {
 
                     SidebarMenuItem(
                       icon: Icons.inventory_2_rounded,
-                      title: "Inventario",
+                      title: "Productos",
                       selected: selectedIndex == 2,
                       onTap: () => onItemSelected(2),
                     ),
 
                     SidebarMenuItem(
-                      icon: Icons.people_alt_rounded,
-                      title: "Clientes",
+                      icon: Icons.warehouse_rounded,
+                      title: "Inventario",
                       selected: selectedIndex == 3,
                       onTap: () => onItemSelected(3),
                     ),
 
                     SidebarMenuItem(
-                      icon: Icons.point_of_sale_rounded,
-                      title: "Caja",
+                      icon: Icons.menu_book_rounded,
+                      title: "Recetas",
                       selected: selectedIndex == 4,
                       onTap: () => onItemSelected(4),
                     ),
 
                     SidebarMenuItem(
-                      icon: Icons.bar_chart_rounded,
-                      title: "Reportes",
+                      icon: Icons.precision_manufacturing_rounded,
+                      title: "Producción",
                       selected: selectedIndex == 5,
                       onTap: () => onItemSelected(5),
                     ),
 
                     SidebarMenuItem(
-                      icon: Icons.settings_rounded,
-                      title: "Configuración",
+                      icon: Icons.shopping_cart_rounded,
+                      title: "Pedidos",
                       selected: selectedIndex == 6,
                       onTap: () => onItemSelected(6),
+                    ),
+
+                    SidebarMenuItem(
+                      icon: Icons.point_of_sale_rounded,
+                      title: "Ventas",
+                      selected: selectedIndex == 7,
+                      onTap: () => onItemSelected(7),
+                    ),
+
+                    SidebarMenuItem(
+                      icon: Icons.people_alt_rounded,
+                      title: "Clientes",
+                      selected: selectedIndex == 8,
+                      onTap: () => onItemSelected(8),
+                    ),
+
+                    SidebarMenuItem(
+                      icon: Icons.account_balance_wallet_rounded,
+                      title: "Caja",
+                      selected: selectedIndex == 9,
+                      onTap: () => onItemSelected(9),
+                    ),
+
+                    SidebarMenuItem(
+                      icon: Icons.bar_chart_rounded,
+                      title: "Reportes",
+                      selected: selectedIndex == 10,
+                      onTap: () => onItemSelected(10),
+                    ),
+
+                    SidebarMenuItem(
+                      icon: Icons.settings_rounded,
+                      title: "Configuración",
+                      selected: selectedIndex == 11,
+                      onTap: () => onItemSelected(11),
                     ),
                   ],
                 ),

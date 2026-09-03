@@ -28,9 +28,7 @@ class EmpresaMapper {
   /// Convierte EmpresaModel a EmpresaCompanion
   static EmpresaCompanion toCompanion(EmpresaModel model) {
     return EmpresaCompanion(
-      id: model.id == null
-          ? const Value.absent()
-          : Value(model.id!),
+      id: model.id == null ? const Value.absent() : Value(model.id!),
       nombre: Value(model.nombre),
       ruc: Value(model.ruc),
       tipoContribuyente: Value(model.tipoContribuyente),
@@ -43,9 +41,7 @@ class EmpresaMapper {
       instagram: model.instagram.isEmpty
           ? const Value.absent()
           : Value(model.instagram),
-      logo: model.logo.isEmpty
-          ? const Value.absent()
-          : Value(model.logo),
+      logo: model.logo.isEmpty ? const Value.absent() : Value(model.logo),
       serieBoleta: Value(model.serieBoleta),
       serieFactura: Value(model.serieFactura),
       correlativoBoleta: Value(model.correlativoBoleta),

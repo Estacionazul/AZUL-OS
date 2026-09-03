@@ -13,16 +13,11 @@ class PosTotal extends StatelessWidget {
         return ListTile(
           title: const Text(
             "TOTAL",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
           trailing: Text(
             "S/ ${carrito.total.toStringAsFixed(2)}",
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
         );
       },

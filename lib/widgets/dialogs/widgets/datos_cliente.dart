@@ -24,9 +24,7 @@ class DatosCliente extends StatelessWidget {
     return Card(
       elevation: 0,
       color: const Color(0xffF7F9FC),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
@@ -34,10 +32,7 @@ class DatosCliente extends StatelessWidget {
           children: [
             const Row(
               children: [
-                Icon(
-                  Icons.person_outline,
-                  color: Color(0xff0A2E6E),
-                ),
+                Icon(Icons.person_outline, color: Color(0xff0A2E6E)),
                 SizedBox(width: 8),
                 Text(
                   "Datos del Cliente",

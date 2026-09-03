@@ -22,30 +22,21 @@ import '../services/pedidos_service.dart';
 class PedidoDetalleScreen extends StatelessWidget {
   final UbicacionPedido ubicacion;
 
-  const PedidoDetalleScreen({
-    super.key,
-    required this.ubicacion,
-  });
+  const PedidoDetalleScreen({super.key, required this.ubicacion});
 
   @override
   Widget build(BuildContext context) {
     final pedidosService = context.watch<PedidosService>();
 
-    final pedido =
-    pedidosService.obtenerPedido(ubicacion.id);
+    final pedido = pedidosService.obtenerPedido(ubicacion.id);
 
     if (pedido == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(ubicacion.nombre),
-        ),
+        appBar: AppBar(title: Text(ubicacion.nombre)),
         body: const Center(
           child: Text(
             'No existe un pedido abierto.',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
         ),
       );
@@ -55,9 +46,7 @@ class PedidoDetalleScreen extends StatelessWidget {
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         if (pedido.estaVacio) {
-          pedidosService.cancelarPedido(
-            ubicacion.id,
-          );
+          pedidosService.cancelarPedido(ubicacion.id);
         }
       },
       child: Scaffold(
@@ -67,9 +56,7 @@ class PedidoDetalleScreen extends StatelessWidget {
           foregroundColor: Colors.white,
           title: Text(
             ubicacion.nombre,
-            style: const TextStyle(
-              fontWeight: FontWeight.w800,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           actions: [
             Padding(
@@ -77,9 +64,7 @@ class PedidoDetalleScreen extends StatelessWidget {
               child: Center(
                 child: Text(
                   pedido.numero,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
             ),
@@ -90,19 +75,9 @@ class PedidoDetalleScreen extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                flex: 6,
-                child: _ProductosPedidoPanel(
-                  pedido: pedido,
-                ),
-              ),
+              Expanded(flex: 6, child: _ProductosPedidoPanel(pedido: pedido)),
               const SizedBox(width: 20),
-              Expanded(
-                flex: 4,
-                child: _ResumenPedido(
-                  pedido: pedido,
-                ),
-              ),
+              Expanded(flex: 4, child: _ResumenPedido(pedido: pedido)),
             ],
           ),
         ),
@@ -118,36 +93,27 @@ class PedidoDetalleScreen extends StatelessWidget {
 class _ProductosPedidoPanel extends StatelessWidget {
   final PedidoAbierto pedido;
 
-  const _ProductosPedidoPanel({
-    required this.pedido,
-  });
+  const _ProductosPedidoPanel({required this.pedido});
 
   @override
   Widget build(BuildContext context) {
-    final productos =
-        context.watch<ProductoService>().todosProductos;
+    final productos = context.watch<ProductoService>().todosProductos;
 
     final puedeAgregar =
         pedido.estado != EstadoPedido.esperandoCuenta &&
-            pedido.estado != EstadoPedido.cerrado;
+        pedido.estado != EstadoPedido.cerrado;
 
     return Card(
       elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'AGREGAR PRODUCTOS',
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.w900,
-              ),
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900),
             ),
 
             const SizedBox(height: 8),
@@ -156,10 +122,7 @@ class _ProductosPedidoPanel extends StatelessWidget {
               puedeAgregar
                   ? 'Selecciona los productos para ${pedido.ubicacion.nombre}.'
                   : 'El pedido está esperando el pago.',
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
             ),
 
             const SizedBox(height: 20),
@@ -167,53 +130,43 @@ class _ProductosPedidoPanel extends StatelessWidget {
             Expanded(
               child: puedeAgregar
                   ? GridView.builder(
-                gridDelegate:
-                const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 14,
-                  mainAxisSpacing: 14,
-                  childAspectRatio: 2.7,
-                ),
-                itemCount: productos.length,
-                itemBuilder:
-                    (context, index) {
-                  final producto =
-                  productos[index];
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 14,
+                            mainAxisSpacing: 14,
+                            childAspectRatio: 2.7,
+                          ),
+                      itemCount: productos.length,
+                      itemBuilder: (context, index) {
+                        final producto = productos[index];
 
-                  return _ProductoPedidoButton(
-                    producto: producto,
-                    onTap: () =>
-                        _agregarProducto(
-                          context,
-                          producto,
-                        ),
-                  );
-                },
-              )
+                        return _ProductoPedidoButton(
+                          producto: producto,
+                          onTap: () => _agregarProducto(context, producto),
+                        );
+                      },
+                    )
                   : const Center(
-                child: Column(
-                  mainAxisSize:
-                  MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons
-                          .payments_rounded,
-                      size: 55,
-                      color:
-                      Colors.orange,
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      'Pedido listo para cobrar',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight:
-                        FontWeight.w700,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.payments_rounded,
+                            size: 55,
+                            color: Colors.orange,
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            'Pedido listo para cobrar',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
             ),
           ],
         ),
@@ -222,29 +175,23 @@ class _ProductosPedidoPanel extends StatelessWidget {
   }
 
   Future<void> _agregarProducto(
-      BuildContext context,
-      ProductoModel producto,
-      ) async {
-    final pedidosService =
-    context.read<PedidosService>();
+    BuildContext context,
+    ProductoModel producto,
+  ) async {
+    final pedidosService = context.read<PedidosService>();
 
     final requiereVariantes =
         (producto.categoriaId == 1 &&
-            producto.nombre.toLowerCase() !=
-                'espresso') ||
-            producto.categoriaId == 2 ||
-            producto.categoriaId == 5;
+            producto.nombre.toLowerCase() != 'espresso') ||
+        producto.categoriaId == 2 ||
+        producto.categoriaId == 5;
 
     Map<String, dynamic>? resultado;
 
     if (requiereVariantes) {
-      resultado =
-      await showDialog<Map<String, dynamic>>(
+      resultado = await showDialog<Map<String, dynamic>>(
         context: context,
-        builder: (_) =>
-            VariantesProductoDialog(
-              producto: producto,
-            ),
+        builder: (_) => VariantesProductoDialog(producto: producto),
       );
 
       if (resultado == null) {
@@ -258,16 +205,11 @@ class _ProductosPedidoPanel extends StatelessWidget {
       tipoLeche: resultado?['tipoLeche'],
       endulzante: resultado?['endulzante'],
       infusion: resultado?['infusion'],
-      observaciones:
-      resultado?['observaciones'],
-      extraShot:
-      resultado?['extraShot'] ?? false,
+      observaciones: resultado?['observaciones'],
+      extraShot: resultado?['extraShot'] ?? false,
     );
 
-    pedidosService.agregarProductos(
-      pedido.ubicacion.id,
-      [item],
-    );
+    pedidosService.agregarProductos(pedido.ubicacion.id, [item]);
   }
 }
 
@@ -275,15 +217,11 @@ class _ProductosPedidoPanel extends StatelessWidget {
 // BOTÓN DE PRODUCTO
 // ==========================================================
 
-class _ProductoPedidoButton
-    extends StatelessWidget {
+class _ProductoPedidoButton extends StatelessWidget {
   final ProductoModel producto;
   final VoidCallback onTap;
 
-  const _ProductoPedidoButton({
-    required this.producto,
-    required this.onTap,
-  });
+  const _ProductoPedidoButton({required this.producto, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -293,13 +231,8 @@ class _ProductoPedidoButton
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 1,
-        side: BorderSide(
-          color: Colors.grey.shade200,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius:
-          BorderRadius.circular(14),
-        ),
+        side: BorderSide(color: Colors.grey.shade200),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       child: Row(
         children: [
@@ -314,11 +247,8 @@ class _ProductoPedidoButton
             child: Text(
               producto.nombre,
               maxLines: 2,
-              overflow:
-              TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-              ),
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
 
@@ -326,9 +256,7 @@ class _ProductoPedidoButton
 
           Text(
             'S/. ${producto.precioVenta.toStringAsFixed(2)}',
-            style: const TextStyle(
-              fontWeight: FontWeight.w800,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w800),
           ),
         ],
       ),
@@ -340,33 +268,24 @@ class _ProductoPedidoButton
 // RESUMEN DEL PEDIDO
 // ==========================================================
 
-class _ResumenPedido
-    extends StatelessWidget {
+class _ResumenPedido extends StatelessWidget {
   final PedidoAbierto pedido;
 
-  const _ResumenPedido({
-    required this.pedido,
-  });
+  const _ResumenPedido({required this.pedido});
 
   @override
   Widget build(BuildContext context) {
-    final service =
-    context.watch<PedidosService>();
+    final service = context.watch<PedidosService>();
 
-    final esperandoCuenta =
-        pedido.estado ==
-            EstadoPedido.esperandoCuenta;
+    final esperandoCuenta = pedido.estado == EstadoPedido.esperandoCuenta;
 
     return Card(
       elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -381,10 +300,7 @@ class _ResumenPedido
                 const Expanded(
                   child: Text(
                     'PEDIDO',
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w900,
-                    ),
+                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900),
                   ),
                 ),
 
@@ -392,8 +308,7 @@ class _ResumenPedido
                   '#${pedido.numeroComanda}',
                   style: TextStyle(
                     color: Colors.grey.shade600,
-                    fontWeight:
-                    FontWeight.w700,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -403,10 +318,7 @@ class _ResumenPedido
 
             Text(
               pedido.ubicacion.nombre,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
 
             if (esperandoCuenta) ...[
@@ -414,22 +326,18 @@ class _ResumenPedido
 
               Container(
                 width: double.infinity,
-                padding:
-                const EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.orange
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                  BorderRadius.circular(12),
+                  color: Colors.orange.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Row(
                   children: [
                     Icon(
-                      Icons
-                          .hourglass_top_rounded,
+                      Icons.hourglass_top_rounded,
                       color: Colors.orange,
                       size: 20,
                     ),
@@ -438,10 +346,8 @@ class _ResumenPedido
                       child: Text(
                         'ESPERANDO CUENTA',
                         style: TextStyle(
-                          color:
-                          Colors.orange,
-                          fontWeight:
-                          FontWeight.w800,
+                          color: Colors.orange,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
@@ -455,49 +361,33 @@ class _ResumenPedido
             Expanded(
               child: pedido.items.isEmpty
                   ? const Center(
-                child: Text(
-                  'Aún no hay productos.',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 16,
-                  ),
-                ),
-              )
+                      child: Text(
+                        'Aún no hay productos.',
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                    )
                   : ListView.separated(
-                itemCount:
-                pedido.items.length,
-                separatorBuilder:
-                    (_, _) =>
-                const Divider(
-                  height: 20,
-                ),
-                itemBuilder:
-                    (context, index) {
-                  final item =
-                  pedido.items[index];
+                      itemCount: pedido.items.length,
+                      separatorBuilder: (_, _) => const Divider(height: 20),
+                      itemBuilder: (context, index) {
+                        final item = pedido.items[index];
 
-                  return _ItemPedidoRow(
-                    item: item,
-                    ubicacionId:
-                    pedido.ubicacion.id,
-                  );
-                },
-              ),
+                        return _ItemPedidoRow(
+                          item: item,
+                          ubicacionId: pedido.ubicacion.id,
+                        );
+                      },
+                    ),
             ),
 
             const Divider(height: 30),
 
             Row(
-              mainAxisAlignment:
-              MainAxisAlignment
-                  .spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   'TOTAL',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
                 ),
                 Text(
                   'S/. ${pedido.total.toStringAsFixed(2)}',
@@ -515,29 +405,17 @@ class _ResumenPedido
             // ==================================================
             // ENVIAR COMANDA
             // ==================================================
-
             SizedBox(
               width: double.infinity,
               height: 54,
               child: ElevatedButton.icon(
-                onPressed:
-                pedido.estaVacio ||
-                    esperandoCuenta
+                onPressed: pedido.estaVacio || esperandoCuenta
                     ? null
-                    : () => _enviarComanda(
-                  context,
-                  service,
-                ),
-                icon: const Icon(
-                  Icons.print_rounded,
-                ),
+                    : () => _enviarComanda(context, service),
+                icon: const Icon(Icons.print_rounded),
                 label: const Text(
                   'ENVIAR COMANDA',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight:
-                    FontWeight.w800,
-                  ),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
                 ),
               ),
             ),
@@ -547,7 +425,6 @@ class _ResumenPedido
             // ==================================================
             // SOLICITAR / COBRAR CUENTA
             // ==================================================
-
             SizedBox(
               width: double.infinity,
               height: 54,
@@ -555,40 +432,20 @@ class _ResumenPedido
                 onPressed: pedido.estaVacio
                     ? null
                     : esperandoCuenta
-                    ? () => _cobrarCuenta(
-                  context,
-                )
-                    : () =>
-                    _solicitarCuenta(
-                      context,
-                      service,
-                    ),
+                    ? () => _cobrarCuenta(context)
+                    : () => _solicitarCuenta(context, service),
                 icon: Icon(
                   esperandoCuenta
-                      ? Icons
-                      .payments_rounded
-                      : Icons
-                      .receipt_long_rounded,
+                      ? Icons.payments_rounded
+                      : Icons.receipt_long_rounded,
                 ),
                 label: Text(
-                  esperandoCuenta
-                      ? 'COBRAR CUENTA'
-                      : 'SOLICITAR CUENTA',
-                  style: const TextStyle(
-                    fontWeight:
-                    FontWeight.w800,
-                  ),
+                  esperandoCuenta ? 'COBRAR CUENTA' : 'SOLICITAR CUENTA',
+                  style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
-                style:
-                ElevatedButton.styleFrom(
-                  backgroundColor:
-                  esperandoCuenta
-                      ? Colors.green
-                      : null,
-                  foregroundColor:
-                  esperandoCuenta
-                      ? Colors.white
-                      : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: esperandoCuenta ? Colors.green : null,
+                  foregroundColor: esperandoCuenta ? Colors.white : null,
                 ),
               ),
             ),
@@ -602,21 +459,11 @@ class _ResumenPedido
   // SOLICITAR CUENTA
   // ==========================================================
 
-  void _solicitarCuenta(
-      BuildContext context,
-      PedidosService service,
-      ) {
-    service.pasarAEsperandoCuenta(
-      pedido.ubicacion.id,
-    );
+  void _solicitarCuenta(BuildContext context, PedidosService service) {
+    service.pasarAEsperandoCuenta(pedido.ubicacion.id);
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Pedido enviado a espera de cuenta.',
-        ),
-      ),
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Pedido enviado a espera de cuenta.')),
     );
   }
 
@@ -624,25 +471,18 @@ class _ResumenPedido
   // COBRAR CUENTA
   // ==========================================================
 
-  Future<void> _cobrarCuenta(
-      BuildContext context,
-      ) async {
-    final carrito =
-    context.read<CarritoService>();
+  Future<void> _cobrarCuenta(BuildContext context) async {
+    final carrito = context.read<CarritoService>();
 
-    final cobro =
-    context.read<CobroService>();
+    final cobro = context.read<CobroService>();
 
-    final pedidosService =
-    context.read<PedidosService>();
+    final pedidosService = context.read<PedidosService>();
 
     // --------------------------------------------------------
     // CARGAR PEDIDO EN EL CARRITO
     // --------------------------------------------------------
 
-    carrito.cargarItems(
-      pedido.items,
-    );
+    carrito.cargarItems(pedido.items);
 
     // --------------------------------------------------------
     // ABRIR DIÁLOGO DE COBRO
@@ -654,38 +494,29 @@ class _ResumenPedido
       builder: (dialogContext) {
         return FinalizarVentaDialog(
           total: pedido.total,
-          onConfirmar:
-              (metodoPago) async {
+          onConfirmar: (metodoPago) async {
             try {
               // ------------------------------------------------
               // COBRAR
               // ------------------------------------------------
 
-              await cobro.cobrar(
-                metodoPago: metodoPago,
-              );
+              await cobro.cobrar(metodoPago: metodoPago);
 
               // ------------------------------------------------
               // SOLO SI EL COBRO TERMINÓ CORRECTAMENTE
               // CERRAMOS EL PEDIDO
               // ------------------------------------------------
 
-              pedidosService.cerrarPedido(
-                pedido.ubicacion.id,
-              );
+              pedidosService.cerrarPedido(pedido.ubicacion.id);
 
               if (!context.mounted) {
                 return;
               }
 
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(
+              ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text(
-                    'Cuenta cobrada correctamente. Mesa liberada.',
-                  ),
-                  backgroundColor:
-                  Colors.green,
+                  content: Text('Cuenta cobrada correctamente. Mesa liberada.'),
+                  backgroundColor: Colors.green,
                 ),
               );
 
@@ -699,20 +530,10 @@ class _ResumenPedido
                 return;
               }
 
-              final mensaje = e
-                  .toString()
-                  .replaceFirst(
-                'Bad state: ',
-                '',
-              );
+              final mensaje = e.toString().replaceFirst('Bad state: ', '');
 
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(
-                SnackBar(
-                  backgroundColor:
-                  Colors.red,
-                  content: Text(mensaje),
-                ),
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(backgroundColor: Colors.red, content: Text(mensaje)),
               );
             }
           },
@@ -726,38 +547,28 @@ class _ResumenPedido
   // ==========================================================
 
   Future<void> _enviarComanda(
-      BuildContext context,
-      PedidosService service,
-      ) async {
-    final pendientes =
-    service
-        .obtenerItemsPendientesParaComanda(
+    BuildContext context,
+    PedidosService service,
+  ) async {
+    final pendientes = service.obtenerItemsPendientesParaComanda(
       pedido.ubicacion.id,
     );
 
     if (pendientes.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        const SnackBar(
-          content: Text(
-            'No hay productos nuevos para enviar.',
-          ),
-        ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No hay productos nuevos para enviar.')),
       );
       return;
     }
 
     try {
-      final printerService =
-      context.read<PrinterService>();
+      final printerService = context.read<PrinterService>();
 
-      final printService =
-      PedidoComandaPrintService(
+      final printService = PedidoComandaPrintService(
         printerService: printerService,
       );
 
-      final numeroComanda =
-      service.obtenerSiguienteNumeroComanda(
+      final numeroComanda = service.obtenerSiguienteNumeroComanda(
         pedido.ubicacion.id,
       );
 
@@ -767,22 +578,16 @@ class _ResumenPedido
         numeroComanda: numeroComanda,
       );
 
-      service.marcarComandaEnviada(
-        pedido.ubicacion.id,
-      );
+      service.marcarComandaEnviada(pedido.ubicacion.id);
 
       if (!context.mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Comanda #$numeroComanda enviada correctamente.',
-          ),
-          backgroundColor:
-          Colors.green,
+          content: Text('Comanda #$numeroComanda enviada correctamente.'),
+          backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
@@ -790,14 +595,10 @@ class _ResumenPedido
         return;
       }
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'No se pudo imprimir la comanda: $e',
-          ),
-          backgroundColor:
-          Colors.red,
+          content: Text('No se pudo imprimir la comanda: $e'),
+          backgroundColor: Colors.red,
         ),
       );
     }
@@ -808,72 +609,47 @@ class _ResumenPedido
 // ITEM DEL PEDIDO
 // ==========================================================
 
-class _ItemPedidoRow
-    extends StatelessWidget {
+class _ItemPedidoRow extends StatelessWidget {
   final ItemCarrito item;
   final String ubicacionId;
 
-  const _ItemPedidoRow({
-    required this.item,
-    required this.ubicacionId,
-  });
+  const _ItemPedidoRow({required this.item, required this.ubicacionId});
 
   @override
   Widget build(BuildContext context) {
-    final service =
-    context.read<PedidosService>();
+    final service = context.read<PedidosService>();
 
     final detalles = <String>[];
 
-    if (item.tipoLeche != null &&
-        item.tipoLeche!.trim().isNotEmpty) {
-      detalles.add(
-        'Leche: ${item.tipoLeche}',
-      );
+    if (item.tipoLeche != null && item.tipoLeche!.trim().isNotEmpty) {
+      detalles.add('Leche: ${item.tipoLeche}');
     }
 
-    if (item.endulzante != null &&
-        item.endulzante!.trim().isNotEmpty) {
-      detalles.add(
-        'Endulzante: ${item.endulzante}',
-      );
+    if (item.endulzante != null && item.endulzante!.trim().isNotEmpty) {
+      detalles.add('Endulzante: ${item.endulzante}');
     }
 
-    if (item.infusion != null &&
-        item.infusion!.trim().isNotEmpty) {
-      detalles.add(
-        'Infusión: ${item.infusion}',
-      );
+    if (item.infusion != null && item.infusion!.trim().isNotEmpty) {
+      detalles.add('Infusión: ${item.infusion}');
     }
 
     if (item.extraShot) {
       detalles.add('Extra Shot');
     }
 
-    if (item.observaciones != null &&
-        item.observaciones!.trim().isNotEmpty) {
-      detalles.add(
-        'Obs: ${item.observaciones}',
-      );
+    if (item.observaciones != null && item.observaciones!.trim().isNotEmpty) {
+      detalles.add('Obs: ${item.observaciones}');
     }
 
     void aumentar() {
-      service.aumentarCantidad(
-        ubicacionId,
-        item,
-      );
+      service.aumentarCantidad(ubicacionId, item);
     }
 
     void disminuir() {
-      final pudoDisminuir =
-      service.disminuirCantidad(
-        ubicacionId,
-        item,
-      );
+      final pudoDisminuir = service.disminuirCantidad(ubicacionId, item);
 
       if (!pudoDisminuir) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
               'No se puede disminuir: esa cantidad ya fue enviada a cocina.',
@@ -884,15 +660,10 @@ class _ItemPedidoRow
     }
 
     void eliminar() {
-      final pudoEliminar =
-      service.eliminarItem(
-        ubicacionId,
-        item,
-      );
+      final pudoEliminar = service.eliminarItem(ubicacionId, item);
 
       if (!pudoEliminar) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
               'No se puede eliminar: el producto ya fue enviado a cocina.',
@@ -903,56 +674,40 @@ class _ItemPedidoRow
     }
 
     return Column(
-      crossAxisAlignment:
-      CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF1565C0)
-                    .withValues(alpha: 0.08),
-                borderRadius:
-                BorderRadius.circular(10),
+                color: const Color(0xFF1565C0).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
-                mainAxisSize:
-                MainAxisSize.min,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
                     tooltip: 'Disminuir',
                     onPressed: disminuir,
-                    icon: const Icon(
-                      Icons.remove_rounded,
-                      size: 18,
-                    ),
-                    color:
-                    const Color(0xFF1565C0),
-                    visualDensity:
-                    VisualDensity.compact,
+                    icon: const Icon(Icons.remove_rounded, size: 18),
+                    color: const Color(0xFF1565C0),
+                    visualDensity: VisualDensity.compact,
                   ),
 
                   Text(
                     '${item.cantidad}x',
                     style: const TextStyle(
-                      color:
-                      Color(0xFF1565C0),
-                      fontWeight:
-                      FontWeight.w900,
+                      color: Color(0xFF1565C0),
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
 
                   IconButton(
                     tooltip: 'Aumentar',
                     onPressed: aumentar,
-                    icon: const Icon(
-                      Icons.add_rounded,
-                      size: 18,
-                    ),
-                    color:
-                    const Color(0xFF1565C0),
-                    visualDensity:
-                    VisualDensity.compact,
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    color: const Color(0xFF1565C0),
+                    visualDensity: VisualDensity.compact,
                   ),
                 ],
               ),
@@ -965,32 +720,23 @@ class _ItemPedidoRow
                 item.producto.nombre,
                 style: const TextStyle(
                   fontSize: 16,
-                  fontWeight:
-                  FontWeight.w800,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),
 
             Text(
               'S/. ${item.subtotal.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontWeight:
-                FontWeight.w800,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w800),
             ),
 
             const SizedBox(width: 4),
 
             IconButton(
-              tooltip:
-              'Eliminar producto',
+              tooltip: 'Eliminar producto',
               onPressed: eliminar,
-              icon: const Icon(
-                Icons
-                    .delete_outline_rounded,
-              ),
-              color:
-              Colors.red.shade600,
+              icon: const Icon(Icons.delete_outline_rounded),
+              color: Colors.red.shade600,
             ),
           ],
         ),
@@ -999,19 +745,11 @@ class _ItemPedidoRow
           const SizedBox(height: 7),
 
           ...detalles.map(
-                (detalle) => Padding(
-              padding:
-              const EdgeInsets.only(
-                left: 8,
-                top: 2,
-              ),
+            (detalle) => Padding(
+              padding: const EdgeInsets.only(left: 8, top: 2),
               child: Text(
                 detalle,
-                style: TextStyle(
-                  color:
-                  Colors.grey.shade600,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
               ),
             ),
           ),

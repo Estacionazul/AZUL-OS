@@ -5,10 +5,7 @@ import '../models/insumo.dart';
 class InsumoCard extends StatelessWidget {
   final Insumo insumo;
 
-  const InsumoCard({
-    super.key,
-    required this.insumo,
-  });
+  const InsumoCard({super.key, required this.insumo});
 
   @override
   Widget build(BuildContext context) {
@@ -25,27 +22,17 @@ class InsumoCard extends StatelessWidget {
     return Card(
       elevation: 3,
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: Colors.blue.shade100,
-          child: const Icon(
-            Icons.inventory_2,
-            color: Colors.blue,
-          ),
+          child: const Icon(Icons.inventory_2, color: Colors.blue),
         ),
         title: Text(
           insumo.nombre,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        subtitle: Text(
-          "Código: ${insumo.codigo}",
-        ),
+        subtitle: Text("Código: ${insumo.codigo}"),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

@@ -7,15 +7,9 @@ class ProduccionRepository {
   final MovimientosInventarioDao _dao;
 
   ProduccionRepository(AppDatabase database)
-      : _dao = MovimientosInventarioDao(database);
+    : _dao = MovimientosInventarioDao(database);
 
-  Future<int> registrarMovimiento(
-      MovimientoInventarioModel movimiento,
-      ) {
-    return _dao.insertar(
-      MovimientoInventarioMapper.toCompanion(
-        movimiento,
-      ),
-    );
+  Future<int> registrarMovimiento(MovimientoInventarioModel movimiento) {
+    return _dao.insertar(MovimientoInventarioMapper.toCompanion(movimiento));
   }
 }

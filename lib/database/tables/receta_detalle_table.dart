@@ -11,14 +11,11 @@ class RecetaDetalle extends Table {
   IntColumn get insumoId => integer()();
 
   // Cantidad utilizada
-  RealColumn get cantidad =>
-      real().withDefault(const Constant(0))();
+  RealColumn get cantidad => real().withDefault(const Constant(0))();
 
   // Unidad
-  TextColumn get unidad =>
-      text().withDefault(const Constant('unid'))();
+  TextColumn get unidad => text().withDefault(const Constant('unid'))();
 
   // Orden de aparición
-  IntColumn get orden =>
-      integer().withDefault(const Constant(0))();
+  IntColumn get orden => integer().withDefault(const Constant(0))();
 }

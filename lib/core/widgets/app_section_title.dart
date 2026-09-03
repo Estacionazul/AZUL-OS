@@ -18,9 +18,7 @@ class AppSectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(
-        bottom: AppSpacing.lg,
-      ),
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -28,18 +26,10 @@ class AppSectionTitle extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: AppTextStyles.title,
-                ),
+                Text(title, style: AppTextStyles.title),
                 if (subtitle != null) ...[
-                  const SizedBox(
-                    height: AppSpacing.sm,
-                  ),
-                  Text(
-                    subtitle!,
-                    style: AppTextStyles.subtitle,
-                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(subtitle!, style: AppTextStyles.subtitle),
                 ],
               ],
             ),

@@ -14,30 +14,25 @@ class Cajas extends Table {
   DateTimeColumn get fechaApertura =>
       dateTime().withDefault(currentDateAndTime)();
 
-  RealColumn get montoInicial =>
-      real().withDefault(const Constant(0))();
+  RealColumn get montoInicial => real().withDefault(const Constant(0))();
 
   // ==========================================================
   // CIERRE
   // ==========================================================
 
-  DateTimeColumn get fechaCierre =>
-      dateTime().nullable()();
+  DateTimeColumn get fechaCierre => dateTime().nullable()();
 
-  RealColumn get montoCierre =>
-      real().nullable()();
+  RealColumn get montoCierre => real().nullable()();
 
   // ==========================================================
   // ESTADO
   // ==========================================================
 
-  TextColumn get estado =>
-      text().withDefault(const Constant('ABIERTA'))();
+  TextColumn get estado => text().withDefault(const Constant('ABIERTA'))();
 
   // ==========================================================
   // OBSERVACIONES
   // ==========================================================
 
-  TextColumn get observaciones =>
-      text().nullable()();
+  TextColumn get observaciones => text().nullable()();
 }

@@ -3,11 +3,7 @@ import 'package:drift/drift.dart';
 import '../database/app_database.dart';
 
 class InsumosSeed {
-  static Future<void> cargar(
-      AppDatabase db,
-      int categoriaId,
-      ) async {
-
+  static Future<void> cargar(AppDatabase db, int categoriaId) async {
     // ==========================================================
     // INSERTAR SOLO SI EL INSUMO NO EXISTE
     // ==========================================================
@@ -21,27 +17,28 @@ class InsumosSeed {
       required double costo,
       required String emoji,
     }) async {
-
-      final existente = await (db.select(db.insumos)
-        ..where((i) => i.codigo.equals(codigo)))
-          .getSingleOrNull();
+      final existente = await (db.select(
+        db.insumos,
+      )..where((i) => i.codigo.equals(codigo))).getSingleOrNull();
 
       if (existente != null) {
         return;
       }
 
-      await db.into(db.insumos).insert(
-        InsumosCompanion.insert(
-          codigo: codigo,
-          nombre: nombre,
-          categoriaId: categoriaId,
-          unidadMedida: unidad,
-          stock: Value(stock),
-          stockMinimo: Value(minimo),
-          costoCompra: Value(costo),
-          emoji: Value(emoji),
-        ),
-      );
+      await db
+          .into(db.insumos)
+          .insert(
+            InsumosCompanion.insert(
+              codigo: codigo,
+              nombre: nombre,
+              categoriaId: categoriaId,
+              unidadMedida: unidad,
+              stock: Value(stock),
+              stockMinimo: Value(minimo),
+              costoCompra: Value(costo),
+              emoji: Value(emoji),
+            ),
+          );
     }
 
     // ==========================================================

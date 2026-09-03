@@ -47,13 +47,12 @@ class ProduccionService extends ChangeNotifier {
 
     await recetaDetalleService.cargarIngredientes(receta.id!);
 
-    final ingredientes =
-    List.of(recetaDetalleService.ingredientes);
+    final ingredientes = List.of(recetaDetalleService.ingredientes);
 
     debugPrint(
       'PRODUCCIÓN: ${receta.nombre} | '
-          'Cantidad: $cantidad | '
-          'Ingredientes: ${ingredientes.length}',
+      'Cantidad: $cantidad | '
+      'Ingredientes: ${ingredientes.length}',
     );
 
     if (ingredientes.isEmpty) {
@@ -64,8 +63,7 @@ class ProduccionService extends ChangeNotifier {
     // VALIDAR PRODUCTO TERMINADO
     // ==========================================================
 
-    final producto =
-    productoService.obtenerProducto(receta.productoId);
+    final producto = productoService.obtenerProducto(receta.productoId);
 
     if (producto == null) {
       return 'No existe el producto asociado a la receta.';
@@ -82,25 +80,20 @@ class ProduccionService extends ChangeNotifier {
     // dentro de la misma operación.
     // ==========================================================
 
-    final movimientos =
-    <MovimientoInventarioModel>[];
+    final movimientos = <MovimientoInventarioModel>[];
 
     // ----------------------------------------------------------
     // 1. CONSUMO DE INSUMOS
     // ----------------------------------------------------------
 
     for (final ingrediente in ingredientes) {
-      final insumo =
-      await insumoService.obtenerPorId(
-        ingrediente.insumoId,
-      );
+      final insumo = await insumoService.obtenerPorId(ingrediente.insumoId);
 
       if (insumo == null) {
         return 'No existe el insumo ID ${ingrediente.insumoId}.';
       }
 
-      final requerido =
-          ingrediente.cantidad * cantidad;
+      final requerido = ingrediente.cantidad * cantidad;
 
       if (requerido <= 0) {
         return 'Cantidad inválida para el insumo ${insumo.nombre}.';
@@ -118,8 +111,7 @@ class ProduccionService extends ChangeNotifier {
           productoId: null,
           cantidad: requerido,
           signo: -1,
-          observacion:
-          'Consumo para producir ${receta.nombre}',
+          observacion: 'Consumo para producir ${receta.nombre}',
         ),
       );
     }
@@ -141,7 +133,7 @@ class ProduccionService extends ChangeNotifier {
         cantidad: cantidad,
         signo: 1,
         observacion:
-        'Producto terminado por producción '
+            'Producto terminado por producción '
             '${receta.nombre}',
       ),
     );
@@ -151,13 +143,9 @@ class ProduccionService extends ChangeNotifier {
     // ==========================================================
 
     try {
-      await movimientoService.validarDisponibilidad(
-        movimientos,
-      );
+      await movimientoService.validarDisponibilidad(movimientos);
     } catch (e) {
-      debugPrint(
-        'Error validando producción: $e',
-      );
+      debugPrint('Error validando producción: $e');
 
       return 'No se puede realizar la producción: $e';
     }
@@ -176,24 +164,18 @@ class ProduccionService extends ChangeNotifier {
     // ==========================================================
 
     try {
-      await movimientoService.registrarMovimientos(
-        movimientos,
-      );
+      await movimientoService.registrarMovimientos(movimientos);
 
       debugPrint(
         'Producción realizada correctamente: '
-            '${receta.nombre} x $cantidad',
+        '${receta.nombre} x $cantidad',
       );
 
       return 'Producción realizada correctamente.';
     } catch (e, stackTrace) {
-      debugPrint(
-        'Error en producción: $e',
-      );
+      debugPrint('Error en producción: $e');
 
-      debugPrint(
-        stackTrace.toString(),
-      );
+      debugPrint(stackTrace.toString());
 
       return 'No se pudo realizar la producción: $e';
     }

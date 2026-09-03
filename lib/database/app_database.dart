@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
@@ -9,22 +9,6 @@ import 'dao/productos_dao.dart';
 import 'dao/insumos_dao.dart';
 import 'dao/recetas_dao.dart';
 import 'dao/receta_detalle_dao.dart';
-
-import 'tables/productos_table.dart';
-import 'tables/categorias_table.dart';
-import 'tables/insumos_table.dart';
-import 'tables/recetas_table.dart';
-import 'tables/receta_detalle_table.dart';
-
-import 'tables/ventas_table.dart';
-import 'tables/detalle_ventas_table.dart';
-import 'tables/clientes_table.dart';
-import 'tables/movimientos_inventario_table.dart';
-import 'tables/empresa_table.dart';
-import 'tables/cajas_table.dart';
-import 'tables/movimientos_caja_table.dart';
-import 'tables/usuarios_table.dart';
-
 import 'dao/ventas_dao.dart';
 import 'dao/clientes_dao.dart';
 import 'dao/movimientos_inventario_dao.dart';
@@ -33,10 +17,23 @@ import 'dao/cajas_dao.dart';
 import 'dao/usuarios_dao.dart';
 import 'dao/permisos_usuario_dao.dart';
 import 'dao/comprobantes_electronicos_dao.dart';
-import 'tables/correlativos_table.dart';
 
+import 'tables/productos_table.dart';
+import 'tables/categorias_table.dart';
+import 'tables/insumos_table.dart';
+import 'tables/recetas_table.dart';
+import 'tables/receta_detalle_table.dart';
+import 'tables/ventas_table.dart';
+import 'tables/detalle_ventas_table.dart';
+import 'tables/clientes_table.dart';
+import 'tables/movimientos_inventario_table.dart';
+import 'tables/empresa_table.dart';
+import 'tables/cajas_table.dart';
+import 'tables/movimientos_caja_table.dart';
+import 'tables/usuarios_table.dart';
 import 'tables/permisos_usuario_table.dart';
 import 'tables/comprobantes_electronicos_table.dart';
+import 'tables/correlativos_table.dart';
 import 'tables/pedidos_table.dart';
 import 'tables/pedido_detalles_table.dart';
 
@@ -124,17 +121,8 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final directory = await getApplicationDocumentsDirectory();
 
-    final file = File(
-      p.join(directory.path, 'azul_os.db'),
-    );
-
-    // SOLO PARA DESARROLLO
-    // if (await file.exists()) {
-    //   await file.delete();
-    // }
+    final file = File(p.join(directory.path, 'azul_os.db'));
 
     return NativeDatabase(file);
   });
 }
-
-

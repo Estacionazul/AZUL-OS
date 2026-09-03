@@ -1,4 +1,4 @@
-﻿import 'package:drift/drift.dart';
+import 'package:drift/drift.dart';
 
 class ComprobantesElectronicos extends Table {
   // ==========================================================
@@ -16,8 +16,7 @@ class ComprobantesElectronicos extends Table {
 
   /// Comprobante electrónico relacionado.
   /// Principalmente utilizado para notas de crédito.
-  IntColumn get comprobanteRelacionadoId =>
-      integer().nullable()();
+  IntColumn get comprobanteRelacionadoId => integer().nullable()();
 
   // ==========================================================
   // TIPO Y NUMERACIÓN
@@ -27,63 +26,51 @@ class ComprobantesElectronicos extends Table {
   /// boleta
   /// factura
   /// notaCredito
-  TextColumn get tipo =>
-      text()();
+  TextColumn get tipo => text()();
 
   /// Serie SUNAT.
   ///
   /// Ejemplos:
   /// B001
   /// F001
-  TextColumn get serie =>
-      text().withLength(min: 1, max: 4)();
+  TextColumn get serie => text().withLength(min: 1, max: 4)();
 
   /// Correlativo del comprobante.
-  IntColumn get numero =>
-      integer()();
+  IntColumn get numero => integer()();
 
   // ==========================================================
   // FECHA
   // ==========================================================
 
-  DateTimeColumn get fechaEmision =>
-      dateTime()();
+  DateTimeColumn get fechaEmision => dateTime()();
 
   // ==========================================================
   // CLIENTE
   // ==========================================================
 
-  TextColumn get dni =>
-      text().nullable()();
+  TextColumn get dni => text().nullable()();
 
-  TextColumn get ruc =>
-      text().nullable()();
+  TextColumn get ruc => text().nullable()();
 
-  TextColumn get nombreCliente =>
-      text().nullable()();
+  TextColumn get nombreCliente => text().nullable()();
 
-  TextColumn get direccionFiscal =>
-      text().nullable()();
+  TextColumn get direccionFiscal => text().nullable()();
 
   // ==========================================================
   // IMPORTES
   // ==========================================================
 
-  RealColumn get subtotal =>
-      real()();
+  RealColumn get subtotal => real()();
 
-  RealColumn get igv =>
-      real()();
+  RealColumn get igv => real()();
 
-  RealColumn get total =>
-      real()();
+  RealColumn get total => real()();
 
   // ==========================================================
   // FORMA DE PAGO
   // ==========================================================
 
-  TextColumn get metodoPago =>
-      text()();
+  TextColumn get metodoPago => text()();
 
   // ==========================================================
   // ESTADO
@@ -96,61 +83,49 @@ class ComprobantesElectronicos extends Table {
   /// rechazado
   /// dadoDeBaja
   /// anulado
-  TextColumn get estado =>
-      text().withDefault(
-        const Constant('pendiente'),
-      )();
+  TextColumn get estado => text().withDefault(const Constant('pendiente'))();
 
   // ==========================================================
   // RESPUESTA SUNAT
   // ==========================================================
 
-  TextColumn get codigoRespuestaSunat =>
-      text().nullable()();
+  TextColumn get codigoRespuestaSunat => text().nullable()();
 
-  TextColumn get mensajeRespuestaSunat =>
-      text().nullable()();
+  TextColumn get mensajeRespuestaSunat => text().nullable()();
 
   // ==========================================================
   // CDR
   // ==========================================================
 
-  TextColumn get cdr =>
-      text().nullable()();
+  TextColumn get cdr => text().nullable()();
 
   // ==========================================================
   // XML
   // ==========================================================
 
-  TextColumn get xml =>
-      text().nullable()();
+  TextColumn get xml => text().nullable()();
 
   // ==========================================================
   // FECHAS DE COMUNICACIÓN CON SUNAT
   // ==========================================================
 
-  DateTimeColumn get fechaEnvioSunat =>
-      dateTime().nullable()();
+  DateTimeColumn get fechaEnvioSunat => dateTime().nullable()();
 
-  DateTimeColumn get fechaRespuestaSunat =>
-      dateTime().nullable()();
+  DateTimeColumn get fechaRespuestaSunat => dateTime().nullable()();
 
   // ==========================================================
   // NOTA DE CRÉDITO
   // ==========================================================
 
   /// Código de motivo SUNAT.
-  TextColumn get codigoMotivoNotaCredito =>
-      text().nullable()();
+  TextColumn get codigoMotivoNotaCredito => text().nullable()();
 
   /// Descripción del motivo.
-  TextColumn get motivoNotaCredito =>
-      text().nullable()();
+  TextColumn get motivoNotaCredito => text().nullable()();
 
   // ==========================================================
   // OBSERVACIONES
   // ==========================================================
 
-  TextColumn get observaciones =>
-      text().nullable()();
+  TextColumn get observaciones => text().nullable()();
 }

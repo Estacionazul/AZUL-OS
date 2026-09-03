@@ -8,11 +8,7 @@ class NuevoProductoDialog extends StatefulWidget {
   final ProductoModel? producto;
   final int? index;
 
-  const NuevoProductoDialog({
-    super.key,
-    this.producto,
-    this.index,
-  });
+  const NuevoProductoDialog({super.key, this.producto, this.index});
 
   @override
   State<NuevoProductoDialog> createState() => _NuevoProductoDialogState();
@@ -95,22 +91,12 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
     final codigo = _codigoController.text.trim();
 
     final costo =
-        double.tryParse(
-          _costoController.text.replaceAll(',', '.'),
-        ) ??
-            0;
+        double.tryParse(_costoController.text.replaceAll(',', '.')) ?? 0;
 
     final precio =
-        double.tryParse(
-          _precioController.text.replaceAll(',', '.'),
-        ) ??
-            0;
+        double.tryParse(_precioController.text.replaceAll(',', '.')) ?? 0;
 
-    final stockMinimo =
-        int.tryParse(
-          _stockMinimoController.text.trim(),
-        ) ??
-            0;
+    final stockMinimo = int.tryParse(_stockMinimoController.text.trim()) ?? 0;
 
     // ============================================================
     // VALIDACIONES
@@ -119,9 +105,7 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
     if (nombre.isEmpty || codigo.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            "Completa el nombre y código del producto.",
-          ),
+          content: Text("Completa el nombre y código del producto."),
         ),
       );
       return;
@@ -129,33 +113,21 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
 
     if (precio <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "El precio de venta debe ser mayor a 0.",
-          ),
-        ),
+        const SnackBar(content: Text("El precio de venta debe ser mayor a 0.")),
       );
       return;
     }
 
     if (costo < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "El costo no puede ser negativo.",
-          ),
-        ),
+        const SnackBar(content: Text("El costo no puede ser negativo.")),
       );
       return;
     }
 
     if (stockMinimo < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "El stock mínimo no puede ser negativo.",
-          ),
-        ),
+        const SnackBar(content: Text("El stock mínimo no puede ser negativo.")),
       );
       return;
     }
@@ -222,7 +194,6 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
       // Si editamos NO tocamos el stock actual.
       // Si es nuevo, comienza en 0.
       // ==========================================================
-
       stock: widget.producto?.stock ?? 0,
 
       stockMinimo: stockMinimo,
@@ -245,13 +216,9 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
     // ============================================================
 
     if (widget.producto == null) {
-      await context
-          .read<ProductoService>()
-          .agregarProducto(producto);
+      await context.read<ProductoService>().agregarProducto(producto);
     } else {
-      await context
-          .read<ProductoService>()
-          .editarProducto(producto);
+      await context.read<ProductoService>().editarProducto(producto);
     }
 
     if (!mounted) return;
@@ -268,23 +235,14 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
     final esEdicion = widget.producto != null;
 
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(22),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
       title: Row(
         children: [
-          const Icon(
-            Icons.inventory_2,
-            color: Color(0xff0A2E6E),
-          ),
+          const Icon(Icons.inventory_2, color: Color(0xff0A2E6E)),
           const SizedBox(width: 10),
           Text(
-            esEdicion
-                ? "Editar Producto"
-                : "Nuevo Producto",
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
+            esEdicion ? "Editar Producto" : "Nuevo Producto",
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -296,14 +254,11 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
               // ==================================================
               // NOMBRE
               // ==================================================
-
               TextField(
                 controller: _nombreController,
                 decoration: InputDecoration(
                   labelText: "Nombre",
-                  prefixIcon: const Icon(
-                    Icons.shopping_bag,
-                  ),
+                  prefixIcon: const Icon(Icons.shopping_bag),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -315,14 +270,11 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
               // ==================================================
               // CÓDIGO
               // ==================================================
-
               TextField(
                 controller: _codigoController,
                 decoration: InputDecoration(
                   labelText: "Código",
-                  prefixIcon: const Icon(
-                    Icons.qr_code,
-                  ),
+                  prefixIcon: const Icon(Icons.qr_code),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -334,35 +286,20 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
               // ==================================================
               // CATEGORÍA
               // ==================================================
-
               DropdownButtonFormField<String>(
                 initialValue: _categoria,
                 decoration: InputDecoration(
                   labelText: "Categoría",
-                  prefixIcon: const Icon(
-                    Icons.category,
-                  ),
+                  prefixIcon: const Icon(Icons.category),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 items: const [
-                  DropdownMenuItem(
-                    value: "Cafés",
-                    child: Text("Cafés"),
-                  ),
-                  DropdownMenuItem(
-                    value: "Jugos",
-                    child: Text("Jugos"),
-                  ),
-                  DropdownMenuItem(
-                    value: "Snacks",
-                    child: Text("Snacks"),
-                  ),
-                  DropdownMenuItem(
-                    value: "Postres",
-                    child: Text("Postres"),
-                  ),
+                  DropdownMenuItem(value: "Cafés", child: Text("Cafés")),
+                  DropdownMenuItem(value: "Jugos", child: Text("Jugos")),
+                  DropdownMenuItem(value: "Snacks", child: Text("Snacks")),
+                  DropdownMenuItem(value: "Postres", child: Text("Postres")),
                 ],
                 onChanged: (valor) {
                   if (valor != null) {
@@ -378,18 +315,14 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
               // ==================================================
               // COSTO
               // ==================================================
-
               TextField(
                 controller: _costoController,
-                keyboardType:
-                const TextInputType.numberWithOptions(
+                keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
                 decoration: InputDecoration(
                   labelText: "Costo de compra",
-                  prefixIcon: const Icon(
-                    Icons.payments_outlined,
-                  ),
+                  prefixIcon: const Icon(Icons.payments_outlined),
                   prefixText: "S/ ",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -402,18 +335,14 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
               // ==================================================
               // PRECIO DE VENTA
               // ==================================================
-
               TextField(
                 controller: _precioController,
-                keyboardType:
-                const TextInputType.numberWithOptions(
+                keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
                 decoration: InputDecoration(
                   labelText: "Precio de venta",
-                  prefixIcon: const Icon(
-                    Icons.sell_outlined,
-                  ),
+                  prefixIcon: const Icon(Icons.sell_outlined),
                   prefixText: "S/ ",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -426,21 +355,17 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
               // ==================================================
               // STOCK MÍNIMO
               // ==================================================
-
               TextField(
                 controller: _stockMinimoController,
-                keyboardType:
-                TextInputType.number,
+                keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: "Stock mínimo",
-                  prefixIcon: const Icon(
-                    Icons.warning_amber_outlined,
-                  ),
+                  prefixIcon: const Icon(Icons.warning_amber_outlined),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                   helperText:
-                  "Cuando llegue a este nivel se marcará como stock bajo.",
+                      "Cuando llegue a este nivel se marcará como stock bajo.",
                 ),
               ),
 
@@ -449,14 +374,11 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
               // ==================================================
               // TIPO DE INVENTARIO
               // ==================================================
-
               DropdownButtonFormField<String>(
                 initialValue: _tipoInventario,
                 decoration: InputDecoration(
                   labelText: "Tipo de inventario",
-                  prefixIcon: const Icon(
-                    Icons.inventory,
-                  ),
+                  prefixIcon: const Icon(Icons.inventory),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -464,15 +386,11 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
                 items: const [
                   DropdownMenuItem(
                     value: "receta",
-                    child: Text(
-                      "Receta — descuenta insumos",
-                    ),
+                    child: Text("Receta — descuenta insumos"),
                   ),
                   DropdownMenuItem(
                     value: "producto",
-                    child: Text(
-                      "Producto — descuenta stock",
-                    ),
+                    child: Text("Producto — descuenta stock"),
                   ),
                 ],
                 onChanged: (valor) {
@@ -489,7 +407,6 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
               // ==================================================
               // INFORMACIÓN DEL STOCK
               // ==================================================
-
               if (esEdicion)
                 Container(
                   width: double.infinity,
@@ -497,25 +414,18 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
                   decoration: BoxDecoration(
                     color: Colors.blue.withOpacity(0.06),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: Colors.blue.withOpacity(0.15),
-                    ),
+                    border: Border.all(color: Colors.blue.withOpacity(0.15)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.lock_outline,
-                        color: Color(0xff0A2E6E),
-                      ),
+                      const Icon(Icons.lock_outline, color: Color(0xff0A2E6E)),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           "Stock actual: ${widget.producto!.stock}\n"
-                              "El stock se modifica mediante inventario "
-                              "y ventas, no desde esta edición.",
-                          style: const TextStyle(
-                            fontSize: 13,
-                          ),
+                          "El stock se modifica mediante inventario "
+                          "y ventas, no desde esta edición.",
+                          style: const TextStyle(fontSize: 13),
                         ),
                       ),
                     ],
@@ -529,7 +439,6 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
       // ==========================================================
       // BOTONES
       // ==========================================================
-
       actions: [
         TextButton.icon(
           onPressed: () {
@@ -541,11 +450,7 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
         ElevatedButton.icon(
           onPressed: _guardarProducto,
           icon: const Icon(Icons.save),
-          label: Text(
-            esEdicion
-                ? "Actualizar"
-                : "Guardar",
-          ),
+          label: Text(esEdicion ? "Actualizar" : "Guardar"),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xff0A2E6E),
             foregroundColor: Colors.white,

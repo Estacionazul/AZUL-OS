@@ -23,15 +23,7 @@ class WindowsPrinterAdapter implements PrinterAdapter {
     final returned = calloc<Uint32>();
 
     try {
-      EnumPrinters(
-        flags,
-        nullptr,
-        2,
-        nullptr,
-        0,
-        needed,
-        returned,
-      );
+      EnumPrinters(flags, nullptr, 2, nullptr, 0, needed, returned);
 
       if (needed.value == 0) {
         return printers;
@@ -60,9 +52,7 @@ class WindowsPrinterAdapter implements PrinterAdapter {
           final printer = printersInfo[i];
 
           if (printer.pPrinterName != nullptr) {
-            final name = printer.pPrinterName
-                .cast<Utf16>()
-                .toDartString();
+            final name = printer.pPrinterName.cast<Utf16>().toDartString();
 
             if (name.isNotEmpty) {
               printers.add(name);
@@ -91,24 +81,19 @@ class WindowsPrinterAdapter implements PrinterAdapter {
   @override
   Future<void> selectPrinter(String printerName) async {
     if (printerName.trim().isEmpty) {
-      throw ArgumentError(
-        'El nombre de la impresora no puede estar vacío.',
-      );
+      throw ArgumentError('El nombre de la impresora no puede estar vacío.');
     }
 
     _selectedPrinter = printerName;
     _rawPrinter = RawPrinter(printerName);
 
-    print(
-      '===== IMPRESORA WINDOWS SELECCIONADA =====',
-    );
+    print('===== IMPRESORA WINDOWS SELECCIONADA =====');
     print(_selectedPrinter);
   }
 
   @override
   Future<bool> isConnected() async {
-    if (_selectedPrinter == null ||
-        _selectedPrinter!.trim().isEmpty) {
+    if (_selectedPrinter == null || _selectedPrinter!.trim().isEmpty) {
       return false;
     }
 
@@ -122,9 +107,7 @@ class WindowsPrinterAdapter implements PrinterAdapter {
     final printer = _rawPrinter;
 
     if (printer == null) {
-      throw Exception(
-        'No hay una impresora Windows seleccionada.',
-      );
+      throw Exception('No hay una impresora Windows seleccionada.');
     }
 
     await printer.send(bytes);
@@ -135,8 +118,6 @@ class WindowsPrinterAdapter implements PrinterAdapter {
     _selectedPrinter = null;
     _rawPrinter = null;
 
-    print(
-      '===== IMPRESORA WINDOWS DESCONECTADA =====',
-    );
+    print('===== IMPRESORA WINDOWS DESCONECTADA =====');
   }
 }

@@ -31,9 +31,9 @@ class VentaEmpty extends StatelessWidget {
 
           Text(
             "Las ventas aparecerán aquí automáticamente.",
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),

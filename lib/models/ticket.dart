@@ -32,10 +32,7 @@ class TicketHeader {
   final String numero;
   final DateTime fecha;
 
-  const TicketHeader({
-    required this.numero,
-    required this.fecha,
-  });
+  const TicketHeader({required this.numero, required this.fecha});
 }
 
 class TicketItem {
@@ -72,10 +69,7 @@ class TicketFooter {
   final String mensaje;
   final String frase;
 
-  const TicketFooter({
-    required this.mensaje,
-    required this.frase,
-  });
+  const TicketFooter({required this.mensaje, required this.frase});
 }
 
 class TicketCliente {

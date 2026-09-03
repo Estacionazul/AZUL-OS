@@ -17,10 +17,10 @@ class InventarioAutomaticoService {
     required ProductoService productoService,
     required InsumoService insumoService,
     required MovimientoInventarioService movimientoService,
-  })  : _recetasRepository = recetasRepository,
-        _productoService = productoService,
-        _insumoService = insumoService,
-        _movimientoService = movimientoService;
+  }) : _recetasRepository = recetasRepository,
+       _productoService = productoService,
+       _insumoService = insumoService,
+       _movimientoService = movimientoService;
 
   // ==========================================================
   // VALIDAR UNA VENTA
@@ -32,12 +32,9 @@ class InventarioAutomaticoService {
   // ==========================================================
 
   Future<void> validarVenta(Venta venta) async {
-    final movimientos =
-    await _construirMovimientosVenta(venta);
+    final movimientos = await _construirMovimientosVenta(venta);
 
-    await _movimientoService.validarDisponibilidad(
-      movimientos,
-    );
+    await _movimientoService.validarDisponibilidad(movimientos);
   }
 
   // ==========================================================
@@ -47,35 +44,27 @@ class InventarioAutomaticoService {
   // ==========================================================
 
   Future<void> descontarInventario(Venta venta) async {
-    final movimientos =
-    await _construirMovimientosVenta(venta);
+    final movimientos = await _construirMovimientosVenta(venta);
 
-    await _movimientoService.registrarMovimientos(
-      movimientos,
-    );
+    await _movimientoService.registrarMovimientos(movimientos);
   }
 
   // ==========================================================
   // CONSTRUIR MOVIMIENTOS
   // ==========================================================
 
-  Future<List<MovimientoInventarioModel>>
-  _construirMovimientosVenta(
-      Venta venta,
-      ) async {
-    final movimientos =
-    <MovimientoInventarioModel>[];
+  Future<List<MovimientoInventarioModel>> _construirMovimientosVenta(
+    Venta venta,
+  ) async {
+    final movimientos = <MovimientoInventarioModel>[];
 
     for (final item in venta.items) {
-      final producto =
-      _productoService.obtenerProducto(
-        item.producto.id!,
-      );
+      final producto = _productoService.obtenerProducto(item.producto.id!);
 
       if (producto == null) {
         throw StateError(
           'No existe el producto '
-              '${item.producto.nombre}.',
+          '${item.producto.nombre}.',
         );
       }
 
@@ -96,8 +85,7 @@ class InventarioAutomaticoService {
             productoId: producto.id,
             cantidad: item.cantidad.toDouble(),
             signo: -1,
-            observacion:
-            'Consumo por venta ${venta.numero}',
+            observacion: 'Consumo por venta ${venta.numero}',
           ),
         );
 
@@ -109,66 +97,57 @@ class InventarioAutomaticoService {
       // ======================================================
 
       if (producto.tipoInventario == 'receta') {
-        final receta =
-        await _recetasRepository
-            .obtenerPorProducto(
+        final receta = await _recetasRepository.obtenerPorProducto(
           producto.id!,
         );
 
         if (receta == null) {
           throw StateError(
             'El producto ${producto.nombre} '
-                'está configurado como receta pero '
-                'no tiene una receta registrada.',
+            'está configurado como receta pero '
+            'no tiene una receta registrada.',
           );
         }
 
         if (receta.id == null) {
           throw StateError(
             'La receta de ${producto.nombre} '
-                'no tiene un ID válido.',
+            'no tiene un ID válido.',
           );
         }
 
-        final detalle =
-        await _recetasRepository.obtenerDetalle();
+        final detalle = await _recetasRepository.obtenerDetalle();
 
         final ingredientes = detalle
-            .where(
-              (d) => d.recetaId == receta.id,
-        )
+            .where((d) => d.recetaId == receta.id)
             .toList();
 
         if (ingredientes.isEmpty) {
           throw StateError(
             'La receta ${receta.nombre} '
-                'no tiene ingredientes.',
+            'no tiene ingredientes.',
           );
         }
 
-        for (final ingrediente
-        in ingredientes) {
-          final insumo =
-          await _insumoService.obtenerPorId(
+        for (final ingrediente in ingredientes) {
+          final insumo = await _insumoService.obtenerPorId(
             ingrediente.insumoId,
           );
 
           if (insumo == null) {
             throw StateError(
               'No existe el insumo ID '
-                  '${ingrediente.insumoId}.',
+              '${ingrediente.insumoId}.',
             );
           }
 
-          final requerido =
-              ingrediente.cantidad *
-                  item.cantidad;
+          final requerido = ingrediente.cantidad * item.cantidad;
 
           if (requerido <= 0) {
             throw StateError(
               'La receta ${receta.nombre} '
-                  'tiene una cantidad inválida '
-                  'para ${insumo.nombre}.',
+              'tiene una cantidad inválida '
+              'para ${insumo.nombre}.',
             );
           }
 
@@ -185,7 +164,7 @@ class InventarioAutomaticoService {
               cantidad: requerido,
               signo: -1,
               observacion:
-              'Consumo por venta ${venta.numero} '
+                  'Consumo por venta ${venta.numero} '
                   '— ${producto.nombre}',
             ),
           );
@@ -200,8 +179,8 @@ class InventarioAutomaticoService {
 
       throw StateError(
         'Tipo de inventario desconocido '
-            'para ${producto.nombre}: '
-            '${producto.tipoInventario}',
+        'para ${producto.nombre}: '
+        '${producto.tipoInventario}',
       );
     }
 

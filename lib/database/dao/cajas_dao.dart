@@ -43,36 +43,35 @@ class CajasDao extends DatabaseAccessor<AppDatabase> with _$CajasDaoMixin {
   Future<Caja?> obtenerCajaAbierta() async {
     debugPrint('========== BUSCANDO CAJA ABIERTA ==========');
 
-    final cajasEncontradas = await (select(cajas)
-      ..orderBy([
-            (t) => OrderingTerm(
-          expression: t.id,
-          mode: OrderingMode.desc,
-        ),
-      ])
-      ..limit(10))
-        .get();
+    final cajasEncontradas =
+        await (select(cajas)
+              ..orderBy([
+                (t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc),
+              ])
+              ..limit(10))
+            .get();
 
     debugPrint('TOTAL CAJAS ENCONTRADAS: ${cajasEncontradas.length}');
 
     for (final caja in cajasEncontradas) {
       debugPrint(
         'CAJA -> '
-            'ID: ${caja.id} | '
-            'ESTADO: ${caja.estado} | '
-            'MONTO INICIAL: ${caja.montoInicial} | '
-            'APERTURA: ${caja.fechaApertura}',
+        'ID: ${caja.id} | '
+        'ESTADO: ${caja.estado} | '
+        'MONTO INICIAL: ${caja.montoInicial} | '
+        'APERTURA: ${caja.fechaApertura}',
       );
     }
 
-    final cajaAbierta = await (select(cajas)
-      ..where((t) => t.estado.equals('ABIERTA'))
-      ..limit(1))
-        .getSingleOrNull();
+    final cajaAbierta =
+        await (select(cajas)
+              ..where((t) => t.estado.equals('ABIERTA'))
+              ..limit(1))
+            .getSingleOrNull();
 
     debugPrint(
       'RESULTADO CAJA ABIERTA: '
-          '${cajaAbierta == null ? 'NULL' : 'ID ${cajaAbierta.id}'}',
+      '${cajaAbierta == null ? 'NULL' : 'ID ${cajaAbierta.id}'}',
     );
 
     debugPrint('============================================');

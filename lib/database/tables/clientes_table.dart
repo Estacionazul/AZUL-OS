@@ -18,15 +18,11 @@ class Clientes extends Table {
   DateTimeColumn get fechaRegistro =>
       dateTime().withDefault(currentDateAndTime)();
 
-  DateTimeColumn get ultimaVisita =>
-      dateTime().nullable()();
+  DateTimeColumn get ultimaVisita => dateTime().nullable()();
 
-  RealColumn get totalGastado =>
-      real().withDefault(const Constant(0))();
+  RealColumn get totalGastado => real().withDefault(const Constant(0))();
 
-  IntColumn get cantidadCompras =>
-      integer().withDefault(const Constant(0))();
+  IntColumn get cantidadCompras => integer().withDefault(const Constant(0))();
 
-  TextColumn get observaciones =>
-      text().nullable()();
+  TextColumn get observaciones => text().nullable()();
 }

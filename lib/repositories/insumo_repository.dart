@@ -6,16 +6,13 @@ import '../models/insumo_model.dart';
 class InsumoRepository {
   final InsumosDao _dao;
 
-  InsumoRepository(AppDatabase database)
-      : _dao = InsumosDao(database);
+  InsumoRepository(AppDatabase database) : _dao = InsumosDao(database);
 
   /// Obtener todos
   Future<List<InsumoModel>> obtenerTodos() async {
     final insumos = await _dao.obtenerTodos();
 
-    return insumos
-        .map(InsumoMapper.toModel)
-        .toList();
+    return insumos.map(InsumoMapper.toModel).toList();
   }
 
   /// Obtener por ID
@@ -29,9 +26,7 @@ class InsumoRepository {
 
   /// Insertar
   Future<int> insertar(InsumoModel insumo) {
-    return _dao.insertar(
-      InsumoMapper.toCompanion(insumo),
-    );
+    return _dao.insertar(InsumoMapper.toCompanion(insumo));
   }
 
   /// Actualizar

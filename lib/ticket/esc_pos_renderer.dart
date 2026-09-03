@@ -30,9 +30,9 @@ class EscPosRenderer {
 
     for (final caracter in texto.runes) {
       switch (caracter) {
-      //==============================================
-      // MINÚSCULAS
-      //==============================================
+        //==============================================
+        // MINÚSCULAS
+        //==============================================
 
         case 0xE1: // á
           bytes.add(0xA0);
@@ -62,9 +62,9 @@ class EscPosRenderer {
           bytes.add(0xA4);
           break;
 
-      //==============================================
-      // MAYÚSCULAS
-      //==============================================
+        //==============================================
+        // MAYÚSCULAS
+        //==============================================
 
         case 0xC1: // Á
           bytes.add(0xB5);
@@ -94,9 +94,9 @@ class EscPosRenderer {
           bytes.add(0xA5);
           break;
 
-      //==============================================
-      // SIGNOS ESPAÑOLES
-      //==============================================
+        //==============================================
+        // SIGNOS ESPAÑOLES
+        //==============================================
 
         case 0xBF: // ¿
           bytes.add(0xA8);
@@ -110,9 +110,9 @@ class EscPosRenderer {
           bytes.add(0xF8);
           break;
 
-      //==============================================
-      // CEDILLA
-      //==============================================
+        //==============================================
+        // CEDILLA
+        //==============================================
 
         case 0xE7: // ç
           bytes.add(0x87);
@@ -122,17 +122,17 @@ class EscPosRenderer {
           bytes.add(0x80);
           break;
 
-      //==============================================
-      // ESPACIO
-      //==============================================
+        //==============================================
+        // ESPACIO
+        //==============================================
 
         case 0x20:
           bytes.add(0x20);
           break;
 
-      //==============================================
-      // ASCII NORMAL
-      //==============================================
+        //==============================================
+        // ASCII NORMAL
+        //==============================================
 
         default:
           if (caracter <= 0x7F) {
@@ -154,10 +154,7 @@ class EscPosRenderer {
   Future<List<int>> render(Ticket ticket) async {
     final profile = await CapabilityProfile.load();
 
-    final generator = Generator(
-      PaperSize.mm58,
-      profile,
-    );
+    final generator = Generator(PaperSize.mm58, profile);
 
     final bytes = <int>[];
 
@@ -165,85 +162,55 @@ class EscPosRenderer {
     // REINICIAR IMPRESORA
     //==================================================
 
-    bytes.addAll(
-      generator.reset(),
-    );
+    bytes.addAll(generator.reset());
 
     //==================================================
     // SELECCIONAR CP850
     //==================================================
 
-    bytes.addAll(
-      generator.setGlobalCodeTable('CP850'),
-    );
+    bytes.addAll(generator.setGlobalCodeTable('CP850'));
 
     //==================================================
     // ENCABEZADO
     //==================================================
 
-    await _renderEmpresa(
-      generator,
-      bytes,
-      ticket,
-    );
+    await _renderEmpresa(generator, bytes, ticket);
 
     //==================================================
     // DOCUMENTO
     //==================================================
 
-    _renderHeader(
-      generator,
-      bytes,
-      ticket,
-    );
+    _renderHeader(generator, bytes, ticket);
 
     //==================================================
     // CLIENTE
     //==================================================
 
-    _renderCliente(
-      generator,
-      bytes,
-      ticket,
-    );
+    _renderCliente(generator, bytes, ticket);
 
     //==================================================
     // PRODUCTOS
     //==================================================
 
-    _renderItems(
-      generator,
-      bytes,
-      ticket,
-    );
+    _renderItems(generator, bytes, ticket);
 
     //==================================================
     // TOTALES
     //==================================================
 
-    _renderTotales(
-      generator,
-      bytes,
-      ticket,
-    );
+    _renderTotales(generator, bytes, ticket);
 
     //==================================================
     // PIE
     //==================================================
 
-    _renderFooter(
-      generator,
-      bytes,
-      ticket,
-    );
+    _renderFooter(generator, bytes, ticket);
 
     //==================================================
     // CORTE
     //==================================================
 
-    bytes.addAll(
-      generator.cut(),
-    );
+    bytes.addAll(generator.cut());
 
     return bytes;
   }
@@ -253,24 +220,20 @@ class EscPosRenderer {
   //====================================================
 
   Future<void> _renderEmpresa(
-      Generator generator,
-      List<int> bytes,
-      Ticket ticket,
-      ) async {
+    Generator generator,
+    List<int> bytes,
+    Ticket ticket,
+  ) async {
     try {
       //==================================================
       // CARGAR LOGO ESTACIÓN AZUL
       //==================================================
 
-      final data = await rootBundle.load(
-        'assets/images/logo.png',
-      );
+      final data = await rootBundle.load('assets/images/logo.png');
 
       final logoBytes = data.buffer.asUint8List();
 
-      final img.Image? logoOriginal = img.decodeImage(
-        logoBytes,
-      );
+      final img.Image? logoOriginal = img.decodeImage(logoBytes);
 
       if (logoOriginal != null) {
         //================================================
@@ -289,18 +252,13 @@ class EscPosRenderer {
         // Convertimos azul y dorado en tonos oscuros.
         //================================================
 
-        final gris = img.grayscale(
-          logoRecortado,
-        );
+        final gris = img.grayscale(logoRecortado);
 
         //================================================
         // AUMENTAR CONTRASTE
         //================================================
 
-        final contraste = img.adjustColor(
-          gris,
-          contrast: 1.8,
-        );
+        final contraste = img.adjustColor(gris, contrast: 1.8);
 
         //================================================
         // CONVERTIR A BLANCO/NEGRO
@@ -314,28 +272,12 @@ class EscPosRenderer {
             final pixel = contraste.getPixel(x, y);
 
             final luminancia =
-                (0.299 * pixel.r) +
-                    (0.587 * pixel.g) +
-                    (0.114 * pixel.b);
+                (0.299 * pixel.r) + (0.587 * pixel.g) + (0.114 * pixel.b);
 
             if (luminancia < 225) {
-              contraste.setPixelRgba(
-                x,
-                y,
-                0,
-                0,
-                0,
-                255,
-              );
+              contraste.setPixelRgba(x, y, 0, 0, 0, 255);
             } else {
-              contraste.setPixelRgba(
-                x,
-                y,
-                255,
-                255,
-                255,
-                255,
-              );
+              contraste.setPixelRgba(x, y, 255, 255, 255, 255);
             }
           }
         }
@@ -361,21 +303,13 @@ class EscPosRenderer {
         //================================================
 
         bytes.addAll(
-          generator.image(
-            logo,
-            align: PosAlign.center,
-            isDoubleDensity: true,
-          ),
+          generator.image(logo, align: PosAlign.center, isDoubleDensity: true),
         );
       }
     } catch (e, stackTrace) {
-      debugPrint(
-        'ERROR IMPRIMIENDO LOGO: $e',
-      );
+      debugPrint('ERROR IMPRIMIENDO LOGO: $e');
 
-      debugPrint(
-        stackTrace.toString(),
-      );
+      debugPrint(stackTrace.toString());
     }
   }
 
@@ -383,11 +317,7 @@ class EscPosRenderer {
   // DOCUMENTO / FECHA / HORA
   //====================================================
 
-  void _renderHeader(
-      Generator generator,
-      List<int> bytes,
-      Ticket ticket,
-      ) {
+  void _renderHeader(Generator generator, List<int> bytes, Ticket ticket) {
     final tipo = ticket.cliente.tipoDocumento;
 
     bytes.addAll(
@@ -405,32 +335,25 @@ class EscPosRenderer {
     bytes.addAll(
       generator.textEncoded(
         _cp850("N° ${ticket.header.numero}"),
-        styles: const PosStyles(
-          align: PosAlign.center,
-          bold: true,
-        ),
+        styles: const PosStyles(align: PosAlign.center, bold: true),
       ),
     );
 
-    bytes.addAll(
-      generator.emptyLines(1),
-    );
+    bytes.addAll(generator.emptyLines(1));
 
     bytes.addAll(
       generator.row([
         PosColumn(
           width: 4,
           textEncoded: _cp850("Fecha:"),
-          styles: const PosStyles(
-            bold: true,
-          ),
+          styles: const PosStyles(bold: true),
         ),
         PosColumn(
           width: 8,
           textEncoded: _cp850(
             "${ticket.header.fecha.day.toString().padLeft(2, '0')}/"
-                "${ticket.header.fecha.month.toString().padLeft(2, '0')}/"
-                "${ticket.header.fecha.year}",
+            "${ticket.header.fecha.month.toString().padLeft(2, '0')}/"
+            "${ticket.header.fecha.year}",
           ),
         ),
       ]),
@@ -441,40 +364,32 @@ class EscPosRenderer {
         PosColumn(
           width: 4,
           textEncoded: _cp850("Hora:"),
-          styles: const PosStyles(
-            bold: true,
-          ),
+          styles: const PosStyles(bold: true),
         ),
         PosColumn(
           width: 8,
           textEncoded: _cp850(
             "${ticket.header.fecha.hour.toString().padLeft(2, '0')}:"
-                "${ticket.header.fecha.minute.toString().padLeft(2, '0')}",
+            "${ticket.header.fecha.minute.toString().padLeft(2, '0')}",
           ),
         ),
       ]),
     );
 
-    bytes.addAll(
-      generator.hr(),
-    );
+    bytes.addAll(generator.hr());
   }
 
   //====================================================
   // CLIENTE
   //====================================================
 
-  void _renderCliente(
-      Generator generator,
-      List<int> bytes,
-      Ticket ticket,
-      ) {
+  void _renderCliente(Generator generator, List<int> bytes, Ticket ticket) {
     final cliente = ticket.cliente;
 
     switch (cliente.tipoDocumento) {
-    //================================================
-    // NOTA DE VENTA
-    //================================================
+      //================================================
+      // NOTA DE VENTA
+      //================================================
 
       case "Nota de Venta":
         bytes.addAll(
@@ -482,9 +397,7 @@ class EscPosRenderer {
             PosColumn(
               width: 4,
               textEncoded: _cp850("Cliente:"),
-              styles: const PosStyles(
-                bold: true,
-              ),
+              styles: const PosStyles(bold: true),
             ),
             PosColumn(
               width: 8,
@@ -499,9 +412,9 @@ class EscPosRenderer {
 
         break;
 
-    //================================================
-    // BOLETA
-    //================================================
+      //================================================
+      // BOLETA
+      //================================================
 
       case "Boleta":
         bytes.addAll(
@@ -509,16 +422,9 @@ class EscPosRenderer {
             PosColumn(
               width: 4,
               textEncoded: _cp850("Cliente:"),
-              styles: const PosStyles(
-                bold: true,
-              ),
+              styles: const PosStyles(bold: true),
             ),
-            PosColumn(
-              width: 8,
-              textEncoded: _cp850(
-                cliente.cliente ?? "",
-              ),
-            ),
+            PosColumn(width: 8, textEncoded: _cp850(cliente.cliente ?? "")),
           ]),
         );
 
@@ -527,24 +433,17 @@ class EscPosRenderer {
             PosColumn(
               width: 4,
               textEncoded: _cp850("DNI:"),
-              styles: const PosStyles(
-                bold: true,
-              ),
+              styles: const PosStyles(bold: true),
             ),
-            PosColumn(
-              width: 8,
-              textEncoded: _cp850(
-                cliente.dni ?? "",
-              ),
-            ),
+            PosColumn(width: 8, textEncoded: _cp850(cliente.dni ?? "")),
           ]),
         );
 
         break;
 
-    //================================================
-    // FACTURA
-    //================================================
+      //================================================
+      // FACTURA
+      //================================================
 
       case "Factura":
         bytes.addAll(
@@ -552,16 +451,9 @@ class EscPosRenderer {
             PosColumn(
               width: 4,
               textEncoded: _cp850("RUC:"),
-              styles: const PosStyles(
-                bold: true,
-              ),
+              styles: const PosStyles(bold: true),
             ),
-            PosColumn(
-              width: 8,
-              textEncoded: _cp850(
-                cliente.ruc ?? "",
-              ),
-            ),
+            PosColumn(width: 8, textEncoded: _cp850(cliente.ruc ?? "")),
           ]),
         );
 
@@ -570,16 +462,9 @@ class EscPosRenderer {
             PosColumn(
               width: 4,
               textEncoded: _cp850("Razón:"),
-              styles: const PosStyles(
-                bold: true,
-              ),
+              styles: const PosStyles(bold: true),
             ),
-            PosColumn(
-              width: 8,
-              textEncoded: _cp850(
-                cliente.razonSocial ?? "",
-              ),
-            ),
+            PosColumn(width: 8, textEncoded: _cp850(cliente.razonSocial ?? "")),
           ]),
         );
 
@@ -588,15 +473,11 @@ class EscPosRenderer {
             PosColumn(
               width: 4,
               textEncoded: _cp850("Dirección:"),
-              styles: const PosStyles(
-                bold: true,
-              ),
+              styles: const PosStyles(bold: true),
             ),
             PosColumn(
               width: 8,
-              textEncoded: _cp850(
-                cliente.direccionFiscal ?? "",
-              ),
+              textEncoded: _cp850(cliente.direccionFiscal ?? ""),
             ),
           ]),
         );
@@ -604,20 +485,14 @@ class EscPosRenderer {
         break;
     }
 
-    bytes.addAll(
-      generator.hr(),
-    );
+    bytes.addAll(generator.hr());
   }
 
   //====================================================
   // PRODUCTOS
   //====================================================
 
-  void _renderItems(
-      Generator generator,
-      List<int> bytes,
-      Ticket ticket,
-      ) {
+  void _renderItems(Generator generator, List<int> bytes, Ticket ticket) {
     for (final item in ticket.items) {
       //================================================
       // PRODUCTO + PRECIO
@@ -628,19 +503,12 @@ class EscPosRenderer {
           PosColumn(
             width: 8,
             textEncoded: _cp850(item.nombre),
-            styles: const PosStyles(
-              bold: true,
-            ),
+            styles: const PosStyles(bold: true),
           ),
           PosColumn(
             width: 4,
-            textEncoded: _cp850(
-              "S/ ${item.total.toStringAsFixed(2)}",
-            ),
-            styles: const PosStyles(
-              align: PosAlign.right,
-              bold: true,
-            ),
+            textEncoded: _cp850("S/ ${item.total.toStringAsFixed(2)}"),
+            styles: const PosStyles(align: PosAlign.right, bold: true),
           ),
         ]),
       );
@@ -653,11 +521,9 @@ class EscPosRenderer {
         generator.textEncoded(
           _cp850(
             "${item.cantidad} x S/ "
-                "${item.precioUnitario.toStringAsFixed(2)}",
+            "${item.precioUnitario.toStringAsFixed(2)}",
           ),
-          styles: const PosStyles(
-            fontType: PosFontType.fontA,
-          ),
+          styles: const PosStyles(fontType: PosFontType.fontA),
         ),
       );
 
@@ -680,8 +546,7 @@ class EscPosRenderer {
         //==============================================
 
         if (opcion.startsWith('Tamaño:')) {
-          final valor =
-          opcion.substring('Tamaño:'.length).trim();
+          final valor = opcion.substring('Tamaño:'.length).trim();
 
           if (valor.isNotEmpty) {
             opcionesCompactas.add(valor);
@@ -695,13 +560,10 @@ class EscPosRenderer {
         //==============================================
 
         if (opcion.startsWith('Leche:')) {
-          final valor =
-          opcion.substring('Leche:'.length).trim();
+          final valor = opcion.substring('Leche:'.length).trim();
 
           if (valor.isNotEmpty) {
-            opcionesCompactas.add(
-              _abreviarLeche(valor),
-            );
+            opcionesCompactas.add(_abreviarLeche(valor));
           }
 
           continue;
@@ -712,13 +574,10 @@ class EscPosRenderer {
         //==============================================
 
         if (opcion.startsWith('Endulzante:')) {
-          final valor =
-          opcion.substring('Endulzante:'.length).trim();
+          final valor = opcion.substring('Endulzante:'.length).trim();
 
           if (valor.isNotEmpty) {
-            opcionesCompactas.add(
-              _abreviarEndulzante(valor),
-            );
+            opcionesCompactas.add(_abreviarEndulzante(valor));
           }
 
           continue;
@@ -729,8 +588,7 @@ class EscPosRenderer {
         //==============================================
 
         if (opcion.startsWith('Infusión:')) {
-          final valor =
-          opcion.substring('Infusión:'.length).trim();
+          final valor = opcion.substring('Infusión:'.length).trim();
 
           if (valor.isNotEmpty) {
             opcionesCompactas.add(valor);
@@ -753,8 +611,7 @@ class EscPosRenderer {
         //==============================================
 
         if (opcion.startsWith('Observación:')) {
-          observacion =
-              opcion.substring('Observación:'.length).trim();
+          observacion = opcion.substring('Observación:'.length).trim();
 
           continue;
         }
@@ -773,9 +630,7 @@ class EscPosRenderer {
       if (opcionesCompactas.isNotEmpty) {
         bytes.addAll(
           generator.textEncoded(
-            _cp850(
-              opcionesCompactas.join(' | '),
-            ),
+            _cp850(opcionesCompactas.join(' | ')),
             styles: const PosStyles(
               align: PosAlign.left,
               width: PosTextSize.size1,
@@ -789,13 +644,10 @@ class EscPosRenderer {
       // OBSERVACIÓN
       //================================================
 
-      if (observacion != null &&
-          observacion.isNotEmpty) {
+      if (observacion != null && observacion.isNotEmpty) {
         bytes.addAll(
           generator.textEncoded(
-            _cp850(
-              'Obs: $observacion',
-            ),
+            _cp850('Obs: $observacion'),
             styles: const PosStyles(
               align: PosAlign.left,
               width: PosTextSize.size1,
@@ -809,14 +661,10 @@ class EscPosRenderer {
       // SEPARACIÓN PEQUEÑA ENTRE PRODUCTOS
       //================================================
 
-      bytes.addAll(
-        generator.emptyLines(1),
-      );
+      bytes.addAll(generator.emptyLines(1));
     }
 
-    bytes.addAll(
-      generator.hr(),
-    );
+    bytes.addAll(generator.hr());
   }
 
   //====================================================
@@ -865,28 +713,20 @@ class EscPosRenderer {
   // TOTALES
   //====================================================
 
-  void _renderTotales(
-      Generator generator,
-      List<int> bytes,
-      Ticket ticket,
-      ) {
+  void _renderTotales(Generator generator, List<int> bytes, Ticket ticket) {
     bytes.addAll(
       generator.row([
         PosColumn(
           width: 8,
           textEncoded: _cp850("Subtotal"),
-          styles: const PosStyles(
-            bold: true,
-          ),
+          styles: const PosStyles(bold: true),
         ),
         PosColumn(
           width: 4,
           textEncoded: _cp850(
             "S/ ${ticket.totals.subtotal.toStringAsFixed(2)}",
           ),
-          styles: const PosStyles(
-            align: PosAlign.right,
-          ),
+          styles: const PosStyles(align: PosAlign.right),
         ),
       ]),
     );
@@ -896,25 +736,17 @@ class EscPosRenderer {
         PosColumn(
           width: 8,
           textEncoded: _cp850("IGV (18%)"),
-          styles: const PosStyles(
-            bold: true,
-          ),
+          styles: const PosStyles(bold: true),
         ),
         PosColumn(
           width: 4,
-          textEncoded: _cp850(
-            "S/ ${ticket.totals.igv.toStringAsFixed(2)}",
-          ),
-          styles: const PosStyles(
-            align: PosAlign.right,
-          ),
+          textEncoded: _cp850("S/ ${ticket.totals.igv.toStringAsFixed(2)}"),
+          styles: const PosStyles(align: PosAlign.right),
         ),
       ]),
     );
 
-    bytes.addAll(
-      generator.hr(),
-    );
+    bytes.addAll(generator.hr());
 
     //==================================================
     // TOTAL
@@ -925,26 +757,17 @@ class EscPosRenderer {
         PosColumn(
           width: 7,
           textEncoded: _cp850("TOTAL"),
-          styles: const PosStyles(
-            bold: true,
-          ),
+          styles: const PosStyles(bold: true),
         ),
         PosColumn(
           width: 5,
-          textEncoded: _cp850(
-            "S/ ${ticket.totals.total.toStringAsFixed(2)}",
-          ),
-          styles: const PosStyles(
-            align: PosAlign.right,
-            bold: true,
-          ),
+          textEncoded: _cp850("S/ ${ticket.totals.total.toStringAsFixed(2)}"),
+          styles: const PosStyles(align: PosAlign.right, bold: true),
         ),
       ]),
     );
 
-    bytes.addAll(
-      generator.emptyLines(1),
-    );
+    bytes.addAll(generator.emptyLines(1));
 
     //==================================================
     // MÉTODO DE PAGO
@@ -955,33 +778,20 @@ class EscPosRenderer {
         PosColumn(
           width: 5,
           textEncoded: _cp850("Pago:"),
-          styles: const PosStyles(
-            bold: true,
-          ),
+          styles: const PosStyles(bold: true),
         ),
-        PosColumn(
-          width: 7,
-          textEncoded: _cp850(
-            ticket.totals.metodoPago,
-          ),
-        ),
+        PosColumn(width: 7, textEncoded: _cp850(ticket.totals.metodoPago)),
       ]),
     );
 
-    bytes.addAll(
-      generator.hr(),
-    );
+    bytes.addAll(generator.hr());
   }
 
   //====================================================
   // PIE
   //====================================================
 
-  void _renderFooter(
-      Generator generator,
-      List<int> bytes,
-      Ticket ticket,
-      ) {
+  void _renderFooter(Generator generator, List<int> bytes, Ticket ticket) {
     //==================================================
     // MENSAJE
     //==================================================
@@ -989,16 +799,11 @@ class EscPosRenderer {
     bytes.addAll(
       generator.textEncoded(
         _cp850(ticket.footer.mensaje),
-        styles: const PosStyles(
-          align: PosAlign.center,
-          bold: true,
-        ),
+        styles: const PosStyles(align: PosAlign.center, bold: true),
       ),
     );
 
-    bytes.addAll(
-      generator.emptyLines(1),
-    );
+    bytes.addAll(generator.emptyLines(1));
 
     //==================================================
     // FRASE
@@ -1008,8 +813,8 @@ class EscPosRenderer {
       generator.textEncoded(
         _cp850(
           'Cada taza cuenta una historia,\n'
-              'gracias por ser parte de\n'
-              'la nuestra.',
+          'gracias por ser parte de\n'
+          'la nuestra.',
         ),
         styles: const PosStyles(
           align: PosAlign.center,
@@ -1025,10 +830,7 @@ class EscPosRenderer {
     bytes.addAll(
       generator.textEncoded(
         _cp850(ticket.empresa.instagram),
-        styles: const PosStyles(
-          align: PosAlign.center,
-          bold: true,
-        ),
+        styles: const PosStyles(align: PosAlign.center, bold: true),
       ),
     );
   }

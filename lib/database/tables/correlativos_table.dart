@@ -5,6 +5,5 @@ class Correlativos extends Table {
 
   TextColumn get clave => text().unique()();
 
-  IntColumn get ultimoNumero =>
-      integer().withDefault(const Constant(0))();
+  IntColumn get ultimoNumero => integer().withDefault(const Constant(0))();
 }

@@ -7,10 +7,7 @@ import '../../services/clientes_service.dart';
 class ClienteForm extends StatefulWidget {
   final ClienteModel? cliente;
 
-  const ClienteForm({
-    super.key,
-    this.cliente,
-  });
+  const ClienteForm({super.key, this.cliente});
 
   @override
   State<ClienteForm> createState() => _ClienteFormState();
@@ -67,16 +64,11 @@ class _ClienteFormState extends State<ClienteForm> {
       direccion: _direccionController.text.trim().isEmpty
           ? null
           : _direccionController.text.trim(),
-      fechaRegistro:
-      esEdicion ? widget.cliente!.fechaRegistro : DateTime.now(),
-      ultimaVisita:
-      esEdicion ? widget.cliente!.ultimaVisita : null,
-      totalGastado:
-      esEdicion ? widget.cliente!.totalGastado : 0,
-      cantidadCompras:
-      esEdicion ? widget.cliente!.cantidadCompras : 0,
-      observaciones:
-      esEdicion ? widget.cliente!.observaciones : null,
+      fechaRegistro: esEdicion ? widget.cliente!.fechaRegistro : DateTime.now(),
+      ultimaVisita: esEdicion ? widget.cliente!.ultimaVisita : null,
+      totalGastado: esEdicion ? widget.cliente!.totalGastado : 0,
+      cantidadCompras: esEdicion ? widget.cliente!.cantidadCompras : 0,
+      observaciones: esEdicion ? widget.cliente!.observaciones : null,
       esVip: esEdicion ? widget.cliente!.esVip : false,
       puntos: esEdicion ? widget.cliente!.puntos : 0,
     );
@@ -113,9 +105,7 @@ class _ClienteFormState extends State<ClienteForm> {
         children: [
           TextFormField(
             controller: _nombreController,
-            decoration: const InputDecoration(
-              labelText: 'Nombre *',
-            ),
+            decoration: const InputDecoration(labelText: 'Nombre *'),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Ingrese el nombre del cliente';
@@ -128,36 +118,28 @@ class _ClienteFormState extends State<ClienteForm> {
 
           TextFormField(
             controller: _dniController,
-            decoration: const InputDecoration(
-              labelText: 'DNI',
-            ),
+            decoration: const InputDecoration(labelText: 'DNI'),
           ),
 
           const SizedBox(height: 15),
 
           TextFormField(
             controller: _telefonoController,
-            decoration: const InputDecoration(
-              labelText: 'Teléfono',
-            ),
+            decoration: const InputDecoration(labelText: 'Teléfono'),
           ),
 
           const SizedBox(height: 15),
 
           TextFormField(
             controller: _correoController,
-            decoration: const InputDecoration(
-              labelText: 'Correo',
-            ),
+            decoration: const InputDecoration(labelText: 'Correo'),
           ),
 
           const SizedBox(height: 15),
 
           TextFormField(
             controller: _direccionController,
-            decoration: const InputDecoration(
-              labelText: 'Dirección',
-            ),
+            decoration: const InputDecoration(labelText: 'Dirección'),
           ),
 
           const SizedBox(height: 25),
@@ -168,11 +150,7 @@ class _ClienteFormState extends State<ClienteForm> {
             child: ElevatedButton.icon(
               onPressed: guardarCliente,
               icon: const Icon(Icons.save),
-              label: Text(
-                esEdicion
-                    ? 'Actualizar cliente'
-                    : 'Guardar cliente',
-              ),
+              label: Text(esEdicion ? 'Actualizar cliente' : 'Guardar cliente'),
             ),
           ),
         ],

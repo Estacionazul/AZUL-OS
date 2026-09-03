@@ -8,10 +8,7 @@ import 'producto_card.dart';
 class ProductosPanel extends StatefulWidget {
   final void Function(ProductoModel producto) onAgregarProducto;
 
-  const ProductosPanel({
-    super.key,
-    required this.onAgregarProducto,
-  });
+  const ProductosPanel({super.key, required this.onAgregarProducto});
 
   @override
   State<ProductosPanel> createState() => _ProductosPanelState();
@@ -21,27 +18,13 @@ class _ProductosPanelState extends State<ProductosPanel> {
   String _busqueda = "";
 
   final Map<int, Map<String, String>> categorias = {
-    1: {
-      "titulo": "☕ CAFÉS",
-    },
-    2: {
-      "titulo": "🥤 JUGOS NATURALES",
-    },
-    3: {
-      "titulo": "🧃 BEBIDAS FRÍAS",
-    },
-    4: {
-      "titulo": "🥪 SNACKS",
-    },
-    5: {
-      "titulo": "🍔 HAMBURGUESAS",
-    },
-    6: {
-      "titulo": "🍰 POSTRES",
-    },
-    7: {
-      "titulo": "⭐ COMBOS",
-    },
+    1: {"titulo": "☕ CAFÉS"},
+    2: {"titulo": "🥤 JUGOS NATURALES"},
+    3: {"titulo": "🧃 BEBIDAS FRÍAS"},
+    4: {"titulo": "🥪 SNACKS"},
+    5: {"titulo": "🍔 HAMBURGUESAS"},
+    6: {"titulo": "🍰 POSTRES"},
+    7: {"titulo": "⭐ COMBOS"},
   };
 
   @override
@@ -50,19 +33,14 @@ class _ProductosPanelState extends State<ProductosPanel> {
 
     return Card(
       elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: ListView(
           children: [
             const Text(
               "PRODUCTOS",
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 20),
@@ -86,13 +64,12 @@ class _ProductosPanelState extends State<ProductosPanel> {
 
             ...categorias.entries.map((categoria) {
               final lista = productos.where((p) {
-                final perteneceCategoria =
-                    p.categoriaId == categoria.key;
+                final perteneceCategoria = p.categoriaId == categoria.key;
 
                 final coincideBusqueda =
                     _busqueda.isEmpty ||
-                        p.nombre.toLowerCase().contains(_busqueda) ||
-                        p.codigo.toLowerCase().contains(_busqueda);
+                    p.nombre.toLowerCase().contains(_busqueda) ||
+                    p.codigo.toLowerCase().contains(_busqueda);
 
                 return perteneceCategoria && coincideBusqueda;
               }).toList();
@@ -115,10 +92,9 @@ class _ProductosPanelState extends State<ProductosPanel> {
                   const SizedBox(height: 15),
 
                   ...lista.map(
-                        (producto) => ProductoCard(
+                    (producto) => ProductoCard(
                       producto: producto,
-                      onAgregar: () =>
-                          widget.onAgregarProducto(producto),
+                      onAgregar: () => widget.onAgregarProducto(producto),
                     ),
                   ),
 

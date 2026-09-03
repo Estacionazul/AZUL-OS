@@ -5,13 +5,8 @@ import '../tables/recetas_table.dart';
 
 part 'recetas_dao.g.dart';
 
-@DriftAccessor(
-  tables: [
-    Recetas,
-  ],
-)
-class RecetasDao extends DatabaseAccessor<AppDatabase>
-    with _$RecetasDaoMixin {
+@DriftAccessor(tables: [Recetas])
+class RecetasDao extends DatabaseAccessor<AppDatabase> with _$RecetasDaoMixin {
   RecetasDao(AppDatabase db) : super(db);
 
   Future<List<Receta>> obtenerTodas() {
@@ -19,9 +14,9 @@ class RecetasDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<Receta?> obtenerPorProducto(int productoId) {
-    return (select(recetas)
-      ..where((t) => t.productoId.equals(productoId)))
-        .getSingleOrNull();
+    return (select(
+      recetas,
+    )..where((t) => t.productoId.equals(productoId))).getSingleOrNull();
   }
 
   Future<int> insertar(RecetasCompanion receta) {

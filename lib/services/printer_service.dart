@@ -26,9 +26,7 @@ class PrinterService {
     final connected = await _printerAdapter.isConnected();
 
     if (!connected) {
-      throw Exception(
-        'No se encontró una impresora disponible para imprimir.',
-      );
+      throw Exception('No se encontró una impresora disponible para imprimir.');
     }
 
     await _printerAdapter.printTicket(bytes);

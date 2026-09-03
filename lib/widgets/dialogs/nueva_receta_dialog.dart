@@ -27,19 +27,15 @@ class _NuevaRecetaDialogState extends State<NuevaRecetaDialog> {
 
   Future<void> _guardar() async {
     if (_productoSeleccionado == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Seleccione un producto."),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Seleccione un producto.")));
       return;
     }
 
     if (_nombreController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Ingrese el nombre de la receta."),
-        ),
+        const SnackBar(content: Text("Ingrese el nombre de la receta.")),
       );
       return;
     }
@@ -119,10 +115,7 @@ class _NuevaRecetaDialogState extends State<NuevaRecetaDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text("Cancelar"),
         ),
-        FilledButton(
-          onPressed: _guardar,
-          child: const Text("Guardar"),
-        ),
+        FilledButton(onPressed: _guardar, child: const Text("Guardar")),
       ],
     );
   }

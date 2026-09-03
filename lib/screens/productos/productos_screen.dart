@@ -11,6 +11,7 @@ import '../../core/widgets/app_action_menu.dart';
 import '../../core/widgets/app_confirm_dialog.dart';
 import '../../core/widgets/app_empty_state.dart';
 import '../../core/widgets/app_search_field.dart';
+import '../../widgets/module_header.dart';
 
 class ProductosScreen extends StatelessWidget {
   const ProductosScreen({super.key});
@@ -40,12 +41,6 @@ class ProductosScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xffF5F7FA),
 
-      appBar: AppBar(
-        title: const Text("PRODUCTOS"),
-        centerTitle: true,
-        backgroundColor: const Color(0xff0A2E6E),
-      ),
-
       // ==========================================================
       // NUEVO PRODUCTO
       // ==========================================================
@@ -69,15 +64,29 @@ class ProductosScreen extends StatelessWidget {
         ),
       ),
 
+      // ==========================================================
+      // CONTENIDO
+      // ==========================================================
       body: Padding(
         padding: const EdgeInsets.all(20),
 
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ========================================================
+            // ENCABEZADO DEL MÓDULO
+            // ========================================================
+            const ModuleHeader(
+              icon: Icons.inventory_2_outlined,
+              title: 'Productos',
+              subtitle: 'Gestiona los productos y su información',
+            ),
 
-            // ====================================================
+            const SizedBox(height: 20),
+
+            // ========================================================
             // BUSCADOR
-            // ====================================================
+            // ========================================================
             AppSearchField(
               hintText: "Buscar producto...",
               onChanged: (texto) {
@@ -87,36 +96,29 @@ class ProductosScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // ====================================================
+            // ========================================================
             // LISTA DE PRODUCTOS
-            // ====================================================
+            // ========================================================
             Expanded(
               child: productos.isEmpty
                   ? const AppEmptyState(
                 icon: Icons.inventory_2_outlined,
                 titulo: "No hay productos",
-                mensaje:
-                "Presiona 'Nuevo Producto' para comenzar.",
+                mensaje: "Presiona 'Nuevo Producto' para comenzar.",
               )
                   : ListView.builder(
                 itemCount: productos.length,
-
                 itemBuilder: (context, index) {
                   final producto = productos[index];
 
                   return Card(
-                    margin: const EdgeInsets.only(
-                      bottom: 14,
-                    ),
+                    margin: const EdgeInsets.only(bottom: 14),
                     elevation: 2,
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                      BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-
                     child: ListTile(
-                      contentPadding:
-                      const EdgeInsets.all(18),
+                      contentPadding: const EdgeInsets.all(18),
 
                       // ==================================================
                       // EMOJI
@@ -143,30 +145,22 @@ class ProductosScreen extends StatelessWidget {
                       // INFORMACIÓN
                       // ==================================================
                       subtitle: Padding(
-                        padding:
-                        const EdgeInsets.only(top: 8),
-
+                        padding: const EdgeInsets.only(top: 8),
                         child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-
                             Text(
                               "Código: ${producto.codigo}",
                             ),
-
                             Text(
                               "Categoría: ${_nombreCategoria(producto.categoriaId)}",
                             ),
-
                             Text(
                               "Stock: ${producto.stock} und",
                             ),
-
                             Text(
                               "Stock mínimo: ${producto.stockMinimo} und",
                             ),
-
                             Text(
                               "Precio: S/. ${producto.precioVenta.toStringAsFixed(2)}",
                             ),
@@ -180,26 +174,20 @@ class ProductosScreen extends StatelessWidget {
                               builder: (_) {
                                 if (producto.stock <= 0) {
                                   return Container(
-                                    padding:
-                                    const EdgeInsets
-                                        .symmetric(
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: 10,
                                       vertical: 5,
                                     ),
-                                    decoration:
-                                    BoxDecoration(
-                                      color:
-                                      Colors.red.shade100,
+                                    decoration: BoxDecoration(
+                                      color: Colors.red.shade100,
                                       borderRadius:
-                                      BorderRadius
-                                          .circular(20),
+                                      BorderRadius.circular(20),
                                     ),
                                     child: const Text(
                                       "🔴 Agotado",
                                       style: TextStyle(
                                         color: Colors.red,
-                                        fontWeight:
-                                        FontWeight.bold,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   );
@@ -208,54 +196,40 @@ class ProductosScreen extends StatelessWidget {
                                 if (producto.stock <=
                                     producto.stockMinimo) {
                                   return Container(
-                                    padding:
-                                    const EdgeInsets
-                                        .symmetric(
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: 10,
                                       vertical: 5,
                                     ),
-                                    decoration:
-                                    BoxDecoration(
-                                      color: Colors
-                                          .orange
-                                          .shade100,
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange.shade100,
                                       borderRadius:
-                                      BorderRadius
-                                          .circular(20),
+                                      BorderRadius.circular(20),
                                     ),
                                     child: const Text(
                                       "🟠 Stock Bajo",
                                       style: TextStyle(
-                                        color:
-                                        Colors.orange,
-                                        fontWeight:
-                                        FontWeight.bold,
+                                        color: Colors.orange,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   );
                                 }
 
                                 return Container(
-                                  padding:
-                                  const EdgeInsets
-                                      .symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                     horizontal: 10,
                                     vertical: 5,
                                   ),
-                                  decoration:
-                                  BoxDecoration(
-                                    color:
-                                    Colors.green.shade100,
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade100,
                                     borderRadius:
-                                    BorderRadius.circular(
-                                        20),
+                                    BorderRadius.circular(20),
                                   ),
                                   child: const Text(
                                     "🟢 Stock Normal",
                                     style: TextStyle(
                                       color: Colors.green,
-                                      fontWeight:
-                                      FontWeight.bold,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 );
@@ -271,7 +245,6 @@ class ProductosScreen extends StatelessWidget {
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-
                           // ==============================================
                           // REGISTRAR ENTRADA
                           // ==============================================
@@ -281,7 +254,6 @@ class ProductosScreen extends StatelessWidget {
                               Icons.move_to_inbox,
                               color: Color(0xff0A2E6E),
                             ),
-
                             onPressed: () async {
                               await showDialog(
                                 context: context,
@@ -303,56 +275,50 @@ class ProductosScreen extends StatelessWidget {
                             onDetalle: () {
                               showDialog(
                                 context: context,
-                                builder: (_) =>
-                                    ProductoDetalleDialog(
-                                      producto: producto,
+                                builder: (_) => ProductoDetalleDialog(
+                                  producto: producto,
+                                  onEditar: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) =>
+                                          NuevoProductoDialog(
+                                            producto: producto,
+                                          ),
+                                    );
+                                  },
+                                  onEliminar: () async {
+                                    final confirmar =
+                                    await showDialog<bool>(
+                                      context: context,
+                                      builder: (_) => AppConfirmDialog(
+                                        titulo: "Eliminar producto",
+                                        mensaje:
+                                        "¿Deseas eliminar '${producto.nombre}'?\n\nEsta acción no se puede deshacer.",
+                                        textoConfirmar: "Eliminar",
+                                      ),
+                                    );
 
-                                      onEditar: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (_) =>
-                                              NuevoProductoDialog(
-                                                producto: producto,
-                                              ),
+                                    if (confirmar == true &&
+                                        producto.id != null) {
+                                      await productoService
+                                          .eliminarProducto(
+                                        producto.id!,
+                                      );
+
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Producto eliminado correctamente",
+                                            ),
+                                          ),
                                         );
-                                      },
-
-                                      onEliminar: () async {
-                                        final confirmar =
-                                        await showDialog<bool>(
-                                          context: context,
-                                          builder: (_) =>
-                                              AppConfirmDialog(
-                                                titulo:
-                                                "Eliminar producto",
-                                                mensaje:
-                                                "¿Deseas eliminar '${producto.nombre}'?\n\nEsta acción no se puede deshacer.",
-                                                textoConfirmar:
-                                                "Eliminar",
-                                              ),
-                                        );
-
-                                        if (confirmar == true &&
-                                            producto.id != null) {
-                                          await productoService
-                                              .eliminarProducto(
-                                            producto.id!,
-                                          );
-
-                                          if (context.mounted) {
-                                            ScaffoldMessenger
-                                                .of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                  "Producto eliminado correctamente",
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                        }
-                                      },
-                                    ),
+                                      }
+                                    }
+                                  },
+                                ),
                               );
                             },
 
@@ -362,10 +328,9 @@ class ProductosScreen extends StatelessWidget {
                             onEditar: () {
                               showDialog(
                                 context: context,
-                                builder: (_) =>
-                                    NuevoProductoDialog(
-                                      producto: producto,
-                                    ),
+                                builder: (_) => NuevoProductoDialog(
+                                  producto: producto,
+                                ),
                               );
                             },
 
@@ -376,28 +341,24 @@ class ProductosScreen extends StatelessWidget {
                               final confirmar =
                               await showDialog<bool>(
                                 context: context,
-                                builder: (_) =>
-                                    AppConfirmDialog(
-                                      titulo:
-                                      "Eliminar producto",
-                                      mensaje:
-                                      "¿Deseas eliminar '${producto.nombre}'?\n\nEsta acción no se puede deshacer.",
-                                      textoConfirmar:
-                                      "Eliminar",
-                                    ),
+                                builder: (_) => AppConfirmDialog(
+                                  titulo: "Eliminar producto",
+                                  mensaje:
+                                  "¿Deseas eliminar '${producto.nombre}'?\n\nEsta acción no se puede deshacer.",
+                                  textoConfirmar: "Eliminar",
+                                ),
                               );
 
                               if (confirmar == true &&
                                   producto.id != null) {
-                                await productoService
-                                    .eliminarProducto(
+                                await productoService.eliminarProducto(
                                   producto.id!,
                                 );
 
                                 if (context.mounted) {
-                                  ScaffoldMessenger
-                                      .of(context)
-                                      .showSnackBar(
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).showSnackBar(
                                     const SnackBar(
                                       content: Text(
                                         "Producto eliminado correctamente",

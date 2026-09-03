@@ -11,15 +11,13 @@ class MovimientosCaja extends Table {
   // CAJA
   // ==========================================================
 
-  IntColumn get cajaId =>
-      integer()();
+  IntColumn get cajaId => integer()();
 
   // ==========================================================
   // FECHA
   // ==========================================================
 
-  DateTimeColumn get fecha =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get fecha => dateTime().withDefault(currentDateAndTime)();
 
   // ==========================================================
   // TIPO
@@ -31,22 +29,19 @@ class MovimientosCaja extends Table {
   // CIERRE
   // ==========================================================
 
-  TextColumn get tipo =>
-      text()();
+  TextColumn get tipo => text()();
 
   // ==========================================================
   // CONCEPTO
   // ==========================================================
 
-  TextColumn get concepto =>
-      text()();
+  TextColumn get concepto => text()();
 
   // ==========================================================
   // MONTO
   // ==========================================================
 
-  RealColumn get monto =>
-      real()();
+  RealColumn get monto => real()();
 
   // ==========================================================
   // MÉTODO DE PAGO
@@ -58,8 +53,7 @@ class MovimientosCaja extends Table {
   // OTRO
   // ==========================================================
 
-  TextColumn get metodoPago =>
-      text().nullable()();
+  TextColumn get metodoPago => text().nullable()();
 
   // ==========================================================
   // REFERENCIA
@@ -68,13 +62,11 @@ class MovimientosCaja extends Table {
   // V000027
   // ==========================================================
 
-  TextColumn get referencia =>
-      text().nullable()();
+  TextColumn get referencia => text().nullable()();
 
   // ==========================================================
   // OBSERVACIÓN
   // ==========================================================
 
-  TextColumn get observacion =>
-      text().nullable()();
+  TextColumn get observacion => text().nullable()();
 }

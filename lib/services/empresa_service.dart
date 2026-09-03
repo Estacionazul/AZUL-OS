@@ -6,7 +6,7 @@ class EmpresaService {
   final EmpresaRepository _repository;
 
   EmpresaService(AppDatabase database)
-      : _repository = EmpresaRepository(database);
+    : _repository = EmpresaRepository(database);
 
   /// Obtiene la empresa.
   /// Si no existe, crea automáticamente la configuración inicial.

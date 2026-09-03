@@ -12,17 +12,10 @@ class DashboardHeader extends StatelessWidget {
     final rol = sesion.rolUsuario ?? '';
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 30,
-        vertical: 25,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey.shade300,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
       ),
       child: Row(
         children: [
@@ -32,10 +25,7 @@ class DashboardHeader extends StatelessWidget {
               children: [
                 const Text(
                   "Dashboard",
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 6),
@@ -44,10 +34,7 @@ class DashboardHeader extends StatelessWidget {
                   sesion.esCEO
                       ? "Bienvenida a AZUL OS"
                       : "Bienvenido a AZUL OS",
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 16,
-                  ),
+                  style: const TextStyle(color: Colors.grey, fontSize: 16),
                 ),
               ],
             ),
@@ -59,36 +46,20 @@ class DashboardHeader extends StatelessWidget {
               color: Colors.blue.shade50,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.notifications_none,
-              color: Colors.blue,
-            ),
+            child: const Icon(Icons.notifications_none, color: Colors.blue),
           ),
 
           const SizedBox(width: 20),
 
-          const CircleAvatar(
-            radius: 22,
-            child: Icon(Icons.person),
-          ),
+          const CircleAvatar(radius: 22, child: Icon(Icons.person)),
 
           const SizedBox(width: 10),
 
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                nombre,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                rol,
-                style: const TextStyle(
-                  color: Colors.grey,
-                ),
-              ),
+              Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(rol, style: const TextStyle(color: Colors.grey)),
             ],
           ),
         ],

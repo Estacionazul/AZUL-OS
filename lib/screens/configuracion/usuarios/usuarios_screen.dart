@@ -38,15 +38,12 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
               final nombre = nombreController.text.trim();
               final pin = pinController.text.trim();
-              final confirmarPin =
-              confirmarPinController.text.trim();
+              final confirmarPin = confirmarPinController.text.trim();
 
               if (nombre.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text(
-                      'Ingresa el nombre del usuario.',
-                    ),
+                    content: Text('Ingresa el nombre del usuario.'),
                   ),
                 );
                 return;
@@ -54,11 +51,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
               if (pin.length != 4) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'El PIN debe tener 4 dígitos.',
-                    ),
-                  ),
+                  const SnackBar(content: Text('El PIN debe tener 4 dígitos.')),
                 );
                 return;
               }
@@ -66,9 +59,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
               if (!RegExp(r'^\d{4}$').hasMatch(pin)) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text(
-                      'El PIN solo puede contener números.',
-                    ),
+                    content: Text('El PIN solo puede contener números.'),
                   ),
                 );
                 return;
@@ -76,11 +67,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
               if (pin != confirmarPin) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Los PIN no coinciden.',
-                    ),
-                  ),
+                  const SnackBar(content: Text('Los PIN no coinciden.')),
                 );
                 return;
               }
@@ -90,11 +77,9 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
               });
 
               try {
-                final repository =
-                context.read<UsuariosRepository>();
+                final repository = context.read<UsuariosRepository>();
 
-                final existente =
-                await repository.obtenerPorNombre(nombre);
+                final existente = await repository.obtenerPorNombre(nombre);
 
                 if (existente != null) {
                   setDialogState(() {
@@ -105,9 +90,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
                   ScaffoldMessenger.of(dialogBuildContext).showSnackBar(
                     const SnackBar(
-                      content: Text(
-                        'Ya existe un usuario con ese nombre.',
-                      ),
+                      content: Text('Ya existe un usuario con ese nombre.'),
                     ),
                   );
 
@@ -124,18 +107,16 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                 if (!dialogBuildContext.mounted) return;
 
                 Navigator.of(dialogContext).pop(true);
-                } catch (e) {
-              if (!dialogBuildContext.mounted) return;
+              } catch (e) {
+                if (!dialogBuildContext.mounted) return;
 
-              setDialogState(() {
-              guardando = false;
-              });
+                setDialogState(() {
+                  guardando = false;
+                });
 
-              ScaffoldMessenger.of(dialogBuildContext).showSnackBar(
+                ScaffoldMessenger.of(dialogBuildContext).showSnackBar(
                   SnackBar(
-                    content: Text(
-                      'No se pudo crear el usuario: $e',
-                    ),
+                    content: Text('No se pudo crear el usuario: $e'),
                     backgroundColor: AppColors.error,
                   ),
                 );
@@ -145,9 +126,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
             return AlertDialog(
               title: const Row(
                 children: [
-                  Icon(
-                    Icons.person_add_alt_1_rounded,
-                  ),
+                  Icon(Icons.person_add_alt_1_rounded),
                   SizedBox(width: 10),
                   Text('Nuevo usuario'),
                 ],
@@ -159,14 +138,11 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                   children: [
                     TextField(
                       controller: nombreController,
-                      textCapitalization:
-                      TextCapitalization.words,
+                      textCapitalization: TextCapitalization.words,
                       decoration: const InputDecoration(
                         labelText: 'Nombre',
                         hintText: 'Ej. María',
-                        prefixIcon: Icon(
-                          Icons.person_outline,
-                        ),
+                        prefixIcon: Icon(Icons.person_outline),
                       ),
                     ),
 
@@ -181,9 +157,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                         labelText: 'PIN',
                         hintText: '4 dígitos',
                         counterText: '',
-                        prefixIcon: const Icon(
-                          Icons.lock_outline,
-                        ),
+                        prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           onPressed: () {
                             setDialogState(() {
@@ -202,8 +176,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                     const SizedBox(height: 16),
 
                     TextField(
-                      controller:
-                      confirmarPinController,
+                      controller: confirmarPinController,
                       obscureText: ocultarConfirmacion,
                       keyboardType: TextInputType.number,
                       maxLength: 4,
@@ -211,14 +184,11 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                         labelText: 'Confirmar PIN',
                         hintText: 'Repite el PIN',
                         counterText: '',
-                        prefixIcon: const Icon(
-                          Icons.lock_outline,
-                        ),
+                        prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           onPressed: () {
                             setDialogState(() {
-                              ocultarConfirmacion =
-                              !ocultarConfirmacion;
+                              ocultarConfirmacion = !ocultarConfirmacion;
                             });
                           },
                           icon: Icon(
@@ -236,25 +206,17 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppColors.info.withValues(
-                          alpha: 0.08,
-                        ),
-                        borderRadius:
-                        BorderRadius.circular(10),
+                        color: AppColors.info.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Row(
                         children: [
-                          Icon(
-                            Icons.badge_outlined,
-                          ),
+                          Icon(Icons.badge_outlined),
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               'Rol: CAJERO',
-                              style: TextStyle(
-                                fontWeight:
-                                FontWeight.w600,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.w600),
                             ),
                           ),
                         ],
@@ -268,30 +230,20 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                   onPressed: guardando
                       ? null
                       : () {
-                    Navigator.of(dialogContext)
-                        .pop();
-                  },
+                          Navigator.of(dialogContext).pop();
+                        },
                   child: const Text('CANCELAR'),
                 ),
                 ElevatedButton.icon(
                   onPressed: guardando ? null : guardar,
                   icon: guardando
                       ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child:
-                    CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
-                  )
-                      : const Icon(
-                    Icons.save_rounded,
-                  ),
-                  label: Text(
-                    guardando
-                        ? 'GUARDANDO...'
-                        : 'CREAR USUARIO',
-                  ),
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.save_rounded),
+                  label: Text(guardando ? 'GUARDANDO...' : 'CREAR USUARIO'),
                 ),
               ],
             );
@@ -313,9 +265,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Usuario creado correctamente.',
-          ),
+          content: Text('Usuario creado correctamente.'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -349,9 +299,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'No se pudieron cargar los usuarios: $e',
-          ),
+          content: Text('No se pudieron cargar los usuarios: $e'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -363,9 +311,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
     if (usuario.id == SesionService.instancia.idUsuario) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'No puedes desactivar tu propio usuario.',
-          ),
+          content: Text('No puedes desactivar tu propio usuario.'),
         ),
       );
       return;
@@ -373,72 +319,35 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
     final repository = context.read<UsuariosRepository>();
 
-    await repository.cambiarEstado(
-      usuario.id,
-      !usuario.activo,
-    );
+    await repository.cambiarEstado(usuario.id, !usuario.activo);
 
     await _cargarUsuarios();
   }
 
   Future<void> _mostrarPermisos(Usuario usuario) async {
-    final repository =
-    context.read<PermisosUsuarioRepository>();
+    final repository = context.read<PermisosUsuarioRepository>();
 
     const modulos = <Map<String, String>>[
-      {
-        'codigo': 'CAFETERIA',
-        'nombre': 'Cafetería',
-      },
-      {
-        'codigo': 'PRODUCTOS',
-        'nombre': 'Productos',
-      },
-      {
-        'codigo': 'INVENTARIO',
-        'nombre': 'Inventario',
-      },
-      {
-        'codigo': 'RECETAS',
-        'nombre': 'Recetas',
-      },
-      {
-        'codigo': 'PRODUCCION',
-        'nombre': 'Producción',
-      },
-      {
-        'codigo': 'VENTAS',
-        'nombre': 'Ventas',
-      },
-      {
-        'codigo': 'CLIENTES',
-        'nombre': 'Clientes',
-      },
-      {
-        'codigo': 'CAJA',
-        'nombre': 'Caja',
-      },
-      {
-        'codigo': 'REPORTES',
-        'nombre': 'Reportes',
-      },
-      {
-        'codigo': 'CONFIGURACION',
-        'nombre': 'Configuración',
-      },
+      {'codigo': 'CAFETERIA', 'nombre': 'Cafetería'},
+      {'codigo': 'PRODUCTOS', 'nombre': 'Productos'},
+      {'codigo': 'INVENTARIO', 'nombre': 'Inventario'},
+      {'codigo': 'RECETAS', 'nombre': 'Recetas'},
+      {'codigo': 'PRODUCCION', 'nombre': 'Producción'},
+      {'codigo': 'VENTAS', 'nombre': 'Ventas'},
+      {'codigo': 'CLIENTES', 'nombre': 'Clientes'},
+      {'codigo': 'CAJA', 'nombre': 'Caja'},
+      {'codigo': 'REPORTES', 'nombre': 'Reportes'},
+      {'codigo': 'CONFIGURACION', 'nombre': 'Configuración'},
     ];
 
-    final permisos =
-    await repository.obtenerPorUsuario(usuario.id);
+    final permisos = await repository.obtenerPorUsuario(usuario.id);
 
     if (!mounted) return;
 
     final permisosActuales = <String, bool>{
       for (final modulo in modulos)
         modulo['codigo']!: permisos.any(
-              (permiso) =>
-          permiso.modulo == modulo['codigo'] &&
-              permiso.permitido,
+          (permiso) => permiso.modulo == modulo['codigo'] && permiso.permitido,
         ),
     };
 
@@ -450,15 +359,9 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
             return AlertDialog(
               title: Row(
                 children: [
-                  const Icon(
-                    Icons.security_rounded,
-                  ),
+                  const Icon(Icons.security_rounded),
                   const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Permisos de ${usuario.nombre}',
-                    ),
-                  ),
+                  Expanded(child: Text('Permisos de ${usuario.nombre}')),
                 ],
               ),
               content: SizedBox(
@@ -476,46 +379,42 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                     Expanded(
                       child: ListView(
                         children: [
-                          ...modulos.map(
-                                (modulo) {
-                              final codigo = modulo['codigo']!;
-                              final nombre = modulo['nombre']!;
+                          ...modulos.map((modulo) {
+                            final codigo = modulo['codigo']!;
+                            final nombre = modulo['nombre']!;
 
-                              return SwitchListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(nombre),
-                                value: permisosActuales[codigo] ?? false,
-                                onChanged: (valor) async {
-                                  try {
-                                    await repository.cambiarPermiso(
-                                      usuario.id,
-                                      codigo,
-                                      valor,
-                                    );
+                            return SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(nombre),
+                              value: permisosActuales[codigo] ?? false,
+                              onChanged: (valor) async {
+                                try {
+                                  await repository.cambiarPermiso(
+                                    usuario.id,
+                                    codigo,
+                                    valor,
+                                  );
 
-                                    if (!context.mounted) return;
+                                  if (!context.mounted) return;
 
-                                    setState(() {
-                                      permisosActuales[codigo] = valor;
-                                    });
-                                  } catch (e) {
-                                    if (!context.mounted) return;
+                                  setState(() {
+                                    permisosActuales[codigo] = valor;
+                                  });
+                                } catch (e) {
+                                  if (!context.mounted) return;
 
-                                    ScaffoldMessenger.of(
-                                      context,
-                                    ).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'No se pudo cambiar el permiso: $e',
-                                        ),
-                                        backgroundColor: AppColors.error,
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'No se pudo cambiar el permiso: $e',
                                       ),
-                                    );
-                                  }
-                                },
-                              );
-                            },
-                          ),
+                                      backgroundColor: AppColors.error,
+                                    ),
+                                  );
+                                }
+                              },
+                            );
+                          }),
                         ],
                       ),
                     ),
@@ -538,9 +437,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   }
 
   Color _colorEstado(bool activo) {
-    return activo
-        ? AppColors.success
-        : AppColors.error;
+    return activo ? AppColors.success : AppColors.error;
   }
 
   @override
@@ -551,10 +448,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
       return const Center(
         child: Text(
           'No tienes permisos para administrar usuarios.',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
       );
     }
@@ -569,13 +463,20 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
             // ==================================================
             // ENCABEZADO
             // ==================================================
-
             Row(
               children: [
+                IconButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  icon: const Icon(Icons.arrow_back),
+                  tooltip: 'Volver',
+                  color: AppColors.textPrimary,
+                ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
                         'Usuarios y permisos',
@@ -601,12 +502,8 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
                 ElevatedButton.icon(
                   onPressed: _mostrarDialogoNuevoUsuario,
-                  icon: const Icon(
-                    Icons.person_add_alt_1_rounded,
-                  ),
-                  label: const Text(
-                    'NUEVO USUARIO',
-                  ),
+                  icon: const Icon(Icons.person_add_alt_1_rounded),
+                  label: const Text('NUEVO USUARIO'),
                 ),
               ],
             ),
@@ -616,7 +513,6 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
             // ==================================================
             // RESUMEN
             // ==================================================
-
             Row(
               children: [
                 _ResumenCard(
@@ -639,7 +535,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                   icon: Icons.admin_panel_settings_rounded,
                   titulo: 'CEO',
                   valor:
-                  '${_usuarios.where((u) => u.rol.toUpperCase() == 'CEO').length}',
+                      '${_usuarios.where((u) => u.rol.toUpperCase() == 'CEO').length}',
                 ),
               ],
             ),
@@ -649,203 +545,144 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
             // ==================================================
             // LISTA
             // ==================================================
-
             Expanded(
               child: Card(
                 child: _cargando
-                    ? const Center(
-                  child: CircularProgressIndicator(),
-                )
+                    ? const Center(child: CircularProgressIndicator())
                     : _usuarios.isEmpty
                     ? const Center(
-                  child: Text(
-                    'No existen usuarios registrados.',
-                    style: TextStyle(
-                      color:
-                      AppColors.textSecondary,
-                      fontSize: 16,
-                    ),
-                  ),
-                )
-                    : ListView.separated(
-                  padding: const EdgeInsets.all(20),
-                  itemCount: _usuarios.length,
-                  separatorBuilder:
-                      (_, _) =>
-                  const Divider(),
-                  itemBuilder:
-                      (context, index) {
-                    final usuario =
-                    _usuarios[index];
-
-                    final esUsuarioActual =
-                        usuario.id ==
-                            SesionService
-                                .instancia
-                                .idUsuario;
-
-                    final esCEO =
-                        usuario.rol
-                            .toUpperCase() ==
-                            'CEO';
-
-                    return ListTile(
-                      contentPadding:
-                      const EdgeInsets
-                          .symmetric(
-                        horizontal: 8,
-                        vertical: 8,
-                      ),
-                      leading: CircleAvatar(
-                        radius: 24,
-                        backgroundColor:
-                        AppColors.primary
-                            .withValues(
-                          alpha: 0.10,
-                        ),
-                        child: Icon(
-                          esCEO
-                              ? Icons
-                              .admin_panel_settings_rounded
-                              : Icons
-                              .person_rounded,
-                          color:
-                          AppColors.primary,
-                        ),
-                      ),
-                      title: Row(
-                        children: [
-                          Text(
-                            usuario.nombre,
-                            style:
-                            const TextStyle(
-                              fontWeight:
-                              FontWeight.bold,
-                            ),
+                        child: Text(
+                          'No existen usuarios registrados.',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 16,
                           ),
-
-                          if (esUsuarioActual) ...[
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            Container(
-                              padding:
-                              const EdgeInsets
-                                  .symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration:
-                              BoxDecoration(
-                                color: AppColors
-                                    .info
-                                    .withValues(
-                                  alpha: 0.10,
-                                ),
-                                borderRadius:
-                                BorderRadius
-                                    .circular(
-                                  20,
-                                ),
-                              ),
-                              child: const Text(
-                                'TÚ',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight:
-                                  FontWeight
-                                      .bold,
-                                  color:
-                                  AppColors
-                                      .info,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      subtitle: Padding(
-                        padding:
-                        const EdgeInsets.only(
-                          top: 5,
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              usuario.rol,
-                              style:
-                              const TextStyle(
-                                fontWeight:
-                                FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 12,
-                            ),
-                            Icon(
-                              Icons.circle,
-                              size: 9,
-                              color:
-                              _colorEstado(
-                                usuario.activo,
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            Text(
-                              usuario.activo
-                                  ? 'Activo'
-                                  : 'Inactivo',
-                              style: TextStyle(
-                                color:
-                                _colorEstado(
-                                  usuario.activo,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      trailing: esCEO
-                          ? const Chip(
-                        avatar: Icon(
-                          Icons
-                              .verified_user_rounded,
-                          size: 18,
-                        ),
-                        label: Text(
-                          'ADMINISTRADOR',
                         ),
                       )
-                          : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              _mostrarPermisos(usuario);
-                            },
-                            icon: const Icon(
-                              Icons.security_rounded,
-                              size: 18,
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(20),
+                        itemCount: _usuarios.length,
+                        separatorBuilder: (_, _) => const Divider(),
+                        itemBuilder: (context, index) {
+                          final usuario = _usuarios[index];
+
+                          final esUsuarioActual =
+                              usuario.id == SesionService.instancia.idUsuario;
+
+                          final esCEO = usuario.rol.toUpperCase() == 'CEO';
+
+                          return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 8,
                             ),
-                            label: const Text('PERMISOS'),
-                          ),
+                            leading: CircleAvatar(
+                              radius: 24,
+                              backgroundColor: AppColors.primary.withValues(
+                                alpha: 0.10,
+                              ),
+                              child: Icon(
+                                esCEO
+                                    ? Icons.admin_panel_settings_rounded
+                                    : Icons.person_rounded,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            title: Row(
+                              children: [
+                                Text(
+                                  usuario.nombre,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
 
-                          const SizedBox(width: 12),
+                                if (esUsuarioActual) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.info.withValues(
+                                        alpha: 0.10,
+                                      ),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Text(
+                                      'TÚ',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.info,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 5),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    usuario.rol,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Icon(
+                                    Icons.circle,
+                                    size: 9,
+                                    color: _colorEstado(usuario.activo),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    usuario.activo ? 'Activo' : 'Inactivo',
+                                    style: TextStyle(
+                                      color: _colorEstado(usuario.activo),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            trailing: esCEO
+                                ? const Chip(
+                                    avatar: Icon(
+                                      Icons.verified_user_rounded,
+                                      size: 18,
+                                    ),
+                                    label: Text('ADMINISTRADOR'),
+                                  )
+                                : Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      OutlinedButton.icon(
+                                        onPressed: () {
+                                          _mostrarPermisos(usuario);
+                                        },
+                                        icon: const Icon(
+                                          Icons.security_rounded,
+                                          size: 18,
+                                        ),
+                                        label: const Text('PERMISOS'),
+                                      ),
 
-                          Switch(
-                            value: usuario.activo,
-                            onChanged:
-                            esUsuarioActual
-                                ? null
-                                : (_) => _cambiarEstado(usuario),
-                          ),
-                        ],
+                                      const SizedBox(width: 12),
+
+                                      Switch(
+                                        value: usuario.activo,
+                                        onChanged: esUsuarioActual
+                                            ? null
+                                            : (_) => _cambiarEstado(usuario),
+                                      ),
+                                    ],
+                                  ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
             ),
           ],
@@ -881,28 +718,20 @@ class _ResumenCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(
-                    alpha: 0.10,
-                  ),
+                  color: AppColors.primary.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  color: AppColors.primary,
-                ),
+                child: Icon(icon, color: AppColors.primary),
               ),
 
               const SizedBox(width: 14),
 
               Column(
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     titulo,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                    ),
+                    style: const TextStyle(color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 3),
                   Text(

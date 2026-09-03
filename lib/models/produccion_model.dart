@@ -26,9 +26,7 @@ class ProduccionModel {
     };
   }
 
-  factory ProduccionModel.fromMap(
-      Map<String, dynamic> map,
-      ) {
+  factory ProduccionModel.fromMap(Map<String, dynamic> map) {
     return ProduccionModel(
       id: map['id'],
       recetaId: map['receta_id'],

@@ -25,9 +25,7 @@ class InsumoMapper {
   /// Convierte un InsumoModel a InsumosCompanion
   static InsumosCompanion toCompanion(InsumoModel model) {
     return InsumosCompanion(
-      id: model.id == null
-          ? const Value.absent()
-          : Value(model.id!),
+      id: model.id == null ? const Value.absent() : Value(model.id!),
       codigo: Value(model.codigo),
       nombre: Value(model.nombre),
       descripcion: Value(model.descripcion),

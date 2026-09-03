@@ -1,4 +1,4 @@
-﻿import 'estado_pedido.dart';
+import 'estado_pedido.dart';
 import 'ubicacion_pedido.dart';
 
 class Pedido {
@@ -18,13 +18,10 @@ class Pedido {
     this.numeroComanda = 0,
   });
 
-  bool get estaAbierto =>
-      estado != EstadoPedido.cerrado;
+  bool get estaAbierto => estado != EstadoPedido.cerrado;
 
   bool get puedeAgregarProductos =>
-      estado == EstadoPedido.abierto ||
-      estado == EstadoPedido.enviado;
+      estado == EstadoPedido.abierto || estado == EstadoPedido.enviado;
 
-  bool get esperandoCuenta =>
-      estado == EstadoPedido.esperandoCuenta;
+  bool get esperandoCuenta => estado == EstadoPedido.esperandoCuenta;
 }

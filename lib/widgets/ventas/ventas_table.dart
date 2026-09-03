@@ -9,15 +9,9 @@ import '../../ticket/esc_pos_renderer.dart';
 class VentasTable extends StatelessWidget {
   final List<Venta> ventas;
 
-  const VentasTable({
-    super.key,
-    required this.ventas,
-  });
+  const VentasTable({super.key, required this.ventas});
 
-  Future<void> _reimprimirTicket(
-      BuildContext context,
-      Venta venta,
-      ) async {
+  Future<void> _reimprimirTicket(BuildContext context, Venta venta) async {
     try {
       debugPrint('==============================================');
       debugPrint('🖨️ REIMPRIMIENDO TICKET');
@@ -25,28 +19,23 @@ class VentasTable extends StatelessWidget {
       debugPrint('Venta: ${venta.numero}');
       debugPrint('Total: S/ ${venta.total.toStringAsFixed(2)}');
 
-      final ticketPrintService =
-      context.read<TicketPrintService>();
+      final ticketPrintService = context.read<TicketPrintService>();
 
-      final escPosRenderer =
-      context.read<EscPosRenderer>();
+      final escPosRenderer = context.read<EscPosRenderer>();
 
-      final printerService =
-      context.read<PrinterService>();
+      final printerService = context.read<PrinterService>();
 
       //==============================================
       // GENERAR TICKET DESDE LA VENTA GUARDADA
       //==============================================
 
-      final ticket =
-      ticketPrintService.generarTicket(venta);
+      final ticket = ticketPrintService.generarTicket(venta);
 
       //==============================================
       // CONVERTIR A ESC/POS
       //==============================================
 
-      final bytes =
-      await escPosRenderer.render(ticket);
+      final bytes = await escPosRenderer.render(ticket);
 
       //==============================================
       // ENVIAR A IMPRESORA
@@ -60,7 +49,7 @@ class VentasTable extends StatelessWidget {
         SnackBar(
           content: Text(
             'Ticket de la venta ${venta.numero} '
-                'impreso correctamente.',
+            'impreso correctamente.',
           ),
         ),
       );
@@ -77,11 +66,7 @@ class VentasTable extends StatelessWidget {
       if (!context.mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'No se pudo imprimir el ticket: $e',
-          ),
-        ),
+        SnackBar(content: Text('No se pudo imprimir el ticket: $e')),
       );
     }
   }
@@ -102,9 +87,7 @@ class VentasTable extends StatelessWidget {
         rows: ventas.map((venta) {
           return DataRow(
             cells: [
-              DataCell(
-                Text(venta.numero),
-              ),
+              DataCell(Text(venta.numero)),
 
               DataCell(
                 Text(
@@ -114,19 +97,11 @@ class VentasTable extends StatelessWidget {
                 ),
               ),
 
-              DataCell(
-                Text(venta.tipoDocumento),
-              ),
+              DataCell(Text(venta.tipoDocumento)),
 
-              DataCell(
-                Text(venta.metodoPago),
-              ),
+              DataCell(Text(venta.metodoPago)),
 
-              DataCell(
-                Text(
-                  "S/ ${venta.total.toStringAsFixed(2)}",
-                ),
-              ),
+              DataCell(Text("S/ ${venta.total.toStringAsFixed(2)}")),
 
               DataCell(
                 Row(
@@ -134,26 +109,20 @@ class VentasTable extends StatelessWidget {
                   children: [
                     Text(
                       "${venta.fecha.day.toString().padLeft(2, '0')}/"
-                          "${venta.fecha.month.toString().padLeft(2, '0')}/"
-                          "${venta.fecha.year}",
+                      "${venta.fecha.month.toString().padLeft(2, '0')}/"
+                      "${venta.fecha.year}",
                     ),
                     const SizedBox(width: 8),
                     IconButton(
                       tooltip: "Reimprimir ticket",
-                      icon: const Icon(
-                        Icons.print_outlined,
-                        size: 20,
-                      ),
+                      icon: const Icon(Icons.print_outlined, size: 20),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(
                         minWidth: 32,
                         minHeight: 32,
                       ),
                       onPressed: () {
-                        _reimprimirTicket(
-                          context,
-                          venta,
-                        );
+                        _reimprimirTicket(context, venta);
                       },
                     ),
                   ],

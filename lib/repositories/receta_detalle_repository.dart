@@ -17,18 +17,14 @@ class RecetaDetalleRepository {
   }
 
   /// Obtener ingredientes de una receta
-  Future<List<RecetaDetalleModel>> obtenerPorReceta(
-      int recetaId,
-      ) async {
+  Future<List<RecetaDetalleModel>> obtenerPorReceta(int recetaId) async {
     final lista = await _dao.obtenerPorReceta(recetaId);
 
     return lista.map(_toModel).toList();
   }
 
   /// Insertar ingrediente
-  Future<void> insertar(
-      RecetaDetalleModel detalle,
-      ) async {
+  Future<void> insertar(RecetaDetalleModel detalle) async {
     await _dao.insertar(
       RecetaDetalleCompanion.insert(
         recetaId: detalle.recetaId,
@@ -41,9 +37,7 @@ class RecetaDetalleRepository {
   }
 
   /// Actualizar ingrediente
-  Future<void> actualizar(
-      RecetaDetalleModel detalle,
-      ) async {
+  Future<void> actualizar(RecetaDetalleModel detalle) async {
     await _dao.actualizar(
       RecetaDetalleData(
         id: detalle.id!,
@@ -57,22 +51,16 @@ class RecetaDetalleRepository {
   }
 
   /// Eliminar ingrediente
-  Future<void> eliminar(
-      int id,
-      ) async {
+  Future<void> eliminar(int id) async {
     await _dao.eliminar(id);
   }
 
   /// Eliminar todos los ingredientes de una receta
-  Future<void> eliminarPorReceta(
-      int recetaId,
-      ) async {
+  Future<void> eliminarPorReceta(int recetaId) async {
     await _dao.eliminarPorReceta(recetaId);
   }
 
-  RecetaDetalleModel _toModel(
-      RecetaDetalleData data,
-      ) {
+  RecetaDetalleModel _toModel(RecetaDetalleData data) {
     return RecetaDetalleModel(
       id: data.id,
       recetaId: data.recetaId,

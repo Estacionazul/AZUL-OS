@@ -6,12 +6,9 @@ import '../repositories/comprobantes_electronicos_repository.dart';
 import '../xml/comprobante_xml_service.dart';
 
 class FacturacionService {
-  final ComprobantesElectronicosRepository
-  comprobantesElectronicosRepository;
+  final ComprobantesElectronicosRepository comprobantesElectronicosRepository;
 
-  FacturacionService({
-    required this.comprobantesElectronicosRepository,
-  });
+  FacturacionService({required this.comprobantesElectronicosRepository});
 
   // ==========================================================
   // CREAR COMPROBANTE ELECTRÓNICO
@@ -21,6 +18,7 @@ class FacturacionService {
     required int ventaId,
     required TipoComprobanteElectronico tipo,
     required String serie,
+    required int numero,
     required DateTime fechaEmision,
     String? dni,
     String? ruc,
@@ -31,20 +29,12 @@ class FacturacionService {
     required double total,
     required String metodoPago,
   }) async {
-    // ----------------------------------------------------------
-    // OBTENER SIGUIENTE CORRELATIVO
-    // ----------------------------------------------------------
-
-    final numero =
-    await comprobantesElectronicosRepository
-        .obtenerSiguienteNumero(serie);
 
     // ----------------------------------------------------------
     // CREAR REGISTRO EN BASE DE DATOS
     // ----------------------------------------------------------
 
-    final comprobante =
-    ComprobantesElectronicosCompanion.insert(
+    final comprobante = ComprobantesElectronicosCompanion.insert(
       ventaId: Value(ventaId),
       tipo: tipo.name,
       serie: serie,
@@ -61,34 +51,23 @@ class FacturacionService {
       estado: const Value('pendiente'),
     );
 
-    return comprobantesElectronicosRepository
-        .crearComprobante(comprobante);
+    return comprobantesElectronicosRepository.crearComprobante(comprobante);
   }
 
   // ==========================================================
   // OBTENER COMPROBANTE POR ID
   // ==========================================================
 
-  Future<ComprobantesElectronico?> obtenerPorId(
-      int id,
-      ) {
-    return comprobantesElectronicosRepository
-        .obtenerPorId(id);
+  Future<ComprobantesElectronico?> obtenerPorId(int id) {
+    return comprobantesElectronicosRepository.obtenerPorId(id);
   }
 
   // ==========================================================
   // ACTUALIZAR ESTADO
   // ==========================================================
 
-  Future<bool> actualizarEstado({
-    required int id,
-    required String estado,
-  }) {
-    return comprobantesElectronicosRepository
-        .actualizarEstado(
-      id,
-      estado,
-    );
+  Future<bool> actualizarEstado({required int id, required String estado}) {
+    return comprobantesElectronicosRepository.actualizarEstado(id, estado);
   }
 
   // ==========================================================
@@ -105,8 +84,7 @@ class FacturacionService {
     DateTime? fechaRespuestaSunat,
     String? estado,
   }) {
-    return comprobantesElectronicosRepository
-        .actualizarRespuestaSunat(
+    return comprobantesElectronicosRepository.actualizarRespuestaSunat(
       id: id,
       codigoRespuestaSunat: codigoRespuestaSunat,
       mensajeRespuestaSunat: mensajeRespuestaSunat,
@@ -123,18 +101,16 @@ class FacturacionService {
   // ==========================================================
 
   ComprobanteElectronico _convertirAModelo(
-      ComprobantesElectronico comprobante,
-      ) {
+    ComprobantesElectronico comprobante,
+  ) {
     final tipo = TipoComprobanteElectronico.values.firstWhere(
-          (e) => e.name == comprobante.tipo,
+      (e) => e.name == comprobante.tipo,
       orElse: () => TipoComprobanteElectronico.notaVenta,
     );
 
-    final estado =
-    EstadoComprobanteElectronico.values.firstWhere(
-          (e) => e.name == comprobante.estado,
-      orElse: () =>
-      EstadoComprobanteElectronico.pendiente,
+    final estado = EstadoComprobanteElectronico.values.firstWhere(
+      (e) => e.name == comprobante.estado,
+      orElse: () => EstadoComprobanteElectronico.pendiente,
     );
 
     return ComprobanteElectronico(
@@ -153,24 +129,16 @@ class FacturacionService {
       total: comprobante.total,
       metodoPago: comprobante.metodoPago,
       estado: estado,
-      codigoRespuestaSunat:
-      comprobante.codigoRespuestaSunat,
-      mensajeRespuestaSunat:
-      comprobante.mensajeRespuestaSunat,
+      codigoRespuestaSunat: comprobante.codigoRespuestaSunat,
+      mensajeRespuestaSunat: comprobante.mensajeRespuestaSunat,
       cdr: comprobante.cdr,
       xml: comprobante.xml,
-      fechaEnvioSunat:
-      comprobante.fechaEnvioSunat,
-      fechaRespuestaSunat:
-      comprobante.fechaRespuestaSunat,
-      comprobanteRelacionadoId:
-      comprobante.comprobanteRelacionadoId,
-      codigoMotivoNotaCredito:
-      comprobante.codigoMotivoNotaCredito,
-      motivoNotaCredito:
-      comprobante.motivoNotaCredito,
-      observaciones:
-      comprobante.observaciones,
+      fechaEnvioSunat: comprobante.fechaEnvioSunat,
+      fechaRespuestaSunat: comprobante.fechaRespuestaSunat,
+      comprobanteRelacionadoId: comprobante.comprobanteRelacionadoId,
+      codigoMotivoNotaCredito: comprobante.codigoMotivoNotaCredito,
+      motivoNotaCredito: comprobante.motivoNotaCredito,
+      observaciones: comprobante.observaciones,
     );
   }
 
@@ -191,14 +159,14 @@ class FacturacionService {
     // OBTENER COMPROBANTE DE LA BASE DE DATOS
     // ----------------------------------------------------------
 
-    final comprobanteDb =
-    await comprobantesElectronicosRepository
-        .obtenerPorId(comprobanteId);
+    final comprobanteDb = await comprobantesElectronicosRepository.obtenerPorId(
+      comprobanteId,
+    );
 
     if (comprobanteDb == null) {
       throw StateError(
         'No se encontró el comprobante electrónico '
-            'con ID $comprobanteId.',
+        'con ID $comprobanteId.',
       );
     }
 
@@ -206,8 +174,7 @@ class FacturacionService {
     // CONVERTIR A MODELO DE NEGOCIO
     // ----------------------------------------------------------
 
-    final comprobante =
-    _convertirAModelo(comprobanteDb);
+    final comprobante = _convertirAModelo(comprobanteDb);
 
     // ----------------------------------------------------------
     // GENERAR XML
@@ -227,8 +194,7 @@ class FacturacionService {
     // GUARDAR XML EN LA BASE DE DATOS
     // ----------------------------------------------------------
 
-    final actualizado =
-    await comprobantesElectronicosRepository.actualizarXml(
+    final actualizado = await comprobantesElectronicosRepository.actualizarXml(
       comprobanteId,
       xml,
     );
@@ -236,7 +202,7 @@ class FacturacionService {
     if (!actualizado) {
       throw StateError(
         'No se pudo guardar el XML del comprobante '
-            'con ID $comprobanteId.',
+        'con ID $comprobanteId.',
       );
     }
 

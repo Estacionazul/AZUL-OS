@@ -11,8 +11,7 @@ class Recetas extends Table {
   TextColumn get nombre => text()();
 
   // Estado
-  BoolColumn get activo =>
-      boolean().withDefault(const Constant(true))();
+  BoolColumn get activo => boolean().withDefault(const Constant(true))();
 
   // Auditoría
   DateTimeColumn get fechaCreacion =>

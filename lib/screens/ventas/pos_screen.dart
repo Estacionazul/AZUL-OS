@@ -13,27 +13,21 @@ class PosScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Punto de Venta"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("Punto de Venta"), centerTitle: true),
 
       body: Padding(
         padding: const EdgeInsets.all(16),
 
         child: Row(
           children: [
-
             //==================================
             // IZQUIERDA
             //==================================
-
             Expanded(
               flex: 2,
 
               child: Column(
                 children: const [
-
                   PosSearch(),
 
                   SizedBox(height: 16),
@@ -42,9 +36,7 @@ class PosScreen extends StatelessWidget {
 
                   SizedBox(height: 16),
 
-                  Expanded(
-                    child: PosProducts(),
-                  ),
+                  Expanded(child: PosProducts()),
                 ],
               ),
             ),
@@ -54,16 +46,12 @@ class PosScreen extends StatelessWidget {
             //==================================
             // DERECHA
             //==================================
-
             SizedBox(
               width: 350,
 
               child: Column(
                 children: const [
-
-                  Expanded(
-                    child: PosCart(),
-                  ),
+                  Expanded(child: PosCart()),
 
                   Divider(),
 

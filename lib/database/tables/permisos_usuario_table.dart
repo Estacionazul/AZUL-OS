@@ -1,4 +1,4 @@
-﻿import 'package:drift/drift.dart';
+import 'package:drift/drift.dart';
 
 import 'usuarios_table.dart';
 
@@ -13,8 +13,7 @@ class PermisosUsuario extends Table {
   // USUARIO
   // ==========================================================
 
-  IntColumn get usuarioId =>
-      integer().references(Usuarios, #id)();
+  IntColumn get usuarioId => integer().references(Usuarios, #id)();
 
   // ==========================================================
   // MODULO
@@ -26,8 +25,5 @@ class PermisosUsuario extends Table {
   // PERMISO
   // ==========================================================
 
-  BoolColumn get permitido =>
-      boolean().withDefault(
-        const Constant(false),
-      )();
+  BoolColumn get permitido => boolean().withDefault(const Constant(false))();
 }

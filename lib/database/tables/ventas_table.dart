@@ -17,8 +17,7 @@ class Ventas extends Table {
   // Fecha
   //==========================
 
-  DateTimeColumn get fecha =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get fecha => dateTime().withDefault(currentDateAndTime)();
 
   //==========================
   // Documento
@@ -45,29 +44,23 @@ class Ventas extends Table {
   // Totales
   //==========================
 
-  RealColumn get subtotal =>
-      real().withDefault(const Constant(0))();
+  RealColumn get subtotal => real().withDefault(const Constant(0))();
 
-  RealColumn get igv =>
-      real().withDefault(const Constant(0))();
+  RealColumn get igv => real().withDefault(const Constant(0))();
 
-  RealColumn get descuento =>
-      real().withDefault(const Constant(0))();
+  RealColumn get descuento => real().withDefault(const Constant(0))();
 
-  RealColumn get total =>
-      real().withDefault(const Constant(0))();
+  RealColumn get total => real().withDefault(const Constant(0))();
 
   //==========================
   // Pago
   //==========================
 
-  TextColumn get metodoPago =>
-      text().withDefault(const Constant('Efectivo'))();
+  TextColumn get metodoPago => text().withDefault(const Constant('Efectivo'))();
 
   //==========================
   // Observaciones
   //==========================
 
-  TextColumn get observaciones =>
-      text().nullable()();
+  TextColumn get observaciones => text().nullable()();
 }

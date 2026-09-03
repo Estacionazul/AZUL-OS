@@ -55,17 +55,9 @@ class AppActionMenu extends StatelessWidget {
           value: "eliminar",
           child: Row(
             children: [
-              Icon(
-                Icons.delete_outline,
-                color: Colors.red,
-              ),
+              Icon(Icons.delete_outline, color: Colors.red),
               SizedBox(width: 10),
-              Text(
-                "Eliminar",
-                style: TextStyle(
-                  color: Colors.red,
-                ),
-              ),
+              Text("Eliminar", style: TextStyle(color: Colors.red)),
             ],
           ),
         ),

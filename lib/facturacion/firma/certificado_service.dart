@@ -16,9 +16,7 @@ class CertificadoService {
 
     // 1. Verificar que el archivo existe.
     if (!await archivo.exists()) {
-      throw Exception(
-        '❌ No se encontró el certificado en:\n$rutaCertificado',
-      );
+      throw Exception('❌ No se encontró el certificado en:\n$rutaCertificado');
     }
 
     print('✅ Archivo .p12 encontrado.');

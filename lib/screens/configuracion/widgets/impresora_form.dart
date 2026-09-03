@@ -88,9 +88,7 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text(
-          '🔎 Buscando impresoras...',
-        ),
+        content: Text('🔎 Buscando impresoras...'),
         duration: Duration(seconds: 2),
       ),
     );
@@ -100,15 +98,13 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
       print('===== DETECTANDO IMPRESORAS WINDOWS =====');
       print('======================================');
 
-      final impresorasDetectadas =
-      await _printerAdapter.discoverPrinters();
+      final impresorasDetectadas = await _printerAdapter.discoverPrinters();
 
       print('Impresoras detectadas originalmente:');
       print(impresorasDetectadas);
 
       // Eliminamos duplicados.
-      final impresorasUnicas =
-      impresorasDetectadas.toSet().toList();
+      final impresorasUnicas = impresorasDetectadas.toSet().toList();
 
       print('Impresoras únicas:');
       print(impresorasUnicas);
@@ -135,9 +131,7 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              '⚠️ No se encontraron impresoras en Windows.',
-            ),
+            content: Text('⚠️ No se encontraron impresoras en Windows.'),
           ),
         );
 
@@ -150,7 +144,7 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
 
       print(
         '===== SE ENCONTRARON '
-            '${_impresoras.length} IMPRESORA(S) =====',
+        '${_impresoras.length} IMPRESORA(S) =====',
       );
 
       for (final impresora in _impresoras) {
@@ -165,40 +159,30 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
           _impresoras.contains(_impresoraSeleccionada)) {
         print(
           '✅ Impresora guardada encontrada: '
-              '$_impresoraSeleccionada',
+          '$_impresoraSeleccionada',
         );
       }
-
       // --------------------------------------------------------
       // BUSCAR HL200B_000
       // --------------------------------------------------------
-
       else if (_impresoras.contains('HL200B_000')) {
         setState(() {
           _impresoraSeleccionada = 'HL200B_000';
         });
 
-        print(
-          '✅ HL200B_000 detectada automáticamente.',
-        );
+        print('✅ HL200B_000 detectada automáticamente.');
       }
-
       // --------------------------------------------------------
       // SI NO ESTÁ HL200B_000
       // --------------------------------------------------------
-
       else {
         setState(() {
           _impresoraSeleccionada = _impresoras.first;
         });
 
-        print(
-          'ℹ️ HL200B_000 no fue encontrada.',
-        );
+        print('ℹ️ HL200B_000 no fue encontrada.');
 
-        print(
-          'Se seleccionó: ${_impresoras.first}',
-        );
+        print('Se seleccionó: ${_impresoras.first}');
       }
 
       // --------------------------------------------------------
@@ -206,9 +190,7 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
       // --------------------------------------------------------
 
       if (_impresoraSeleccionada != null) {
-        await _seleccionarImpresoraInternamente(
-          _impresoraSeleccionada!,
-        );
+        await _seleccionarImpresoraInternamente(_impresoraSeleccionada!);
       }
 
       if (!mounted) {
@@ -219,15 +201,13 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
         SnackBar(
           content: Text(
             '✅ Se encontraron '
-                '${_impresoras.length} impresora(s).',
+            '${_impresoras.length} impresora(s).',
           ),
           duration: const Duration(seconds: 3),
         ),
       );
     } catch (e) {
-      print(
-        '===== ERROR DETECTANDO IMPRESORAS =====',
-      );
+      print('===== ERROR DETECTANDO IMPRESORAS =====');
       print(e);
 
       if (!mounted) {
@@ -236,9 +216,7 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            '❌ Error detectando impresoras: $e',
-          ),
+          content: Text('❌ Error detectando impresoras: $e'),
           duration: const Duration(seconds: 4),
         ),
       );
@@ -255,14 +233,11 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
   // SELECCIONAR IMPRESORA
   // ============================================================
 
-  Future<void> _seleccionarImpresoraInternamente(
-      String nombre,
-      ) async {
+  Future<void> _seleccionarImpresoraInternamente(String nombre) async {
     try {
       await _printerAdapter.selectPrinter(nombre);
 
-      final conectada =
-      await _printerAdapter.isConnected();
+      final conectada = await _printerAdapter.isConnected();
 
       if (!mounted) {
         return;
@@ -277,9 +252,7 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
       print('Nombre: $nombre');
       print('Conectada: $conectada');
     } catch (e) {
-      print(
-        '===== ERROR SELECCIONANDO IMPRESORA =====',
-      );
+      print('===== ERROR SELECCIONANDO IMPRESORA =====');
       print(e);
 
       if (!mounted) {
@@ -302,9 +275,7 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
         _impresoraSeleccionada!.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Selecciona una impresora antes de guardar.',
-          ),
+          content: Text('Selecciona una impresora antes de guardar.'),
         ),
       );
 
@@ -316,8 +287,7 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
     });
 
     try {
-      final empresaService =
-      context.read<EmpresaService>();
+      final empresaService = context.read<EmpresaService>();
 
       final empresaActualizada = EmpresaModel(
         id: _empresa!.id,
@@ -329,20 +299,15 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
         logo: _empresa!.logo,
         serieBoleta: _empresa!.serieBoleta,
         serieFactura: _empresa!.serieFactura,
-        correlativoBoleta:
-        _empresa!.correlativoBoleta,
-        correlativoFactura:
-        _empresa!.correlativoFactura,
+        correlativoBoleta: _empresa!.correlativoBoleta,
+        correlativoFactura: _empresa!.correlativoFactura,
         igv: _empresa!.igv,
         moneda: _empresa!.moneda,
-        tipoContribuyente:
-        _empresa!.tipoContribuyente,
+        tipoContribuyente: _empresa!.tipoContribuyente,
         impresora: _impresoraSeleccionada!,
       );
 
-      await empresaService.actualizar(
-        empresaActualizada,
-      );
+      await empresaService.actualizar(empresaActualizada);
 
       if (!mounted) {
         return;
@@ -354,11 +319,7 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Impresora guardada correctamente',
-          ),
-        ),
+        const SnackBar(content: Text('Impresora guardada correctamente')),
       );
 
       print('===== IMPRESORA GUARDADA =====');
@@ -373,16 +334,10 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Error al guardar la impresora: $e',
-          ),
-        ),
+        SnackBar(content: Text('Error al guardar la impresora: $e')),
       );
 
-      print(
-        '===== ERROR GUARDANDO IMPRESORA =====',
-      );
+      print('===== ERROR GUARDANDO IMPRESORA =====');
       print(e);
     }
   }
@@ -405,33 +360,22 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // --------------------------------------------------
             // TÍTULO
             // --------------------------------------------------
-
             const Row(
               children: [
-                Icon(
-                  Icons.print,
-                  color: Color(0xff0A2E6E),
-                ),
+                Icon(Icons.print, color: Color(0xff0A2E6E)),
                 SizedBox(width: 10),
                 Text(
                   'Impresora',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -440,9 +384,7 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
 
             const Text(
               'Impresora predeterminada',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
 
             const SizedBox(height: 10),
@@ -450,7 +392,6 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
             // --------------------------------------------------
             // LISTA DE IMPRESORAS
             // --------------------------------------------------
-
             if (_cargando)
               const LinearProgressIndicator()
             else if (_impresoras.isEmpty)
@@ -458,21 +399,14 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey.shade300,
-                  ),
-                  borderRadius:
-                  BorderRadius.circular(14),
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Row(
                   children: [
                     Icon(Icons.print),
                     SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'No se encontraron impresoras.',
-                      ),
-                    ),
+                    Expanded(child: Text('No se encontraron impresoras.')),
                   ],
                 ),
               )
@@ -480,34 +414,29 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
               DropdownButtonFormField<String>(
                 value: _impresoraSeleccionada,
                 decoration: InputDecoration(
-                  prefixIcon:
-                  const Icon(Icons.print),
+                  prefixIcon: const Icon(Icons.print),
                   labelText: 'Impresora',
                   border: OutlineInputBorder(
-                    borderRadius:
-                    BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 items: _impresoras
                     .map(
-                      (impresora) =>
-                      DropdownMenuItem<String>(
+                      (impresora) => DropdownMenuItem<String>(
                         value: impresora,
                         child: Text(impresora),
                       ),
-                )
+                    )
                     .toList(),
                 onChanged: _detectando
                     ? null
                     : (valor) async {
-                  if (valor == null) {
-                    return;
-                  }
+                        if (valor == null) {
+                          return;
+                        }
 
-                  await _seleccionarImpresoraInternamente(
-                    valor,
-                  );
-                },
+                        await _seleccionarImpresoraInternamente(valor);
+                      },
               ),
 
             const SizedBox(height: 15),
@@ -515,17 +444,12 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
             // --------------------------------------------------
             // ESTADO
             // --------------------------------------------------
-
             Row(
               children: [
                 Icon(
-                  _conectada
-                      ? Icons.check_circle
-                      : Icons.info_outline,
+                  _conectada ? Icons.check_circle : Icons.info_outline,
                   size: 20,
-                  color: _conectada
-                      ? Colors.green
-                      : Colors.grey,
+                  color: _conectada ? Colors.green : Colors.grey,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -534,9 +458,7 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
                       : 'Impresora no conectada',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: _conectada
-                        ? Colors.green
-                        : Colors.grey,
+                    color: _conectada ? Colors.green : Colors.grey,
                   ),
                 ),
               ],
@@ -547,28 +469,20 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
             // --------------------------------------------------
             // DETECTAR
             // --------------------------------------------------
-
             SizedBox(
               width: double.infinity,
               height: 48,
               child: OutlinedButton.icon(
-                onPressed: _detectando
-                    ? null
-                    : _detectarImpresoras,
+                onPressed: _detectando ? null : _detectarImpresoras,
                 icon: _detectando
                     ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child:
-                  CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
-                )
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Icon(Icons.refresh),
                 label: Text(
-                  _detectando
-                      ? 'Detectando...'
-                      : 'Detectar impresoras',
+                  _detectando ? 'Detectando...' : 'Detectar impresoras',
                 ),
               ),
             ),
@@ -578,33 +492,21 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
             // --------------------------------------------------
             // GUARDAR
             // --------------------------------------------------
-
             SizedBox(
               width: double.infinity,
               height: 48,
               child: ElevatedButton.icon(
-                onPressed: _guardando
-                    ? null
-                    : _guardarImpresora,
+                onPressed: _guardando ? null : _guardarImpresora,
                 icon: _guardando
                     ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child:
-                  CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
-                )
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Icon(Icons.save),
-                label: Text(
-                  _guardando
-                      ? 'Guardando...'
-                      : 'Guardar Impresora',
-                ),
-                style:
-                ElevatedButton.styleFrom(
-                  backgroundColor:
-                  const Color(0xff0A2E6E),
+                label: Text(_guardando ? 'Guardando...' : 'Guardar Impresora'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xff0A2E6E),
                   foregroundColor: Colors.white,
                 ),
               ),

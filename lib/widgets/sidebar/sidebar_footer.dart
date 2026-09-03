@@ -11,11 +11,7 @@ class SidebarFooter extends StatelessWidget {
       padding: EdgeInsets.all(AppSpacing.md),
       child: Column(
         children: [
-
-          Divider(
-            color: Colors.white24,
-            height: 1,
-          ),
+          Divider(color: Colors.white24, height: 1),
 
           SizedBox(height: AppSpacing.md),
 
@@ -33,21 +29,14 @@ class SidebarFooter extends StatelessWidget {
           Text(
             "La plataforma integral\npara Estación Azul",
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 11,
-              height: 1.4,
-            ),
+            style: TextStyle(color: Colors.white70, fontSize: 11, height: 1.4),
           ),
 
           SizedBox(height: AppSpacing.sm),
 
           Text(
             "© 2026 Estación Azul",
-            style: TextStyle(
-              color: Colors.white54,
-              fontSize: 10,
-            ),
+            style: TextStyle(color: Colors.white54, fontSize: 10),
           ),
         ],
       ),

@@ -1,1010 +1,818 @@
-    import 'package:flutter/material.dart';
-    import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-    import '../core/theme/app_colors.dart';
-    import '../core/theme/app_spacing.dart';
-    import '../core/widgets/app_card.dart';
+import '../core/theme/app_colors.dart';
+import '../core/theme/app_spacing.dart';
+import '../core/widgets/app_card.dart';
 
-    import '../models/dashboard_resumen.dart';
-    import '../models/venta.dart';
-    import '../repositories/ventas_repository.dart';
-    import '../repositories/permisos_usuario_repository.dart';
-    import '../services/sesion_service.dart';
+import '../models/dashboard_resumen.dart';
+import '../models/venta.dart';
+import '../repositories/ventas_repository.dart';
+import '../repositories/permisos_usuario_repository.dart';
+import '../services/sesion_service.dart';
 
-    import '../widgets/dashboard/dashboard_header.dart';
-    import '../widgets/dashboard/kpi_card.dart';
-    import '../widgets/dashboard/quick_action_card.dart';
+import '../widgets/dashboard/dashboard_header.dart';
+import '../widgets/dashboard/kpi_card.dart';
+import '../widgets/dashboard/quick_action_card.dart';
 
-    class DashboardScreen extends StatefulWidget {
-      final ValueChanged<int>? onNavigate;
+class DashboardScreen extends StatefulWidget {
+  final ValueChanged<int>? onNavigate;
 
-      const DashboardScreen({
-        super.key,
-        this.onNavigate,
+  const DashboardScreen({super.key, this.onNavigate});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  bool _cargando = true;
+
+  DashboardResumen? _resumen;
+
+  List<Venta> _ultimasVentas = [];
+
+  Map<String, bool> _permisos = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarDashboard();
+  }
+
+  // ==========================================================
+  // CARGAR DASHBOARD
+  // ==========================================================
+
+  Future<void> _cargarDashboard() async {
+    final repository = context.read<VentasRepository>();
+
+    try {
+      final permisos = await _cargarPermisos();
+
+      final resumen = await repository.obtenerResumenDashboard();
+
+      final ventas = await repository.obtenerVentas();
+
+      ventas.sort((a, b) => b.fecha.compareTo(a.fecha));
+
+      if (!mounted) return;
+
+      setState(() {
+        _permisos = permisos;
+        _resumen = resumen;
+        _ultimasVentas = ventas.take(8).toList();
+        _cargando = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _cargando = false;
       });
 
-      @override
-      State<DashboardScreen> createState() => _DashboardScreenState();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo cargar el Dashboard: $e')),
+      );
+    }
+  }
+
+  // ==========================================================
+  // PERMISOS DEL USUARIO
+  // ==========================================================
+
+  Future<Map<String, bool>> _cargarPermisos() async {
+    final sesion = SesionService.instancia;
+
+    // El CEO tiene acceso a todo.
+    if (sesion.esCEO) {
+      return {
+        'CAFETERIA': true,
+        'PRODUCTOS': true,
+        'INVENTARIO': true,
+        'RECETAS': true,
+        'PRODUCCION': true,
+        'PEDIDOS': true,
+        'VENTAS': true,
+        'CLIENTES': true,
+        'CAJA': true,
+        'REPORTES': true,
+        'CONFIGURACION': true,
+      };
     }
 
-    class _DashboardScreenState extends State<DashboardScreen> {
-      bool _cargando = true;
+    // Si no hay usuario iniciado, no damos acceso.
+    if (sesion.idUsuario == null) {
+      return {};
+    }
 
-      DashboardResumen? _resumen;
+    final repository = context.read<PermisosUsuarioRepository>();
 
-      List<Venta> _ultimasVentas = [];
+    final usuarioId = sesion.idUsuario!;
 
-      Map<String, bool> _permisos = {};
+    final resultados = await Future.wait([
+      repository.tienePermiso(usuarioId, 'CAFETERIA'),
+      repository.tienePermiso(usuarioId, 'PRODUCTOS'),
+      repository.tienePermiso(usuarioId, 'INVENTARIO'),
+      repository.tienePermiso(usuarioId, 'RECETAS'),
+      repository.tienePermiso(usuarioId, 'PRODUCCION'),
+      repository.tienePermiso(usuarioId, 'PEDIDOS'),
+      repository.tienePermiso(usuarioId, 'VENTAS'),
+      repository.tienePermiso(usuarioId, 'CLIENTES'),
+      repository.tienePermiso(usuarioId, 'CAJA'),
+      repository.tienePermiso(usuarioId, 'REPORTES'),
+    ]);
 
-      @override
-      void initState() {
-        super.initState();
-        _cargarDashboard();
-      }
+    return {
+      'CAFETERIA': resultados[0],
+      'PRODUCTOS': resultados[1],
+      'INVENTARIO': resultados[2],
+      'RECETAS': resultados[3],
+      'PRODUCCION': resultados[4],
+      'PEDIDOS': resultados[5],
+      'VENTAS': resultados[6],
+      'CLIENTES': resultados[7],
+      'CAJA': resultados[8],
+      'REPORTES': resultados[9],
+    };
+  }
 
-      // ==========================================================
-      // CARGAR DASHBOARD
-      // ==========================================================
+  // ==========================================================
+  // FORMATO DE HORA
+  // ==========================================================
 
-      Future<void> _cargarDashboard() async {
-        final repository = context.read<VentasRepository>();
+  String _hora(DateTime fecha) {
+    final hora = fecha.hour.toString().padLeft(2, '0');
 
-        try {
-          final permisos = await _cargarPermisos();
+    final minuto = fecha.minute.toString().padLeft(2, '0');
 
-          final resumen =
-          await repository.obtenerResumenDashboard();
+    return '$hora:$minuto';
+  }
 
-          final ventas =
-          await repository.obtenerVentas();
+  // ==========================================================
+  // CLIENTE
+  // ==========================================================
 
-          ventas.sort(
-                (a, b) => b.fecha.compareTo(a.fecha),
-          );
+  String _cliente(Venta venta) {
+    final nombre = venta.nombreCliente?.trim();
 
-          if (!mounted) return;
+    if (nombre != null && nombre.isNotEmpty) {
+      return nombre;
+    }
 
-          setState(() {
-            _permisos = permisos;
-            _resumen = resumen;
-            _ultimasVentas = ventas.take(8).toList();
-            _cargando = false;
-          });
-        } catch (e) {
-          if (!mounted) return;
+    return 'Cliente General';
+  }
 
-          setState(() {
-            _cargando = false;
-          });
+  // ==========================================================
+  // FORMATO MONEDA
+  // ==========================================================
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'No se pudo cargar el Dashboard: $e',
-              ),
-            ),
-          );
-        }
-      }
+  String _moneda(double valor) {
+    return 'S/ ${valor.toStringAsFixed(2)}';
+  }
 
-      // ==========================================================
-      // PERMISOS DEL USUARIO
-      // ==========================================================
+  // ==========================================================
+  // DETALLE DE VENTA
+  // ==========================================================
 
-      Future<Map<String, bool>> _cargarPermisos() async {
-        final sesion = SesionService.instancia;
-
-        // El CEO tiene acceso a todo.
-        if (sesion.esCEO) {
-          return {
-            'CAFETERIA': true,
-            'PRODUCTOS': true,
-            'INVENTARIO': true,
-            'RECETAS': true,
-            'PRODUCCION': true,
-            'PEDIDOS': true,
-            'VENTAS': true,
-            'CLIENTES': true,
-            'CAJA': true,
-            'REPORTES': true,
-            'CONFIGURACION': true,
-          };
-        }
-
-        // Si no hay usuario iniciado, no damos acceso.
-        if (sesion.idUsuario == null) {
-          return {};
-        }
-
-        final repository =
-        context.read<PermisosUsuarioRepository>();
-
-        final usuarioId = sesion.idUsuario!;
-
-        final resultados = await Future.wait([
-          repository.tienePermiso(usuarioId, 'CAFETERIA'),
-          repository.tienePermiso(usuarioId, 'PRODUCTOS'),
-          repository.tienePermiso(usuarioId, 'INVENTARIO'),
-          repository.tienePermiso(usuarioId, 'RECETAS'),
-          repository.tienePermiso(usuarioId, 'PRODUCCION'),
-          repository.tienePermiso(usuarioId, 'PEDIDOS'),
-          repository.tienePermiso(usuarioId, 'VENTAS'),
-          repository.tienePermiso(usuarioId, 'CLIENTES'),
-          repository.tienePermiso(usuarioId, 'CAJA'),
-          repository.tienePermiso(usuarioId, 'REPORTES'),
-        ]);
-
-        return {
-          'CAFETERIA': resultados[0],
-          'PRODUCTOS': resultados[1],
-          'INVENTARIO': resultados[2],
-          'RECETAS': resultados[3],
-          'PRODUCCION': resultados[4],
-          'PEDIDOS': resultados[5],
-          'VENTAS': resultados[6],
-          'CLIENTES': resultados[7],
-          'CAJA': resultados[8],
-          'REPORTES': resultados[9],
-        };
-      }
-
-
-      // ==========================================================
-      // FORMATO DE HORA
-      // ==========================================================
-
-      String _hora(DateTime fecha) {
-        final hora =
-        fecha.hour.toString().padLeft(2, '0');
-
-        final minuto =
-        fecha.minute.toString().padLeft(2, '0');
-
-        return '$hora:$minuto';
-      }
-
-      // ==========================================================
-      // CLIENTE
-      // ==========================================================
-
-      String _cliente(Venta venta) {
-        final nombre =
-        venta.nombreCliente?.trim();
-
-        if (nombre != null && nombre.isNotEmpty) {
-          return nombre;
-        }
-
-        return 'Cliente General';
-      }
-
-      // ==========================================================
-      // FORMATO MONEDA
-      // ==========================================================
-
-      String _moneda(double valor) {
-        return 'S/ ${valor.toStringAsFixed(2)}';
-      }
-
-      // ==========================================================
-      // DETALLE DE VENTA
-      // ==========================================================
-
-      Future<void> _mostrarDetalleVenta(Venta venta) async {
-        await showDialog<void>(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Row(
+  Future<void> _mostrarDetalleVenta(Venta venta) async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              const Icon(Icons.receipt_long, color: Color(0xFF174D7A)),
+              const SizedBox(width: 10),
+              Text('Venta ${venta.numero}'),
+            ],
+          ),
+          content: SizedBox(
+            width: 620,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.receipt_long,
-                    color: Color(0xFF174D7A),
+                  // ============================================
+                  // INFORMACIÓN GENERAL
+                  // ============================================
+                  _detalleFila(
+                    'Fecha',
+                    '${venta.fecha.day.toString().padLeft(2, '0')}/'
+                        '${venta.fecha.month.toString().padLeft(2, '0')}/'
+                        '${venta.fecha.year}',
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Venta ${venta.numero}',
+
+                  _detalleFila('Hora', _hora(venta.fecha)),
+
+                  _detalleFila('Cliente', _cliente(venta)),
+
+                  _detalleFila('Documento', venta.tipoDocumento),
+
+                  _detalleFila('Método de pago', venta.metodoPago),
+
+                  const Divider(height: 28),
+
+                  // ============================================
+                  // PRODUCTOS
+                  // ============================================
+                  const Text(
+                    'Productos',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                ],
-              ),
-              content: SizedBox(
-                width: 620,
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                    children: [
-                      // ============================================
-                      // INFORMACIÓN GENERAL
-                      // ============================================
 
-                      _detalleFila(
-                        'Fecha',
-                        '${venta.fecha.day.toString().padLeft(2, '0')}/'
-                            '${venta.fecha.month.toString().padLeft(2, '0')}/'
-                            '${venta.fecha.year}',
-                      ),
+                  const SizedBox(height: 12),
 
-                      _detalleFila(
-                        'Hora',
-                        _hora(venta.fecha),
-                      ),
+                  if (venta.items.isEmpty)
+                    const Text(
+                      'No hay productos registrados.',
+                      style: TextStyle(color: Colors.grey),
+                    )
+                  else
+                    ...venta.items.map((item) {
+                      final personalizaciones = <Widget>[];
 
-                      _detalleFila(
-                        'Cliente',
-                        _cliente(venta),
-                      ),
-
-                      _detalleFila(
-                        'Documento',
-                        venta.tipoDocumento,
-                      ),
-
-                      _detalleFila(
-                        'Método de pago',
-                        venta.metodoPago,
-                      ),
-
-                      const Divider(height: 28),
-
-                      // ============================================
-                      // PRODUCTOS
-                      // ============================================
-
-                      const Text(
-                        'Productos',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      if (venta.items.isEmpty)
-                        const Text(
-                          'No hay productos registrados.',
-                          style: TextStyle(
-                            color: Colors.grey,
+                      if (item.tamano != null &&
+                          item.tamano!.trim().isNotEmpty) {
+                        personalizaciones.add(
+                          Text(
+                            'Tamaño: ${item.tamano}',
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
                           ),
-                        )
-                      else
-                        ...venta.items.map(
-                              (item) {
-                            final personalizaciones = <Widget>[];
+                        );
+                      }
 
-                            if (item.tamano != null &&
-                                item.tamano!.trim().isNotEmpty) {
-                              personalizaciones.add(
-                                Text(
-                                  'Tamaño: ${item.tamano}',
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              );
-                            }
+                      if (item.tipoLeche != null &&
+                          item.tipoLeche!.trim().isNotEmpty) {
+                        personalizaciones.add(
+                          Text(
+                            'Leche: ${item.tipoLeche}',
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        );
+                      }
 
-                            if (item.tipoLeche != null &&
-                                item.tipoLeche!.trim().isNotEmpty) {
-                              personalizaciones.add(
-                                Text(
-                                  'Leche: ${item.tipoLeche}',
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              );
-                            }
+                      if (item.endulzante != null &&
+                          item.endulzante!.trim().isNotEmpty) {
+                        personalizaciones.add(
+                          Text(
+                            'Endulzante: ${item.endulzante}',
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        );
+                      }
 
-                            if (item.endulzante != null &&
-                                item.endulzante!.trim().isNotEmpty) {
-                              personalizaciones.add(
-                                Text(
-                                  'Endulzante: ${item.endulzante}',
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              );
-                            }
+                      if (item.infusion != null &&
+                          item.infusion!.trim().isNotEmpty) {
+                        personalizaciones.add(
+                          Text(
+                            'Infusión: ${item.infusion}',
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        );
+                      }
 
-                            if (item.infusion != null &&
-                                item.infusion!.trim().isNotEmpty) {
-                              personalizaciones.add(
-                                Text(
-                                  'Infusión: ${item.infusion}',
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              );
-                            }
+                      if (item.extraShot) {
+                        personalizaciones.add(
+                          const Text(
+                            'Extra shot: Sí',
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                        );
+                      }
 
-                            if (item.extraShot) {
-                              personalizaciones.add(
-                                const Text(
-                                  'Extra shot: Sí',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              );
-                            }
+                      if (item.observaciones != null &&
+                          item.observaciones!.trim().isNotEmpty) {
+                        personalizaciones.add(
+                          Text(
+                            'Observación: ${item.observaciones}',
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        );
+                      }
 
-                            if (item.observaciones != null &&
-                                item.observaciones!.trim().isNotEmpty) {
-                              personalizaciones.add(
-                                Text(
-                                  'Observación: ${item.observaciones}',
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              );
-                            }
-
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: 14,
-                              ),
-                              child: Row(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          item.producto.nombre,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-
-                                        const SizedBox(height: 3),
-
-                                        Text(
-                                          '${item.cantidad} x '
-                                              '${_moneda(item.precioUnitario)}',
-                                          style: const TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-
-                                        if (personalizaciones.isNotEmpty) ...[
-                                          const SizedBox(height: 5),
-                                          ...personalizaciones.map(
-                                                (detalle) => Padding(
-                                              padding:
-                                              const EdgeInsets.only(
-                                                bottom: 2,
-                                              ),
-                                              child: detalle,
-                                            ),
-                                          ),
-                                        ],
-                                      ],
+                                  Text(
+                                    item.producto.nombre,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
                                     ),
                                   ),
 
-                                  const SizedBox(width: 16),
+                                  const SizedBox(height: 3),
 
                                   Text(
-                                    _moneda(item.subtotal),
+                                    '${item.cantidad} x '
+                                    '${_moneda(item.precioUnitario)}',
                                     style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                      color: Colors.grey,
+                                      fontSize: 13,
                                     ),
                                   ),
+
+                                  if (personalizaciones.isNotEmpty) ...[
+                                    const SizedBox(height: 5),
+                                    ...personalizaciones.map(
+                                      (detalle) => Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 2,
+                                        ),
+                                        child: detalle,
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
-                            );
-                          },
-                        ),
-
-                      const Divider(height: 28),
-
-                      // ============================================
-                      // TOTALES
-                      // ============================================
-
-                      _detalleFila(
-                        'Subtotal',
-                        _moneda(venta.subtotal),
-                      ),
-
-                      _detalleFila(
-                        'Descuento',
-                        _moneda(venta.descuento),
-                      ),
-
-                      _detalleFila(
-                        'IGV',
-                        _moneda(venta.igv),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Container(
-                        padding:
-                        const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                          const Color(0xFFE8F1F8),
-                          borderRadius:
-                          BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            const Expanded(
-                              child: Text(
-                                'TOTAL',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight:
-                                  FontWeight.bold,
-                                ),
-                              ),
                             ),
+
+                            const SizedBox(width: 16),
+
                             Text(
-                              _moneda(venta.total),
+                              _moneda(item.subtotal),
                               style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight:
-                                FontWeight.bold,
-                                color:
-                                Color(0xFF174D7A),
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
                         ),
-                      ),
+                      );
+                    }),
 
-                      if (venta.observaciones != null &&
-                          venta.observaciones!
-                              .trim()
-                              .isNotEmpty) ...[
-                        const SizedBox(height: 20),
+                  const Divider(height: 28),
 
-                        const Text(
-                          'Observaciones',
-                          style: TextStyle(
-                            fontWeight:
-                            FontWeight.bold,
+                  // ============================================
+                  // TOTALES
+                  // ============================================
+                  _detalleFila('Subtotal', _moneda(venta.subtotal)),
+
+                  _detalleFila('Descuento', _moneda(venta.descuento)),
+
+                  _detalleFila('IGV', _moneda(venta.igv)),
+
+                  const SizedBox(height: 8),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F1F8),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'TOTAL',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-
-                        const SizedBox(height: 6),
-
                         Text(
-                          venta.observaciones!.trim(),
+                          _moneda(venta.total),
                           style: const TextStyle(
-                            color: Colors.grey,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF174D7A),
                           ),
                         ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              actions: [
-                FilledButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Cerrar'),
-                ),
-              ],
-            );
-          },
-        );
-      }
 
-      Widget _detalleFila(
-          String titulo,
-          String valor,
-          ) {
-        return Padding(
-          padding:
-          const EdgeInsets.only(bottom: 8),
-          child: Row(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 140,
-                child: Text(
-                  titulo,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Text(
-                  valor,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      }
+                  if (venta.observaciones != null &&
+                      venta.observaciones!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 20),
 
-      // ==========================================================
-      // BUILD
-      // ==========================================================
+                    const Text(
+                      'Observaciones',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
 
-      @override
-      Widget build(BuildContext context) {
-        if (_cargando) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
+                    const SizedBox(height: 6),
+
+                    Text(
+                      venta.observaciones!.trim(),
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          );
-        }
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cerrar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-        final resumen = _resumen!;
+  Widget _detalleFila(String titulo, String valor) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 140,
+            child: Text(titulo, style: const TextStyle(color: Colors.grey)),
+          ),
+          Expanded(
+            child: Text(
+              valor,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          body: Column(
-            children: [
-              const DashboardHeader(),
+  // ==========================================================
+  // BUILD
+  // ==========================================================
 
-              Expanded(
-                child: SingleChildScrollView(
-                  padding:
-                  const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+  @override
+  Widget build(BuildContext context) {
+    if (_cargando) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final resumen = _resumen!;
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Column(
+        children: [
+          const DashboardHeader(),
+
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ==================================================
+                  // KPIs
+                  // ==================================================
+                  Row(
                     children: [
-                      // ==================================================
-                      // KPIs
-                      // ==================================================
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: KpiCard(
-                              icon: Icons.today,
-                              titulo: 'Ventas Hoy',
-                              valor:
-                              'S/ ${resumen.ventasHoy.toStringAsFixed(2)}',
-                              color: AppColors.success,
-                            ),
-                          ),
-
-                          const SizedBox(
-                            width: AppSpacing.md,
-                          ),
-
-                          Expanded(
-                            child: KpiCard(
-                              icon: Icons.calendar_month,
-                              titulo: 'Ventas del Mes',
-                              valor:
-                              'S/ ${resumen.ventasMes.toStringAsFixed(2)}',
-                              color: AppColors.info,
-                            ),
-                          ),
-
-                          const SizedBox(
-                            width: AppSpacing.md,
-                          ),
-
-                          Expanded(
-                            child: KpiCard(
-                              icon: Icons.receipt_long,
-                              titulo: 'Tickets Hoy',
-                              valor:
-                              resumen.ticketsHoy.toString(),
-                              color: Colors.brown,
-                            ),
-                          ),
-
-                          const SizedBox(
-                            width: AppSpacing.md,
-                          ),
-
-                          Expanded(
-                            child: KpiCard(
-                              icon: Icons.people,
-                              titulo: 'Clientes Hoy',
-                              valor:
-                              resumen.clientesHoy.toString(),
-                              color: AppColors.info,
-                            ),
-                          ),
-                        ],
+                      Expanded(
+                        child: KpiCard(
+                          icon: Icons.today,
+                          titulo: 'Ventas Hoy',
+                          valor: 'S/ ${resumen.ventasHoy.toStringAsFixed(2)}',
+                          color: AppColors.success,
+                        ),
                       ),
 
-                      const SizedBox(
-                        height: AppSpacing.md,
+                      const SizedBox(width: AppSpacing.md),
+
+                      Expanded(
+                        child: KpiCard(
+                          icon: Icons.calendar_month,
+                          titulo: 'Ventas del Mes',
+                          valor: 'S/ ${resumen.ventasMes.toStringAsFixed(2)}',
+                          color: AppColors.info,
+                        ),
                       ),
 
-                      Row(
-                        children: [
-                          Expanded(
-                            child: KpiCard(
-                              icon:
-                              Icons.receipt_long_outlined,
-                              titulo: 'Tickets del Mes',
-                              valor:
-                              resumen.ticketsMes.toString(),
-                              color: Colors.deepPurple,
-                            ),
-                          ),
+                      const SizedBox(width: AppSpacing.md),
 
-                          const SizedBox(
-                            width: AppSpacing.md,
-                          ),
-
-                          Expanded(
-                            child: KpiCard(
-                              icon: Icons.people_outline,
-                              titulo: 'Clientes del Mes',
-                              valor:
-                              resumen.clientesMes.toString(),
-                              color: AppColors.info,
-                            ),
-                          ),
-
-                          const SizedBox(
-                            width: AppSpacing.md,
-                          ),
-
-                          const Expanded(
-                            child: SizedBox(),
-                          ),
-
-                          const SizedBox(
-                            width: AppSpacing.md,
-                          ),
-
-                          const Expanded(
-                            child: SizedBox(),
-                          ),
-                        ],
+                      Expanded(
+                        child: KpiCard(
+                          icon: Icons.receipt_long,
+                          titulo: 'Tickets Hoy',
+                          valor: resumen.ticketsHoy.toString(),
+                          color: Colors.brown,
+                        ),
                       ),
 
-                      const SizedBox(
-                        height: AppSpacing.xl,
-                      ),
+                      const SizedBox(width: AppSpacing.md),
 
-                      // ==================================================
-                      // ACCIONES RÁPIDAS
-                      // ==================================================
-
-                      Builder(
-                        builder: (context) {
-                          final permisos = _permisos;
-
-                          return Wrap(
-                            spacing: AppSpacing.md,
-                            runSpacing: AppSpacing.md,
-                            children: [
-                              if (permisos['CAFETERIA'] == true)
-                                SizedBox(
-                                  width: 210,
-                                  child: QuickActionCard(
-                                    icon: Icons.local_cafe,
-                                    titulo: 'Cafetería',
-                                    color: Colors.brown,
-                                    onTap: () => widget.onNavigate?.call(1),
-                                  ),
-                                ),
-
-                              if (permisos['PRODUCTOS'] == true)
-                                SizedBox(
-                                  width: 210,
-                                  child: QuickActionCard(
-                                    icon: Icons.shopping_bag,
-                                    titulo: 'Productos',
-                                    color: Colors.orange,
-                                    onTap: () => widget.onNavigate?.call(2),
-                                  ),
-                                ),
-
-                              if (permisos['INVENTARIO'] == true)
-                                SizedBox(
-                                  width: 210,
-                                  child: QuickActionCard(
-                                    icon: Icons.inventory_2,
-                                    titulo: 'Inventario',
-                                    color: Colors.indigo,
-                                    onTap: () => widget.onNavigate?.call(3),
-                                  ),
-                                ),
-
-                              if (permisos['RECETAS'] == true)
-                                SizedBox(
-                                  width: 210,
-                                  child: QuickActionCard(
-                                    icon: Icons.restaurant_menu,
-                                    titulo: 'Recetas',
-                                    color: Colors.deepOrange,
-                                    onTap: () => widget.onNavigate?.call(4),
-                                  ),
-                                ),
-
-                              if (permisos['PRODUCCION'] == true)
-                                SizedBox(
-                                  width: 210,
-                                  child: QuickActionCard(
-                                    icon: Icons.factory,
-                                    titulo: 'Producción',
-                                    color: Colors.teal,
-                                    onTap: () => widget.onNavigate?.call(5),
-                                  ),
-                                ),
-
-                              if (permisos['PEDIDOS'] == true)
-                                SizedBox(
-                                  width: 210,
-                                  child: QuickActionCard(
-                                    icon: Icons.receipt_long,
-                                    titulo: 'Pedidos',
-                                    color: Colors.blue,
-                                    onTap: () => widget.onNavigate?.call(6),
-                                  ),
-                                ),
-
-                              if (permisos['VENTAS'] == true)
-                                SizedBox(
-                                  width: 210,
-                                  child: QuickActionCard(
-                                    icon: Icons.receipt_long,
-                                    titulo: 'Ventas',
-                                    color: Colors.green,
-                                    onTap: () => widget.onNavigate?.call(7),
-                                  ),
-                                ),
-
-                              if (permisos['CLIENTES'] == true)
-                                SizedBox(
-                                  width: 210,
-                                  child: QuickActionCard(
-                                    icon: Icons.people,
-                                    titulo: 'Clientes',
-                                    color: AppColors.info,
-                                    onTap: () => widget.onNavigate?.call(8),
-                                  ),
-                                ),
-
-                              if (permisos['CAJA'] == true)
-                                SizedBox(
-                                  width: 210,
-                                  child: QuickActionCard(
-                                    icon: Icons.point_of_sale,
-                                    titulo: 'Caja',
-                                    color: Colors.purple,
-                                    onTap: () => widget.onNavigate?.call(9),
-                                  ),
-                                ),
-
-                              if (permisos['REPORTES'] == true)
-                                SizedBox(
-                                  width: 210,
-                                  child: QuickActionCard(
-                                    icon: Icons.bar_chart,
-                                    titulo: 'Reportes',
-                                    color: AppColors.success,
-                                    onTap: () => widget.onNavigate?.call(10),
-                                  ),
-                                ),
-                            ],
-                          );
-                        },
-                      ),
-
-                      const SizedBox(
-                        height: AppSpacing.xl,
-                      ),
-
-                      // ==================================================
-                      // ÚLTIMAS VENTAS
-                      // ==================================================
-
-                      AppCard(
-                        child: Padding(
-                          padding:
-                          const EdgeInsets.all(22),
-                          child: Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.receipt_long_outlined,
-                                    color:
-                                    Color(0xFF174D7A),
-                                  ),
-
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-
-                                  const Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment
-                                          .start,
-                                      children: [
-                                        Text(
-                                          'Últimas ventas',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight:
-                                            FontWeight.bold,
-                                          ),
-                                        ),
-                                        SizedBox(height: 3),
-                                        Text(
-                                          'Movimientos registrados recientemente',
-                                          style: TextStyle(
-                                            color:
-                                            Colors.grey,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  TextButton.icon(
-                                    onPressed: () => widget.onNavigate?.call(7),
-                                    icon: const Icon(
-                                      Icons.arrow_forward,
-                                      size: 18,
-                                    ),
-                                    label: const Text(
-                                      'Ver todas',
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(
-                                height: 20,
-                              ),
-
-                              if (_ultimasVentas.isEmpty)
-                                const Padding(
-                                  padding:
-                                  EdgeInsets.all(25),
-                                  child: Center(
-                                    child: Text(
-                                      'Todavía no hay ventas registradas.',
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              else
-                                SingleChildScrollView(
-                                  scrollDirection:
-                                  Axis.horizontal,
-                                  child: DataTable(
-                                    columnSpacing: 34,
-                                    columns: const [
-                                      DataColumn(
-                                        label:
-                                        Text('Hora'),
-                                      ),
-                                      DataColumn(
-                                        label:
-                                        Text('Venta'),
-                                      ),
-                                      DataColumn(
-                                        label:
-                                        Text('Cliente'),
-                                      ),
-                                      DataColumn(
-                                        label:
-                                        Text('Pago'),
-                                      ),
-                                      DataColumn(
-                                        label:
-                                        Text('Total'),
-                                      ),
-                                    ],
-                                    rows:
-                                    _ultimasVentas
-                                        .map(
-                                          (venta) {
-                                            return DataRow(
-                                              onSelectChanged: (_) {
-                                                _mostrarDetalleVenta(venta);
-                                              },
-                                              cells: [
-                                            DataCell(
-                                              Text(
-                                                _hora(
-                                                  venta
-                                                      .fecha,
-                                                ),
-                                              ),
-                                            ),
-
-                                            DataCell(
-                                              Text(
-                                                venta
-                                                    .numero,
-                                                style:
-                                                const TextStyle(
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .w600,
-                                                ),
-                                              ),
-                                            ),
-
-                                            DataCell(
-                                              Text(
-                                                _cliente(
-                                                  venta,
-                                                ),
-                                              ),
-                                            ),
-
-                                            DataCell(
-                                              Text(
-                                                venta
-                                                    .metodoPago,
-                                              ),
-                                            ),
-
-                                            DataCell(
-                                              Text(
-                                                _moneda(
-                                                  venta
-                                                      .total,
-                                                ),
-                                                style:
-                                                const TextStyle(
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    )
-                                        .toList(),
-                                  ),
-                                ),
-                            ],
-                          ),
+                      Expanded(
+                        child: KpiCard(
+                          icon: Icons.people,
+                          titulo: 'Clientes Hoy',
+                          valor: resumen.clientesHoy.toString(),
+                          color: AppColors.info,
                         ),
                       ),
                     ],
                   ),
-                ),
+
+                  const SizedBox(height: AppSpacing.md),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: KpiCard(
+                          icon: Icons.receipt_long_outlined,
+                          titulo: 'Tickets del Mes',
+                          valor: resumen.ticketsMes.toString(),
+                          color: Colors.deepPurple,
+                        ),
+                      ),
+
+                      const SizedBox(width: AppSpacing.md),
+
+                      Expanded(
+                        child: KpiCard(
+                          icon: Icons.people_outline,
+                          titulo: 'Clientes del Mes',
+                          valor: resumen.clientesMes.toString(),
+                          color: AppColors.info,
+                        ),
+                      ),
+
+                      const SizedBox(width: AppSpacing.md),
+
+                      const Expanded(child: SizedBox()),
+
+                      const SizedBox(width: AppSpacing.md),
+
+                      const Expanded(child: SizedBox()),
+                    ],
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // ==================================================
+                  // ACCIONES RÁPIDAS
+                  // ==================================================
+                  Builder(
+                    builder: (context) {
+                      final permisos = _permisos;
+
+                      return Wrap(
+                        spacing: AppSpacing.md,
+                        runSpacing: AppSpacing.md,
+                        children: [
+                          if (permisos['CAFETERIA'] == true)
+                            SizedBox(
+                              width: 210,
+                              child: QuickActionCard(
+                                icon: Icons.local_cafe,
+                                titulo: 'Cafetería',
+                                color: Colors.brown,
+                                onTap: () => widget.onNavigate?.call(1),
+                              ),
+                            ),
+
+                          if (permisos['PRODUCTOS'] == true)
+                            SizedBox(
+                              width: 210,
+                              child: QuickActionCard(
+                                icon: Icons.shopping_bag,
+                                titulo: 'Productos',
+                                color: Colors.orange,
+                                onTap: () => widget.onNavigate?.call(2),
+                              ),
+                            ),
+
+                          if (permisos['INVENTARIO'] == true)
+                            SizedBox(
+                              width: 210,
+                              child: QuickActionCard(
+                                icon: Icons.inventory_2,
+                                titulo: 'Inventario',
+                                color: Colors.indigo,
+                                onTap: () => widget.onNavigate?.call(3),
+                              ),
+                            ),
+
+                          if (permisos['RECETAS'] == true)
+                            SizedBox(
+                              width: 210,
+                              child: QuickActionCard(
+                                icon: Icons.restaurant_menu,
+                                titulo: 'Recetas',
+                                color: Colors.deepOrange,
+                                onTap: () => widget.onNavigate?.call(4),
+                              ),
+                            ),
+
+                          if (permisos['PRODUCCION'] == true)
+                            SizedBox(
+                              width: 210,
+                              child: QuickActionCard(
+                                icon: Icons.factory,
+                                titulo: 'Producción',
+                                color: Colors.teal,
+                                onTap: () => widget.onNavigate?.call(5),
+                              ),
+                            ),
+
+                          if (permisos['PEDIDOS'] == true)
+                            SizedBox(
+                              width: 210,
+                              child: QuickActionCard(
+                                icon: Icons.receipt_long,
+                                titulo: 'Pedidos',
+                                color: Colors.blue,
+                                onTap: () => widget.onNavigate?.call(6),
+                              ),
+                            ),
+
+                          if (permisos['VENTAS'] == true)
+                            SizedBox(
+                              width: 210,
+                              child: QuickActionCard(
+                                icon: Icons.receipt_long,
+                                titulo: 'Ventas',
+                                color: Colors.green,
+                                onTap: () => widget.onNavigate?.call(7),
+                              ),
+                            ),
+
+                          if (permisos['CLIENTES'] == true)
+                            SizedBox(
+                              width: 210,
+                              child: QuickActionCard(
+                                icon: Icons.people,
+                                titulo: 'Clientes',
+                                color: AppColors.info,
+                                onTap: () => widget.onNavigate?.call(8),
+                              ),
+                            ),
+
+                          if (permisos['CAJA'] == true)
+                            SizedBox(
+                              width: 210,
+                              child: QuickActionCard(
+                                icon: Icons.point_of_sale,
+                                titulo: 'Caja',
+                                color: Colors.purple,
+                                onTap: () => widget.onNavigate?.call(9),
+                              ),
+                            ),
+
+                          if (permisos['REPORTES'] == true)
+                            SizedBox(
+                              width: 210,
+                              child: QuickActionCard(
+                                icon: Icons.bar_chart,
+                                titulo: 'Reportes',
+                                color: AppColors.success,
+                                onTap: () => widget.onNavigate?.call(10),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // ==================================================
+                  // ÚLTIMAS VENTAS
+                  // ==================================================
+                  AppCard(
+                    child: Padding(
+                      padding: const EdgeInsets.all(22),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.receipt_long_outlined,
+                                color: Color(0xFF174D7A),
+                              ),
+
+                              const SizedBox(width: 10),
+
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Últimas ventas',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 3),
+                                    Text(
+                                      'Movimientos registrados recientemente',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              TextButton.icon(
+                                onPressed: () => widget.onNavigate?.call(7),
+                                icon: const Icon(Icons.arrow_forward, size: 18),
+                                label: const Text('Ver todas'),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          if (_ultimasVentas.isEmpty)
+                            const Padding(
+                              padding: EdgeInsets.all(25),
+                              child: Center(
+                                child: Text(
+                                  'Todavía no hay ventas registradas.',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ),
+                            )
+                          else
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: DataTable(
+                                columnSpacing: 34,
+                                columns: const [
+                                  DataColumn(label: Text('Hora')),
+                                  DataColumn(label: Text('Venta')),
+                                  DataColumn(label: Text('Cliente')),
+                                  DataColumn(label: Text('Pago')),
+                                  DataColumn(label: Text('Total')),
+                                ],
+                                rows: _ultimasVentas.map((venta) {
+                                  return DataRow(
+                                    onSelectChanged: (_) {
+                                      _mostrarDetalleVenta(venta);
+                                    },
+                                    cells: [
+                                      DataCell(Text(_hora(venta.fecha))),
+
+                                      DataCell(
+                                        Text(
+                                          venta.numero,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+
+                                      DataCell(Text(_cliente(venta))),
+
+                                      DataCell(Text(venta.metodoPago)),
+
+                                      DataCell(
+                                        Text(
+                                          _moneda(venta.total),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        );
-      }
-    }
+        ],
+      ),
+    );
+  }
+}

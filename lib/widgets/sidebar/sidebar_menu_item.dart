@@ -27,9 +27,7 @@ class SidebarMenuItem extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(
-            AppSpacing.radiusMedium,
-          ),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
           onTap: onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
@@ -42,29 +40,15 @@ class SidebarMenuItem extends StatelessWidget {
               color: selected
                   ? Colors.white.withValues(alpha: 0.12)
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(
-                AppSpacing.radiusMedium,
-              ),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
             ),
             child: Row(
               children: [
+                Icon(icon, color: Colors.white, size: 22),
 
-                Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 22,
-                ),
+                const SizedBox(width: AppSpacing.md),
 
-                const SizedBox(
-                  width: AppSpacing.md,
-                ),
-
-                Expanded(
-                  child: Text(
-                    title,
-                    style: AppTextStyles.menu,
-                  ),
-                ),
+                Expanded(child: Text(title, style: AppTextStyles.menu)),
 
                 if (selected)
                   Container(

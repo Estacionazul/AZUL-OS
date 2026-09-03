@@ -13,17 +13,17 @@ class CarritoService extends ChangeNotifier {
   // ==========================================================
 
   void agregarProducto(
-      ProductoModel producto, {
-        String? tamano,
-        String? tipoLeche,
-        String? endulzante,
-        String? infusion,
-        String? observaciones,
-        bool extraShot = false,
-      }) {
+    ProductoModel producto, {
+    String? tamano,
+    String? tipoLeche,
+    String? endulzante,
+    String? infusion,
+    String? observaciones,
+    bool extraShot = false,
+  }) {
     final index = _items.indexWhere(
-          (item) =>
-      item.producto.codigo == producto.codigo &&
+      (item) =>
+          item.producto.codigo == producto.codigo &&
           item.tamano == tamano &&
           item.tipoLeche == tipoLeche &&
           item.endulzante == endulzante &&
@@ -51,9 +51,7 @@ class CarritoService extends ChangeNotifier {
     debugPrint('Items en carrito: ${_items.length}');
 
     for (final item in _items) {
-      debugPrint(
-        '${item.producto.nombre} - Cantidad: ${item.cantidad}',
-      );
+      debugPrint('${item.producto.nombre} - Cantidad: ${item.cantidad}');
     }
 
     notifyListeners();
@@ -73,7 +71,7 @@ class CarritoService extends ChangeNotifier {
       ..clear()
       ..addAll(
         items.map(
-              (item) => ItemCarrito(
+          (item) => ItemCarrito(
             producto: item.producto,
             cantidad: item.cantidad,
             tamano: item.tamano,
@@ -86,14 +84,10 @@ class CarritoService extends ChangeNotifier {
         ),
       );
 
-    debugPrint(
-      '========== CARRITO CARGADO DESDE PEDIDO ==========',
-    );
+    debugPrint('========== CARRITO CARGADO DESDE PEDIDO ==========');
 
     for (final item in _items) {
-      debugPrint(
-        '${item.producto.nombre} - Cantidad: ${item.cantidad}',
-      );
+      debugPrint('${item.producto.nombre} - Cantidad: ${item.cantidad}');
     }
 
     notifyListeners();

@@ -14,29 +14,15 @@ class ClienteDetalleDialog extends StatelessWidget {
     this.onEliminar,
   });
 
-  Widget _item(
-      IconData icon,
-      String titulo,
-      String valor,
-      ) {
+  Widget _item(IconData icon, String titulo, String valor) {
     return ListTile(
       leading: CircleAvatar(
         radius: 20,
         backgroundColor: Colors.blue.shade50,
-        child: Icon(
-          icon,
-          color: Colors.blue,
-        ),
+        child: Icon(icon, color: Colors.blue),
       ),
-      title: Text(
-        titulo,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      subtitle: Text(
-        valor.isEmpty ? "-" : valor,
-      ),
+      title: Text(titulo, style: const TextStyle(fontWeight: FontWeight.bold)),
+      subtitle: Text(valor.isEmpty ? "-" : valor),
     );
   }
 
@@ -45,9 +31,7 @@ class ClienteDetalleDialog extends StatelessWidget {
     return AlertDialog(
       title: const Text(
         "Detalle del cliente",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(fontWeight: FontWeight.bold),
       ),
       content: SizedBox(
         width: 520,
@@ -57,10 +41,7 @@ class ClienteDetalleDialog extends StatelessWidget {
             children: [
               const CircleAvatar(
                 radius: 38,
-                child: Icon(
-                  Icons.person,
-                  size: 38,
-                ),
+                child: Icon(Icons.person, size: 38),
               ),
 
               const SizedBox(height: 18),
@@ -77,23 +58,11 @@ class ClienteDetalleDialog extends StatelessWidget {
 
               const Divider(),
 
-              _item(
-                Icons.badge_outlined,
-                "DNI",
-                cliente.dni ?? "",
-              ),
+              _item(Icons.badge_outlined, "DNI", cliente.dni ?? ""),
 
-              _item(
-                Icons.phone_outlined,
-                "Teléfono",
-                cliente.telefono,
-              ),
+              _item(Icons.phone_outlined, "Teléfono", cliente.telefono),
 
-              _item(
-                Icons.email_outlined,
-                "Correo",
-                cliente.correo ?? "",
-              ),
+              _item(Icons.email_outlined, "Correo", cliente.correo ?? ""),
 
               _item(
                 Icons.location_on_outlined,
@@ -115,11 +84,7 @@ class ClienteDetalleDialog extends StatelessWidget {
                 cliente.cantidadCompras.toString(),
               ),
 
-              _item(
-                Icons.star_outline,
-                "Puntos",
-                cliente.puntos.toString(),
-              ),
+              _item(Icons.star_outline, "Puntos", cliente.puntos.toString()),
 
               _item(
                 Icons.workspace_premium_outlined,
@@ -150,16 +115,8 @@ class ClienteDetalleDialog extends StatelessWidget {
               onEliminar!();
             }
           },
-          icon: const Icon(
-            Icons.delete,
-            color: Colors.red,
-          ),
-          label: const Text(
-            "Eliminar",
-            style: TextStyle(
-              color: Colors.red,
-            ),
-          ),
+          icon: const Icon(Icons.delete, color: Colors.red),
+          label: const Text("Eliminar", style: TextStyle(color: Colors.red)),
         ),
         FilledButton(
           onPressed: () {

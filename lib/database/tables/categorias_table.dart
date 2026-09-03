@@ -5,12 +5,9 @@ class Categorias extends Table {
 
   TextColumn get nombre => text().unique()();
 
-  TextColumn get icono =>
-      text().withDefault(const Constant('📦'))();
+  TextColumn get icono => text().withDefault(const Constant('📦'))();
 
-  IntColumn get orden =>
-      integer().withDefault(const Constant(0))();
+  IntColumn get orden => integer().withDefault(const Constant(0))();
 
-  BoolColumn get activo =>
-      boolean().withDefault(const Constant(true))();
+  BoolColumn get activo => boolean().withDefault(const Constant(true))();
 }

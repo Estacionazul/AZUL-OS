@@ -17,12 +17,7 @@ class AppConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        titulo,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+      title: Text(titulo, style: const TextStyle(fontWeight: FontWeight.bold)),
       content: Text(mensaje),
       actions: [
         TextButton(
@@ -30,9 +25,7 @@ class AppConfirmDialog extends StatelessWidget {
           child: const Text("Cancelar"),
         ),
         FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: colorConfirmar,
-          ),
+          style: FilledButton.styleFrom(backgroundColor: colorConfirmar),
           onPressed: () => Navigator.pop(context, true),
           child: Text(textoConfirmar),
         ),

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../dashboard/dashboard_screen.dart';
 import '../widgets/sidebar_menu.dart';
@@ -62,9 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
               });
             },
           ),
-          Expanded(
-            child: pages[_selectedIndex],
-          ),
+          Expanded(child: pages[_selectedIndex]),
         ],
       ),
     );

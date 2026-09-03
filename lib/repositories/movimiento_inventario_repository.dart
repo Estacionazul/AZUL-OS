@@ -13,12 +13,11 @@ class MovimientoInventarioRepository {
   final ProductosDao _productosDao;
   final InsumosDao _insumosDao;
 
-  MovimientoInventarioRepository(
-      AppDatabase database,
-      )   : _database = database,
-        _dao = MovimientosInventarioDao(database),
-        _productosDao = ProductosDao(database),
-        _insumosDao = InsumosDao(database);
+  MovimientoInventarioRepository(AppDatabase database)
+    : _database = database,
+      _dao = MovimientosInventarioDao(database),
+      _productosDao = ProductosDao(database),
+      _insumosDao = InsumosDao(database);
 
   // ==========================================================
   // OBTENER MOVIMIENTOS
@@ -49,9 +48,7 @@ class MovimientoInventarioRepository {
   // OBTENER POR ID
   // ==========================================================
 
-  Future<MovimientoInventarioModel?> obtenerPorId(
-      int id,
-      ) async {
+  Future<MovimientoInventarioModel?> obtenerPorId(int id) async {
     final movimiento = await _dao.obtenerPorId(id);
 
     if (movimiento == null) {
@@ -136,26 +133,22 @@ class MovimientoInventarioRepository {
       // ======================================================
 
       if (movimiento.productoId != null) {
-        final nuevoStock =
-        nuevosStocksProducto[movimiento.productoId!];
+        final nuevoStock = nuevosStocksProducto[movimiento.productoId!];
 
         if (nuevoStock == null) {
           throw StateError(
             'No se calculó el nuevo stock del producto '
-                '${movimiento.productoId}.',
+            '${movimiento.productoId}.',
           );
         }
 
-        final actualizado =
-        await _productosDao.actualizarStock(
+        final actualizado = await _productosDao.actualizarStock(
           movimiento.productoId!,
           nuevoStock,
         );
 
         if (!actualizado) {
-          throw StateError(
-            'No se pudo actualizar el stock del producto.',
-          );
+          throw StateError('No se pudo actualizar el stock del producto.');
         }
       }
 
@@ -164,26 +157,22 @@ class MovimientoInventarioRepository {
       // ======================================================
 
       if (movimiento.insumoId != null) {
-        final nuevoStock =
-        nuevosStocksInsumo[movimiento.insumoId!];
+        final nuevoStock = nuevosStocksInsumo[movimiento.insumoId!];
 
         if (nuevoStock == null) {
           throw StateError(
             'No se calculó el nuevo stock del insumo '
-                '${movimiento.insumoId}.',
+            '${movimiento.insumoId}.',
           );
         }
 
-        final actualizado =
-        await _insumosDao.actualizarStock(
+        final actualizado = await _insumosDao.actualizarStock(
           movimiento.insumoId!,
           nuevoStock,
         );
 
         if (!actualizado) {
-          throw StateError(
-            'No se pudo actualizar el stock del insumo.',
-          );
+          throw StateError('No se pudo actualizar el stock del insumo.');
         }
       }
 

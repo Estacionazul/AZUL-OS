@@ -26,9 +26,7 @@ class ProductoMapper {
   /// Convierte un ProductoModel a ProductosCompanion
   static ProductosCompanion toCompanion(ProductoModel model) {
     return ProductosCompanion(
-      id: model.id == null
-          ? const Value.absent()
-          : Value(model.id!),
+      id: model.id == null ? const Value.absent() : Value(model.id!),
       codigo: Value(model.codigo),
       codigoBarras: model.codigoBarras.isEmpty
           ? const Value.absent()

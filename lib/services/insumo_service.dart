@@ -8,13 +8,12 @@ class InsumoService extends ChangeNotifier {
   final InsumoRepository _repository;
 
   InsumoService(AppDatabase database)
-      : _repository = InsumoRepository(database);
+    : _repository = InsumoRepository(database);
 
   List<InsumoModel> _insumos = [];
   List<InsumoModel> _insumosFiltrados = [];
 
-  List<InsumoModel> get insumos =>
-      List.unmodifiable(_insumosFiltrados);
+  List<InsumoModel> get insumos => List.unmodifiable(_insumosFiltrados);
 
   /// Obtener todos los insumos
   Future<List<InsumoModel>> obtenerTodos() async {
@@ -58,9 +57,7 @@ class InsumoService extends ChangeNotifier {
     final insumos = await _repository.obtenerTodos();
 
     try {
-      return insumos.firstWhere(
-            (i) => i.codigo == codigo,
-      );
+      return insumos.firstWhere((i) => i.codigo == codigo);
     } catch (_) {
       return null;
     }
@@ -70,9 +67,7 @@ class InsumoService extends ChangeNotifier {
   Future<List<InsumoModel>> obtenerStockBajo() async {
     final insumos = await _repository.obtenerTodos();
 
-    return insumos.where(
-          (i) => i.stock <= i.stockMinimo,
-    ).toList();
+    return insumos.where((i) => i.stock <= i.stockMinimo).toList();
   }
 
   /// Buscar por nombre o código
@@ -92,10 +87,7 @@ class InsumoService extends ChangeNotifier {
   }
 
   /// Aumentar stock
-  Future<bool> aumentarStock(
-      InsumoModel insumo,
-      double cantidad,
-      ) {
+  Future<bool> aumentarStock(InsumoModel insumo, double cantidad) {
     final actualizado = InsumoModel(
       id: insumo.id,
       codigo: insumo.codigo,
@@ -116,11 +108,7 @@ class InsumoService extends ChangeNotifier {
   }
 
   /// Disminuir stock
-  Future<bool> disminuirStock(
-      InsumoModel insumo,
-      double cantidad,
-      ) async {
-
+  Future<bool> disminuirStock(InsumoModel insumo, double cantidad) async {
     if (insumo.stock < cantidad) {
       return false;
     }

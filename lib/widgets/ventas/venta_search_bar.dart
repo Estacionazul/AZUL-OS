@@ -4,11 +4,7 @@ class VentaSearchBar extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String>? onChanged;
 
-  const VentaSearchBar({
-    super.key,
-    required this.controller,
-    this.onChanged,
-  });
+  const VentaSearchBar({super.key, required this.controller, this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -20,16 +16,14 @@ class VentaSearchBar extends StatelessWidget {
         prefixIcon: const Icon(Icons.search_rounded),
         suffixIcon: controller.text.isNotEmpty
             ? IconButton(
-          icon: const Icon(Icons.clear),
-          onPressed: () {
-            controller.clear();
-            onChanged?.call('');
-          },
-        )
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  controller.clear();
+                  onChanged?.call('');
+                },
+              )
             : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

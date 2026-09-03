@@ -5,8 +5,8 @@ import '../models/movimiento_inventario_model.dart';
 
 class MovimientoInventarioMapper {
   static MovimientosInventarioCompanion toCompanion(
-      MovimientoInventarioModel model,
-      ) {
+    MovimientoInventarioModel model,
+  ) {
     return MovimientosInventarioCompanion(
       fecha: Value(model.fecha),
       tipo: Value(model.tipo),
@@ -24,9 +24,7 @@ class MovimientoInventarioMapper {
     );
   }
 
-  static MovimientoInventarioModel toModel(
-      MovimientosInventarioData data,
-      ) {
+  static MovimientoInventarioModel toModel(MovimientosInventarioData data) {
     return MovimientoInventarioModel(
       id: data.id,
       fecha: data.fecha,

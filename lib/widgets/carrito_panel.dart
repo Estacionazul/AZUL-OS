@@ -21,9 +21,7 @@ class CarritoPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -31,10 +29,7 @@ class CarritoPanel extends StatelessWidget {
           children: [
             const Text(
               "🛒 CARRITO",
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 20),
@@ -42,53 +37,43 @@ class CarritoPanel extends StatelessWidget {
             Expanded(
               child: carritoService.items.isEmpty
                   ? const Center(
-                child: Text(
-                  "No hay productos agregados.",
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.grey,
-                  ),
-                ),
-              )
+                      child: Text(
+                        "No hay productos agregados.",
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                      ),
+                    )
                   : ListView.builder(
-                itemCount: carritoService.items.length,
-                itemBuilder: (context, index) {
-                  final ItemCarrito item =
-                  carritoService.items[index];
+                      itemCount: carritoService.items.length,
+                      itemBuilder: (context, index) {
+                        final ItemCarrito item = carritoService.items[index];
 
-                  return ItemCarritoCard(
-                    item: item,
-                    onSumar: () {
-                      carritoService.aumentarCantidad(item);
-                      onActualizar();
-                    },
-                    onRestar: () {
-                      carritoService.disminuirCantidad(item);
-                      onActualizar();
-                    },
-                    onEliminar: () {
-                      carritoService.eliminarProducto(item);
-                      onActualizar();
-                    },
-                  );
-                },
-              ),
+                        return ItemCarritoCard(
+                          item: item,
+                          onSumar: () {
+                            carritoService.aumentarCantidad(item);
+                            onActualizar();
+                          },
+                          onRestar: () {
+                            carritoService.disminuirCantidad(item);
+                            onActualizar();
+                          },
+                          onEliminar: () {
+                            carritoService.eliminarProducto(item);
+                            onActualizar();
+                          },
+                        );
+                      },
+                    ),
             ),
 
-            const Divider(
-              thickness: 2,
-              height: 30,
-            ),
+            const Divider(thickness: 2, height: 30),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   "TOTAL",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   "S/. ${carritoService.total.toStringAsFixed(2)}",
@@ -110,36 +95,33 @@ class CarritoPanel extends StatelessWidget {
                 onPressed: carritoService.items.isEmpty
                     ? null
                     : () {
-                  showDialog(
-                    context: context,
-                    builder: (_) => FinalizarVentaDialog(
-                      total: carritoService.total,
-                      onConfirmar: (metodoPago) {
-                        context.read<CobroService>().cobrar(
-                          metodoPago: metodoPago,
-                        );
+                        showDialog(
+                          context: context,
+                          builder: (_) => FinalizarVentaDialog(
+                            total: carritoService.total,
+                            onConfirmar: (metodoPago) {
+                              context.read<CobroService>().cobrar(
+                                metodoPago: metodoPago,
+                              );
 
-                        onActualizar();
+                              onActualizar();
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "✅ Venta registrada correctamente",
-                            ),
-                            backgroundColor: Colors.green,
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "✅ Venta registrada correctamente",
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            },
                           ),
                         );
                       },
-                    ),
-                  );
-                },
                 icon: const Icon(Icons.point_of_sale),
                 label: const Text(
                   "COBRAR",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
             ),

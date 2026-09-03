@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../models/estado_pedido.dart';
 import '../models/pedido_abierto.dart';
@@ -18,8 +18,7 @@ class UbicacionPedidoCard extends StatelessWidget {
 
   bool get ocupada => pedido != null;
 
-  bool get esperandoCuenta =>
-      pedido?.estado == EstadoPedido.esperandoCuenta;
+  bool get esperandoCuenta => pedido?.estado == EstadoPedido.esperandoCuenta;
 
   IconData get icono {
     if (ubicacion.esMesa) {
@@ -94,11 +93,7 @@ class UbicacionPedidoCard extends StatelessWidget {
                         color: colorEstado.withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(
-                        icono,
-                        color: colorEstado,
-                        size: 27,
-                      ),
+                      child: Icon(icono, color: colorEstado, size: 27),
                     ),
                     const Spacer(),
                     Container(
@@ -138,10 +133,7 @@ class UbicacionPedidoCard extends StatelessWidget {
                 if (ocupada) ...[
                   Text(
                     '${pedido!.cantidadItems} producto(s)',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                   ),
 
                   const SizedBox(height: 8),
@@ -156,10 +148,7 @@ class UbicacionPedidoCard extends StatelessWidget {
                 ] else
                   Text(
                     'Lista para recibir pedido',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                   ),
 
                 const Spacer(),
@@ -175,15 +164,9 @@ class UbicacionPedidoCard extends StatelessWidget {
                           ? Icons.receipt_long_rounded
                           : Icons.add_circle_outline_rounded,
                     ),
-                    label: Text(
-                      ocupada
-                          ? 'Ver pedido'
-                          : 'Abrir pedido',
-                    ),
+                    label: Text(ocupada ? 'Ver pedido' : 'Abrir pedido'),
                     style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 13,
-                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

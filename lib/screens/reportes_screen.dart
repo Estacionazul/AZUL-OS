@@ -1,4 +1,9 @@
+import 'dart:io';
+
+import 'package:excel_plus/excel_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
 import '../models/venta.dart' as model;
 import '../database/app_database.dart';
@@ -25,7 +30,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
   void initState() {
     super.initState();
 
-    _database = AppDatabase();
+    _database = context.read<AppDatabase>();
     _repository = VentasRepository(_database);
 
     _cargarReportes();
@@ -33,7 +38,6 @@ class _ReportesScreenState extends State<ReportesScreen> {
 
   @override
   void dispose() {
-    _database.close();
     super.dispose();
   }
 
@@ -63,11 +67,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'No se pudieron cargar los reportes: $e',
-          ),
-        ),
+        SnackBar(content: Text('No se pudieron cargar los reportes: $e')),
       );
     }
   }
@@ -92,9 +92,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
           ahora.year,
           ahora.month,
           ahora.day,
-        ).subtract(
-          const Duration(days: 6),
-        );
+        ).subtract(const Duration(days: 6));
 
         return _ventas.where((venta) {
           return !venta.fecha.isBefore(inicio);
@@ -151,20 +149,15 @@ class _ReportesScreenState extends State<ReportesScreen> {
   }
 
   // ==========================================================
-  // TOTAL POR MÃ‰TODO DE PAGO
+  // TOTAL POR MÉTODO DE PAGO
   // ==========================================================
 
   double _totalPorMetodo(String metodo) {
     return _ventasFiltradas
         .where(
-          (venta) =>
-      venta.metodoPago.toLowerCase() ==
-          metodo.toLowerCase(),
+          (venta) => venta.metodoPago.toLowerCase() == metodo.toLowerCase(),
     )
-        .fold<double>(
-      0,
-          (total, venta) => total + venta.total,
-    );
+        .fold<double>(0, (total, venta) => total + venta.total);
   }
 
   // ==========================================================
@@ -194,15 +187,172 @@ class _ReportesScreenState extends State<ReportesScreen> {
   }
 
   // ==========================================================
+  // EXPORTAR A EXCEL
+  // ==========================================================
+
+  Future<void> _exportarExcel() async {
+    final ventas = _ventasFiltradas;
+
+    if (ventas.isEmpty) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No hay ventas para exportar en el periodo seleccionado.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    try {
+      final excel = Excel.createExcel();
+      final sheet = excel['Reporte de ventas'];
+
+      sheet.appendRow([
+        TextCellValue('ESTACIÓN AZUL'),
+        TextCellValue(''),
+        TextCellValue(''),
+        TextCellValue(''),
+        TextCellValue(''),
+        TextCellValue(''),
+        TextCellValue(''),
+        TextCellValue(''),
+        TextCellValue(''),
+      ]);
+
+      sheet.appendRow([
+        TextCellValue('Periodo'),
+        TextCellValue(_periodo),
+        TextCellValue(''),
+        TextCellValue(''),
+        TextCellValue(''),
+        TextCellValue(''),
+        TextCellValue(''),
+        TextCellValue(''),
+        TextCellValue(''),
+      ]);
+
+      sheet.appendRow([
+        TextCellValue('Total vendido'),
+        DoubleCellValue(_totalVendido),
+      ]);
+
+      sheet.appendRow([
+        TextCellValue('Cantidad de ventas'),
+        IntCellValue(_cantidadVentas),
+      ]);
+
+      sheet.appendRow([
+        TextCellValue('Clientes'),
+        IntCellValue(_cantidadClientes),
+      ]);
+
+      sheet.appendRow([
+        TextCellValue('Descuentos'),
+        DoubleCellValue(_totalDescuentos),
+      ]);
+
+      sheet.appendRow([
+        TextCellValue(''),
+      ]);
+
+      sheet.appendRow([
+        TextCellValue('Fecha'),
+        TextCellValue('Hora'),
+        TextCellValue('Venta'),
+        TextCellValue('Cliente'),
+        TextCellValue('Documento'),
+        TextCellValue('Pago'),
+        TextCellValue('Subtotal'),
+        TextCellValue('Descuento'),
+        TextCellValue('Total'),
+      ]);
+
+      for (final venta in ventas) {
+        final cliente = venta.nombreCliente?.trim();
+
+        sheet.appendRow([
+          TextCellValue(_fecha(venta.fecha)),
+          TextCellValue(_hora(venta.fecha)),
+          TextCellValue(venta.numero),
+          TextCellValue(
+            cliente == null || cliente.isEmpty ? 'Sin cliente' : cliente,
+          ),
+          TextCellValue(venta.tipoDocumento),
+          TextCellValue(venta.metodoPago),
+          DoubleCellValue(venta.subtotal),
+          DoubleCellValue(venta.descuento),
+          DoubleCellValue(venta.total),
+        ]);
+      }
+
+      final bytes = excel.encode();
+
+      if (bytes == null) {
+        throw Exception('No se pudo generar el archivo Excel.');
+      }
+
+      Directory? downloadsDir;
+
+      try {
+        downloadsDir = await getDownloadsDirectory();
+      } catch (_) {
+        downloadsDir = null;
+      }
+
+      final directory =
+          downloadsDir ?? await getApplicationDocumentsDirectory();
+
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+
+      final fecha = DateTime.now();
+      final fechaArchivo =
+          '${fecha.year}${fecha.month.toString().padLeft(2, '0')}${fecha.day.toString().padLeft(2, '0')}';
+
+      final periodoArchivo = _periodo
+          .toLowerCase()
+          .replaceAll(' ', '_')
+          .replaceAll('í', 'i');
+
+      final archivo = File(
+        '${directory.path}/reporte_ventas_${periodoArchivo}_$fechaArchivo.xlsx',
+      );
+
+      await archivo.writeAsBytes(bytes, flush: true);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Excel generado correctamente en:\n${archivo.path}',
+          ),
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No se pudo exportar el Excel: $e'),
+        ),
+      );
+    }
+  }
+
+  // ==========================================================
   // BUILD
   // ==========================================================
 
   @override
   Widget build(BuildContext context) {
     if (_cargando) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     return Container(
@@ -248,19 +398,22 @@ class _ReportesScreenState extends State<ReportesScreen> {
 
   Widget _encabezado() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(
-        28,
-        24,
-        28,
-        20,
-      ),
+      padding: const EdgeInsets.fromLTRB(28, 24, 28, 20),
       color: Colors.white,
       child: Row(
         children: [
-          const Icon(
-            Icons.bar_chart_rounded,
-            size: 34,
-            color: Color(0xFF174D7A),
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1557B0),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.bar_chart_rounded,
+              size: 28,
+              color: Colors.white,
+            ),
           ),
 
           const SizedBox(width: 14),
@@ -271,22 +424,24 @@ class _ReportesScreenState extends State<ReportesScreen> {
               children: [
                 Text(
                   'Reportes',
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Resumen y anÃ¡lisis de las ventas de EstaciÃ³n Azul',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 14,
-                  ),
+                  'Resumen y análisis de las ventas de Estación Azul',
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
                 ),
               ],
             ),
           ),
+
+          FilledButton.icon(
+            onPressed: _exportarExcel,
+            icon: const Icon(Icons.table_view_rounded),
+            label: const Text('Exportar Excel'),
+          ),
+
+          const SizedBox(width: 8),
 
           IconButton(
             tooltip: 'Actualizar',
@@ -309,18 +464,13 @@ class _ReportesScreenState extends State<ReportesScreen> {
         padding: const EdgeInsets.all(18),
         child: Row(
           children: [
-            const Icon(
-              Icons.filter_alt_outlined,
-              color: Color(0xFF174D7A),
-            ),
+            const Icon(Icons.filter_alt_outlined, color: Color(0xFF174D7A)),
 
             const SizedBox(width: 12),
 
             const Text(
               'Periodo:',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(width: 14),
@@ -328,22 +478,13 @@ class _ReportesScreenState extends State<ReportesScreen> {
             DropdownButton<String>(
               value: _periodo,
               items: const [
-                DropdownMenuItem(
-                  value: 'Hoy',
-                  child: Text('Hoy'),
-                ),
+                DropdownMenuItem(value: 'Hoy', child: Text('Hoy')),
                 DropdownMenuItem(
                   value: '7 días',
                   child: Text('Últimos 7 días'),
                 ),
-                DropdownMenuItem(
-                  value: 'Este mes',
-                  child: Text('Este mes'),
-                ),
-                DropdownMenuItem(
-                  value: 'Todo',
-                  child: Text('Todo'),
-                ),
+                DropdownMenuItem(value: 'Este mes', child: Text('Este mes')),
+                DropdownMenuItem(value: 'Todo', child: Text('Todo')),
               ],
               onChanged: (valor) {
                 if (valor == null) return;
@@ -421,10 +562,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
                 color: const Color(0xFFE8F1F8),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icono,
-                color: const Color(0xFF174D7A),
-              ),
+              child: Icon(icono, color: const Color(0xFF174D7A)),
             ),
 
             const SizedBox(width: 14),
@@ -432,15 +570,11 @@ class _ReportesScreenState extends State<ReportesScreen> {
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     titulo,
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 13,
-                    ),
+                    style: const TextStyle(color: Colors.grey, fontSize: 13),
                   ),
                   const SizedBox(height: 5),
                   Text(
@@ -460,7 +594,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
   }
 
   // ==========================================================
-  // MÃ‰TODOS DE PAGO
+  // MÉTODOS DE PAGO
   // ==========================================================
 
   Widget _pagos() {
@@ -469,22 +603,15 @@ class _ReportesScreenState extends State<ReportesScreen> {
       child: Padding(
         padding: const EdgeInsets.all(22),
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(
-                  Icons.payments_outlined,
-                  color: Color(0xFF174D7A),
-                ),
+                Icon(Icons.payments_outlined, color: Color(0xFF174D7A)),
                 SizedBox(width: 10),
                 Text(
-                  'Ventas por mÃ©todo de pago',
-                  style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  'Ventas por método de pago',
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -540,11 +667,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
     );
   }
 
-  Widget _pago(
-      String nombre,
-      double total,
-      IconData icono,
-      ) {
+  Widget _pago(String nombre, double total, IconData icono) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -552,31 +675,19 @@ class _ReportesScreenState extends State<ReportesScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icono,
-            color: const Color(0xFF174D7A),
-          ),
+          Icon(icono, color: const Color(0xFF174D7A)),
 
           const SizedBox(height: 10),
 
-          Text(
-            nombre,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(nombre, style: const TextStyle(fontWeight: FontWeight.w600)),
 
           const SizedBox(height: 5),
 
           Text(
             _moneda(total),
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -597,39 +708,28 @@ class _ReportesScreenState extends State<ReportesScreen> {
         continue;
       }
 
-      mapa[nombre] =
-          (mapa[nombre] ?? 0) + venta.total;
+      mapa[nombre] = (mapa[nombre] ?? 0) + venta.total;
     }
 
     final clientes = mapa.entries.toList()
-      ..sort(
-            (a, b) => b.value.compareTo(a.value),
-      );
+      ..sort((a, b) => b.value.compareTo(a.value));
 
-    final topClientes =
-    clientes.take(5).toList();
+    final topClientes = clientes.take(5).toList();
 
     return Card(
       elevation: 1,
       child: Padding(
         padding: const EdgeInsets.all(22),
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(
-                  Icons.people_outline,
-                  color: Color(0xFF174D7A),
-                ),
+                Icon(Icons.people_outline, color: Color(0xFF174D7A)),
                 SizedBox(width: 10),
                 Text(
                   'Clientes con mayor consumo',
-                  style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -641,33 +741,23 @@ class _ReportesScreenState extends State<ReportesScreen> {
                 padding: EdgeInsets.all(12),
                 child: Text(
                   'No hay ventas asociadas a clientes en este periodo.',
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(color: Colors.grey),
                 ),
               )
             else
-              ...topClientes.asMap().entries.map(
-                    (entrada) {
-                  final posicion =
-                      entrada.key + 1;
-                  final cliente =
-                      entrada.value;
+              ...topClientes.asMap().entries.map((entrada) {
+                final posicion = entrada.key + 1;
+                final cliente = entrada.value;
 
-                  return ListTile(
-                    leading: CircleAvatar(
-                      child: Text('$posicion'),
-                    ),
-                    title: Text(cliente.key),
-                    trailing: Text(
-                      _moneda(cliente.value),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  );
-                },
-              ),
+                return ListTile(
+                  leading: CircleAvatar(child: Text('$posicion')),
+                  title: Text(cliente.key),
+                  trailing: Text(
+                    _moneda(cliente.value),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                );
+              }),
           ],
         ),
       ),
@@ -686,22 +776,15 @@ class _ReportesScreenState extends State<ReportesScreen> {
       child: Padding(
         padding: const EdgeInsets.all(22),
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(
-                  Icons.receipt_long_outlined,
-                  color: Color(0xFF174D7A),
-                ),
+                Icon(Icons.receipt_long_outlined, color: Color(0xFF174D7A)),
                 SizedBox(width: 10),
                 Text(
                   'Detalle de ventas',
-                  style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -714,69 +797,35 @@ class _ReportesScreenState extends State<ReportesScreen> {
                 child: Center(
                   child: Text(
                     'No hay ventas para el periodo seleccionado.',
-                    style: TextStyle(
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(color: Colors.grey),
                   ),
                 ),
               )
             else
               SingleChildScrollView(
-                scrollDirection:
-                Axis.horizontal,
+                scrollDirection: Axis.horizontal,
                 child: DataTable(
                   columns: const [
-                    DataColumn(
-                      label: Text('Fecha'),
-                    ),
-                    DataColumn(
-                      label: Text('Hora'),
-                    ),
-                    DataColumn(
-                      label: Text('Venta'),
-                    ),
-                    DataColumn(
-                      label: Text('Cliente'),
-                    ),
-                    DataColumn(
-                      label: Text('Documento'),
-                    ),
-                    DataColumn(
-                      label: Text('Pago'),
-                    ),
-                    DataColumn(
-                      label: Text('Subtotal'),
-                    ),
-                    DataColumn(
-                      label: Text('Descuento'),
-                    ),
-                    DataColumn(
-                      label: Text('Total'),
-                    ),
+                    DataColumn(label: Text('Fecha')),
+                    DataColumn(label: Text('Hora')),
+                    DataColumn(label: Text('Venta')),
+                    DataColumn(label: Text('Cliente')),
+                    DataColumn(label: Text('Documento')),
+                    DataColumn(label: Text('Pago')),
+                    DataColumn(label: Text('Subtotal')),
+                    DataColumn(label: Text('Descuento')),
+                    DataColumn(label: Text('Total')),
                   ],
                   rows: ventas.map((venta) {
-                    final cliente =
-                    venta.nombreCliente?.trim();
+                    final cliente = venta.nombreCliente?.trim();
 
                     return DataRow(
                       cells: [
-                        DataCell(
-                          Text(
-                            _fecha(venta.fecha),
-                          ),
-                        ),
+                        DataCell(Text(_fecha(venta.fecha))),
 
-                        DataCell(
-                          Text(
-                            _hora(venta.fecha),
-                          ),
-                        ),
+                        DataCell(Text(_hora(venta.fecha))),
 
-                        DataCell(
-                          Text(
-                            venta.numero,
-                          ),
-                        ),
+                        DataCell(Text(venta.numero)),
 
                         DataCell(
                           Text(
@@ -786,36 +835,18 @@ class _ReportesScreenState extends State<ReportesScreen> {
                           ),
                         ),
 
-                        DataCell(
-                          Text(
-                            venta.tipoDocumento,
-                          ),
-                        ),
+                        DataCell(Text(venta.tipoDocumento)),
 
-                        DataCell(
-                          Text(
-                            venta.metodoPago,
-                          ),
-                        ),
+                        DataCell(Text(venta.metodoPago)),
 
-                        DataCell(
-                          Text(
-                            _moneda(venta.subtotal),
-                          ),
-                        ),
+                        DataCell(Text(_moneda(venta.subtotal))),
 
-                        DataCell(
-                          Text(
-                            _moneda(venta.descuento),
-                          ),
-                        ),
+                        DataCell(Text(_moneda(venta.descuento))),
 
                         DataCell(
                           Text(
                             _moneda(venta.total),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],

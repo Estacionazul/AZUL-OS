@@ -1,4 +1,4 @@
-﻿import 'package:drift/drift.dart';
+import 'package:drift/drift.dart';
 
 import '../app_database.dart';
 import '../tables/usuarios_table.dart';
@@ -15,45 +15,35 @@ class UsuariosDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<Usuario>> obtenerUsuarios() {
-    return (select(usuarios)
-          ..orderBy([
-            (u) => OrderingTerm(expression: u.nombre),
-          ]))
-        .get();
+    return (select(
+      usuarios,
+    )..orderBy([(u) => OrderingTerm(expression: u.nombre)])).get();
   }
 
   Future<List<Usuario>> obtenerUsuariosActivos() {
     return (select(usuarios)
           ..where((u) => u.activo.equals(true))
-          ..orderBy([
-            (u) => OrderingTerm(expression: u.nombre),
-          ]))
+          ..orderBy([(u) => OrderingTerm(expression: u.nombre)]))
         .get();
   }
 
   Future<Usuario?> obtenerPorId(int id) {
-    return (select(usuarios)
-          ..where((u) => u.id.equals(id)))
-        .getSingleOrNull();
+    return (select(usuarios)..where((u) => u.id.equals(id))).getSingleOrNull();
   }
 
   Future<Usuario?> obtenerPorNombre(String nombre) {
-    return (select(usuarios)
-          ..where((u) => u.nombre.equals(nombre)))
-        .getSingleOrNull();
+    return (select(
+      usuarios,
+    )..where((u) => u.nombre.equals(nombre))).getSingleOrNull();
   }
 
-  Future<Usuario?> validarAcceso(
-    String nombre,
-    String pin,
-  ) {
-    return (select(usuarios)
-          ..where(
-            (u) =>
-                u.nombre.equals(nombre) &
-                u.pin.equals(pin) &
-                u.activo.equals(true),
-          ))
+  Future<Usuario?> validarAcceso(String nombre, String pin) {
+    return (select(usuarios)..where(
+          (u) =>
+              u.nombre.equals(nombre) &
+              u.pin.equals(pin) &
+              u.activo.equals(true),
+        ))
         .getSingleOrNull();
   }
 
@@ -61,22 +51,13 @@ class UsuariosDao extends DatabaseAccessor<AppDatabase>
     return update(usuarios).replace(usuario);
   }
 
-  Future<int> cambiarEstado(
-    int id,
-    bool activo,
-  ) {
-    return (update(usuarios)
-          ..where((u) => u.id.equals(id)))
-        .write(
-      UsuariosCompanion(
-        activo: Value(activo),
-      ),
+  Future<int> cambiarEstado(int id, bool activo) {
+    return (update(usuarios)..where((u) => u.id.equals(id))).write(
+      UsuariosCompanion(activo: Value(activo)),
     );
   }
 
   Future<int> eliminarUsuario(int id) {
-    return (delete(usuarios)
-          ..where((u) => u.id.equals(id)))
-        .go();
+    return (delete(usuarios)..where((u) => u.id.equals(id))).go();
   }
 }

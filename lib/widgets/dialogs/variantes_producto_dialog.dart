@@ -5,25 +5,20 @@ import '../../models/producto_model.dart';
 class VariantesProductoDialog extends StatefulWidget {
   final ProductoModel producto;
 
-  const VariantesProductoDialog({
-    super.key,
-    required this.producto,
-  });
+  const VariantesProductoDialog({super.key, required this.producto});
 
   @override
   State<VariantesProductoDialog> createState() =>
       _VariantesProductoDialogState();
 }
 
-class _VariantesProductoDialogState
-    extends State<VariantesProductoDialog> {
+class _VariantesProductoDialogState extends State<VariantesProductoDialog> {
   String leche = "Entera";
   String endulzante = "Azúcar";
   bool extraShot = false;
   String infusion = "Manzanilla";
 
-  final TextEditingController observacionesController =
-  TextEditingController();
+  final TextEditingController observacionesController = TextEditingController();
 
   // ==========================================================
   // IDENTIFICAR PRODUCTOS
@@ -34,8 +29,7 @@ class _VariantesProductoDialogState
   }
 
   bool get esBebida {
-    return widget.producto.categoriaId == 2 ||
-        widget.producto.categoriaId == 5;
+    return widget.producto.categoriaId == 2 || widget.producto.categoriaId == 5;
   }
 
   bool get esEspresso {
@@ -82,8 +76,7 @@ class _VariantesProductoDialogState
   }
 
   bool get esJugoNormal {
-    return widget.producto.categoriaId == 2 &&
-        !esJugoConLeche;
+    return widget.producto.categoriaId == 2 && !esJugoConLeche;
   }
 
   bool get esLimonada {
@@ -120,15 +113,10 @@ class _VariantesProductoDialogState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(22),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
       title: Text(
         widget.producto.nombre,
-        style: const TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
       content: SizedBox(
         width: 420,
@@ -136,18 +124,13 @@ class _VariantesProductoDialogState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               // ==================================================
               // INFUSIONES
               // ==================================================
-
               if (esInfusion) ...[
                 const Text(
                   "¿QUÉ INFUSIÓN DESEA?",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
 
                 const SizedBox(height: 8),
@@ -214,14 +197,10 @@ class _VariantesProductoDialogState
               // TIPO DE LECHE
               // SOLO CAFÉS QUE REALMENTE LLEVAN LECHE
               // ==================================================
-
               if (esCafeConLeche || esJugoConLeche) ...[
                 const Text(
                   "TIPO DE LECHE",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
 
                 const SizedBox(height: 8),
@@ -265,7 +244,6 @@ class _VariantesProductoDialogState
               // ==================================================
               // ENDULZANTE
               // ==================================================
-
               if ((esCafe && !esEspresso) ||
                   esChocolate ||
                   esInfusion ||
@@ -274,10 +252,7 @@ class _VariantesProductoDialogState
                   esLimonada) ...[
                 const Text(
                   "ENDULZANTE",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
 
                 const SizedBox(height: 8),
@@ -321,19 +296,11 @@ class _VariantesProductoDialogState
               // ==================================================
               // EXTRA SHOT
               // ==================================================
-
-              if (esCafe &&
-                  !esEspresso &&
-                  !esChocolate &&
-                  !esInfusion)
+              if (esCafe && !esEspresso && !esChocolate && !esInfusion)
                 CheckboxListTile(
                   value: extraShot,
-                  title: const Text(
-                    "Extra Shot de Espresso",
-                  ),
-                  subtitle: const Text(
-                    "Agregar un shot adicional",
-                  ),
+                  title: const Text("Extra Shot de Espresso"),
+                  subtitle: const Text("Agregar un shot adicional"),
                   onChanged: (value) {
                     setState(() {
                       extraShot = value ?? false;
@@ -346,13 +313,9 @@ class _VariantesProductoDialogState
               // ==================================================
               // OBSERVACIONES
               // ==================================================
-
               const Text(
                 "OBSERVACIONES",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
 
               const SizedBox(height: 8),
@@ -361,8 +324,7 @@ class _VariantesProductoDialogState
                 controller: observacionesController,
                 maxLines: 3,
                 decoration: InputDecoration(
-                  hintText:
-                  "Ej.: Muy caliente, para llevar, sin espuma...",
+                  hintText: "Ej.: Muy caliente, para llevar, sin espuma...",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -376,7 +338,6 @@ class _VariantesProductoDialogState
       // ========================================================
       // BOTONES
       // ========================================================
-
       actions: [
         TextButton(
           onPressed: () {
@@ -387,36 +348,22 @@ class _VariantesProductoDialogState
 
         ElevatedButton.icon(
           onPressed: () {
-            Navigator.pop(
-              context,
-              {
-                "tamano": null,
+            Navigator.pop(context, {
+              "tamano": null,
 
-                "tipoLeche":
-                (esCafeConLeche || esJugoConLeche)
-                    ? leche
-                    : null,
+              "tipoLeche": (esCafeConLeche || esJugoConLeche) ? leche : null,
 
-                "endulzante":
-                (esCafe || esBebida)
-                    ? endulzante
-                    : null,
+              "endulzante": (esCafe || esBebida) ? endulzante : null,
 
-                "extraShot":
-                (esCafe &&
-                    !esEspresso &&
-                    !esChocolate &&
-                    !esInfusion)
-                    ? extraShot
-                    : false,
+              "extraShot":
+                  (esCafe && !esEspresso && !esChocolate && !esInfusion)
+                  ? extraShot
+                  : false,
 
-                "infusion":
-                esInfusion ? infusion : null,
+              "infusion": esInfusion ? infusion : null,
 
-                "observaciones":
-                observacionesController.text.trim(),
-              },
-            );
+              "observaciones": observacionesController.text.trim(),
+            });
           },
           icon: const Icon(Icons.shopping_cart),
           label: Text(

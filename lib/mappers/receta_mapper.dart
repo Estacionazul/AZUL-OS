@@ -31,9 +31,7 @@ class RecetaMapper {
   // DETALLE
   // ===========================
 
-  static RecetaDetalleModel toDetalleModel(
-      RecetaDetalleData detalle,
-      ) {
+  static RecetaDetalleModel toDetalleModel(RecetaDetalleData detalle) {
     return RecetaDetalleModel(
       id: detalle.id,
       recetaId: detalle.recetaId,
@@ -44,9 +42,7 @@ class RecetaMapper {
     );
   }
 
-  static RecetaDetalleCompanion toDetalleCompanion(
-      RecetaDetalleModel model,
-      ) {
+  static RecetaDetalleCompanion toDetalleCompanion(RecetaDetalleModel model) {
     return RecetaDetalleCompanion.insert(
       recetaId: model.recetaId,
       insumoId: model.insumoId,

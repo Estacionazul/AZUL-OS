@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
 
 import '../../database/app_database.dart';
@@ -23,11 +23,9 @@ class PedidosService extends ChangeNotifier {
   /// clave del producto/personalización -> cantidad impresa
   final Map<String, Map<String, int>> _cantidadesComandadas = {};
 
-  List<UbicacionPedido> get ubicaciones =>
-      UbicacionesPedidoData.todas;
+  List<UbicacionPedido> get ubicaciones => UbicacionesPedidoData.todas;
 
-  List<PedidoAbierto> get pedidos =>
-      List.unmodifiable(_pedidos.values);
+  List<PedidoAbierto> get pedidos => List.unmodifiable(_pedidos.values);
 
   PedidoAbierto? obtenerPedido(String ubicacionId) {
     return _pedidos[ubicacionId];
@@ -41,9 +39,7 @@ class PedidosService extends ChangeNotifier {
         pedido.items.isNotEmpty;
   }
 
-  Future<PedidoAbierto> abrirPedido(
-      UbicacionPedido ubicacion,
-      ) async {
+  Future<PedidoAbierto> abrirPedido(UbicacionPedido ubicacion) async {
     final existente = _pedidos[ubicacion.id];
 
     if (existente != null) {
@@ -54,8 +50,7 @@ class PedidosService extends ChangeNotifier {
 
     final numeroPedido = await _obtenerSiguienteNumeroPedido();
 
-    final numero =
-        'P${numeroPedido.toString().padLeft(6, '0')}';
+    final numero = 'P${numeroPedido.toString().padLeft(6, '0')}';
 
     final pedido = PedidoAbierto(
       id: '${ubicacion.id}_${ahora.microsecondsSinceEpoch}',
@@ -77,34 +72,25 @@ class PedidosService extends ChangeNotifier {
   ///
   /// Si el producto con la misma configuración ya existe,
   /// aumenta su cantidad en lugar de crear otra línea.
-  void agregarProductos(
-      String ubicacionId,
-      List<ItemCarrito> items,
-      ) {
+  void agregarProductos(String ubicacionId, List<ItemCarrito> items) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
-      throw StateError(
-        'No existe un pedido abierto para $ubicacionId.',
-      );
+      throw StateError('No existe un pedido abierto para $ubicacionId.');
     }
 
     if (pedido.estado == EstadoPedido.esperandoCuenta ||
         pedido.estado == EstadoPedido.cerrado) {
-      throw StateError(
-        'El pedido ya está cerrado para nuevos productos.',
-      );
+      throw StateError('El pedido ya está cerrado para nuevos productos.');
     }
 
     for (final nuevoItem in items) {
       final indiceExistente = pedido.items.indexWhere(
-            (itemExistente) =>
-        _claveItem(itemExistente) == _claveItem(nuevoItem),
+        (itemExistente) => _claveItem(itemExistente) == _claveItem(nuevoItem),
       );
 
       if (indiceExistente >= 0) {
-        pedido.items[indiceExistente].cantidad +=
-            nuevoItem.cantidad;
+        pedido.items[indiceExistente].cantidad += nuevoItem.cantidad;
       } else {
         pedido.agregarItems([nuevoItem]);
       }
@@ -118,10 +104,7 @@ class PedidosService extends ChangeNotifier {
   }
 
   /// Aumenta en una unidad la cantidad de un producto.
-  void aumentarCantidad(
-      String ubicacionId,
-      ItemCarrito item,
-      ) {
+  void aumentarCantidad(String ubicacionId, ItemCarrito item) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -134,8 +117,7 @@ class PedidosService extends ChangeNotifier {
     }
 
     final indice = pedido.items.indexWhere(
-          (itemExistente) =>
-      _claveItem(itemExistente) == _claveItem(item),
+      (itemExistente) => _claveItem(itemExistente) == _claveItem(item),
     );
 
     if (indice == -1) {
@@ -156,10 +138,7 @@ class PedidosService extends ChangeNotifier {
   /// IMPORTANTE:
   /// Si parte de la cantidad ya fue enviada a preparación,
   /// nunca permite bajar por debajo de esa cantidad.
-  bool disminuirCantidad(
-      String ubicacionId,
-      ItemCarrito item,
-      ) {
+  bool disminuirCantidad(String ubicacionId, ItemCarrito item) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -172,8 +151,7 @@ class PedidosService extends ChangeNotifier {
     }
 
     final indice = pedido.items.indexWhere(
-          (itemExistente) =>
-      _claveItem(itemExistente) == _claveItem(item),
+      (itemExistente) => _claveItem(itemExistente) == _claveItem(item),
     );
 
     if (indice == -1) {
@@ -182,11 +160,9 @@ class PedidosService extends ChangeNotifier {
 
     final itemActual = pedido.items[indice];
 
-    final cantidadesComandadas =
-        _cantidadesComandadas[ubicacionId] ?? {};
+    final cantidadesComandadas = _cantidadesComandadas[ubicacionId] ?? {};
 
-    final cantidadEnviada =
-        cantidadesComandadas[_claveItem(itemActual)] ?? 0;
+    final cantidadEnviada = cantidadesComandadas[_claveItem(itemActual)] ?? 0;
 
     // No podemos reducir una cantidad que ya fue
     // enviada a preparación.
@@ -210,10 +186,7 @@ class PedidosService extends ChangeNotifier {
   ///
   /// Solo se permite eliminarlo si todavía NO fue enviado
   /// a preparación.
-  bool eliminarItem(
-      String ubicacionId,
-      ItemCarrito item,
-      ) {
+  bool eliminarItem(String ubicacionId, ItemCarrito item) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -226,8 +199,7 @@ class PedidosService extends ChangeNotifier {
     }
 
     final indice = pedido.items.indexWhere(
-          (itemExistente) =>
-      _claveItem(itemExistente) == _claveItem(item),
+      (itemExistente) => _claveItem(itemExistente) == _claveItem(item),
     );
 
     if (indice == -1) {
@@ -236,11 +208,9 @@ class PedidosService extends ChangeNotifier {
 
     final itemActual = pedido.items[indice];
 
-    final cantidadesComandadas =
-        _cantidadesComandadas[ubicacionId] ?? {};
+    final cantidadesComandadas = _cantidadesComandadas[ubicacionId] ?? {};
 
-    final cantidadEnviada =
-        cantidadesComandadas[_claveItem(itemActual)] ?? 0;
+    final cantidadEnviada = cantidadesComandadas[_claveItem(itemActual)] ?? 0;
 
     // Si ya fue enviado a cocina, no permitimos
     // eliminarlo completamente.
@@ -257,28 +227,23 @@ class PedidosService extends ChangeNotifier {
 
   /// Devuelve SOLO los productos que todavía no fueron enviados
   /// a la impresora.
-  List<ItemCarrito> obtenerItemsPendientesParaComanda(
-      String ubicacionId,
-      ) {
+  List<ItemCarrito> obtenerItemsPendientesParaComanda(String ubicacionId) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null || pedido.estaVacio) {
       return [];
     }
 
-    final cantidadesEnviadas =
-        _cantidadesComandadas[ubicacionId] ?? {};
+    final cantidadesEnviadas = _cantidadesComandadas[ubicacionId] ?? {};
 
     final pendientes = <ItemCarrito>[];
 
     for (final item in pedido.items) {
       final clave = _claveItem(item);
 
-      final enviados =
-          cantidadesEnviadas[clave] ?? 0;
+      final enviados = cantidadesEnviadas[clave] ?? 0;
 
-      final cantidadPendiente =
-          item.cantidad - enviados;
+      final cantidadPendiente = item.cantidad - enviados;
 
       if (cantidadPendiente <= 0) {
         continue;
@@ -303,9 +268,7 @@ class PedidosService extends ChangeNotifier {
 
   /// Marca como enviados a preparación los productos
   /// que existen actualmente en el pedido.
-  void marcarComandaEnviada(
-      String ubicacionId,
-      ) {
+  void marcarComandaEnviada(String ubicacionId) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -326,9 +289,7 @@ class PedidosService extends ChangeNotifier {
     notifyListeners();
   }
 
-  int obtenerSiguienteNumeroComanda(
-      String ubicacionId,
-      ) {
+  int obtenerSiguienteNumeroComanda(String ubicacionId) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -338,9 +299,7 @@ class PedidosService extends ChangeNotifier {
     return pedido.numeroComanda + 1;
   }
 
-  void pasarAEsperandoCuenta(
-      String ubicacionId,
-      ) {
+  void pasarAEsperandoCuenta(String ubicacionId) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -351,39 +310,31 @@ class PedidosService extends ChangeNotifier {
       return;
     }
 
-    pedido.estado =
-        EstadoPedido.esperandoCuenta;
+    pedido.estado = EstadoPedido.esperandoCuenta;
 
     notifyListeners();
   }
 
-  void actualizarObservaciones(
-      String ubicacionId,
-      String observaciones,
-      ) {
+  void actualizarObservaciones(String ubicacionId, String observaciones) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
       return;
     }
 
-    pedido.observaciones =
-        observaciones.trim();
+    pedido.observaciones = observaciones.trim();
 
     notifyListeners();
   }
 
-  void cerrarPedido(
-      String ubicacionId,
-      ) {
+  void cerrarPedido(String ubicacionId) {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
       return;
     }
 
-    pedido.estado =
-        EstadoPedido.cerrado;
+    pedido.estado = EstadoPedido.cerrado;
 
     _pedidos.remove(ubicacionId);
     _cantidadesComandadas.remove(ubicacionId);
@@ -391,17 +342,14 @@ class PedidosService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void cancelarPedido(
-      String ubicacionId,
-      ) {
+  void cancelarPedido(String ubicacionId) {
     _pedidos.remove(ubicacionId);
     _cantidadesComandadas.remove(ubicacionId);
 
     notifyListeners();
   }
 
-  bool get hayPedidosAbiertos =>
-      _pedidos.isNotEmpty;
+  bool get hayPedidosAbiertos => _pedidos.isNotEmpty;
 
   String _claveItem(ItemCarrito item) {
     return [
@@ -423,12 +371,14 @@ class PedidosService extends ChangeNotifier {
       final existente = await consulta.getSingleOrNull();
 
       if (existente == null) {
-        await database.into(database.correlativos).insert(
-          CorrelativosCompanion.insert(
-            clave: 'pedido',
-            ultimoNumero: const Value(1),
-          ),
-        );
+        await database
+            .into(database.correlativos)
+            .insert(
+              CorrelativosCompanion.insert(
+                clave: 'pedido',
+                ultimoNumero: const Value(1),
+              ),
+            );
 
         return 1;
       }
@@ -436,12 +386,8 @@ class PedidosService extends ChangeNotifier {
       final siguiente = existente.ultimoNumero + 1;
 
       await (database.update(database.correlativos)
-        ..where((t) => t.clave.equals('pedido')))
-          .write(
-        CorrelativosCompanion(
-          ultimoNumero: Value(siguiente),
-        ),
-      );
+            ..where((t) => t.clave.equals('pedido')))
+          .write(CorrelativosCompanion(ultimoNumero: Value(siguiente)));
 
       return siguiente;
     });

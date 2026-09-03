@@ -26,10 +26,7 @@ class ItemCarritoCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(
-                  item.producto.emoji,
-                  style: const TextStyle(fontSize: 30),
-                ),
+                Text(item.producto.emoji, style: const TextStyle(fontSize: 30)),
                 const SizedBox(width: 10),
 
                 Expanded(
@@ -69,14 +66,11 @@ class ItemCarritoCard extends StatelessWidget {
                           }
 
                           return Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-
                               if (detalles.isNotEmpty)
                                 Padding(
-                                  padding:
-                                  const EdgeInsets.only(top: 4),
+                                  padding: const EdgeInsets.only(top: 4),
                                   child: Text(
                                     detalles.join(" • "),
                                     style: const TextStyle(
@@ -88,12 +82,9 @@ class ItemCarritoCard extends StatelessWidget {
                                 ),
 
                               if (item.observaciones != null &&
-                                  item.observaciones!
-                                      .trim()
-                                      .isNotEmpty)
+                                  item.observaciones!.trim().isNotEmpty)
                                 Padding(
-                                  padding:
-                                  const EdgeInsets.only(top: 6),
+                                  padding: const EdgeInsets.only(top: 6),
                                   child: Text(
                                     "📝 ${item.observaciones!}",
                                     style: const TextStyle(
@@ -113,10 +104,7 @@ class ItemCarritoCard extends StatelessWidget {
 
                 IconButton(
                   onPressed: onEliminar,
-                  icon: const Icon(
-                    Icons.delete,
-                    color: Colors.red,
-                  ),
+                  icon: const Icon(Icons.delete, color: Colors.red),
                 ),
               ],
             ),

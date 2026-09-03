@@ -12,12 +12,15 @@ dependencies:
     sdk: flutter
 
   image: ^4.9.1
+  archive: ^4.2.0
+  excel_plus: ^2.16.0
 
   cupertino_icons: ^1.0.8
   provider: ^6.1.5
   bluetooth_low_energy: 6.2.0
 
   # Base de datos
+  sqlite3: ^3.5.0
   sqlite3_flutter_libs: ^0.5.39
   drift: ^2.28.1
   path: ^1.9.1
@@ -29,13 +32,13 @@ dependencies:
   # Facturación electrónica / firma digital
   pkcs12_parser: ^1.0.0
   xml_crypto: ^5.1.0
+  xml: ^7.0.1
   flutter_secure_storage: ^10.3.1
 
   # Impresión
   esc_pos_utils_plus: ^2.0.4
   win32: ^5.15.0
   ffi: ^2.2.0
-  archive: ^4.2.0
 
 dev_dependencies:
   flutter_test:

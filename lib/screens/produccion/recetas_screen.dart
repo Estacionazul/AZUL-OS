@@ -47,10 +47,7 @@ class RecetasScreen extends StatelessWidget {
                 child: const Center(
                   child: Text(
                     "Aún no hay recetas registradas",
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                 ),
               ),

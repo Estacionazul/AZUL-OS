@@ -3,10 +3,7 @@ import 'package:drift/drift.dart';
 import '../database/app_database.dart';
 
 class HamburguesasSeed {
-  static Future<void> cargar(
-      AppDatabase db,
-      int categoriaId,
-      ) async {
+  static Future<void> cargar(AppDatabase db, int categoriaId) async {
     final productos = await db.select(db.productos).get();
 
     if (productos.any((p) => p.categoriaId == categoriaId)) {

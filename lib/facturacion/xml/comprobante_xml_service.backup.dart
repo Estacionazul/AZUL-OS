@@ -26,16 +26,13 @@ class ComprobanteXmlService {
     String moneda = 'PEN',
     List<dynamic> detalles = const [],
   }) {
-    final esFactura =
-        comprobante.tipo == TipoComprobanteElectronico.factura;
+    final esFactura = comprobante.tipo == TipoComprobanteElectronico.factura;
 
     final tipoDocumento = esFactura ? '01' : '03';
 
-    final fecha =
-    _formatearFecha(comprobante.fechaEmision);
+    final fecha = _formatearFecha(comprobante.fechaEmision);
 
-    final hora =
-    _formatearHora(comprobante.fechaEmision);
+    final hora = _formatearHora(comprobante.fechaEmision);
 
     final buffer = StringBuffer();
 
@@ -43,17 +40,15 @@ class ComprobanteXmlService {
     // CABECERA XML
     // ==========================================================
 
-    buffer.writeln(
-      '<?xml version="1.0" encoding="UTF-8"?>',
-    );
+    buffer.writeln('<?xml version="1.0" encoding="UTF-8"?>');
 
     buffer.writeln(
       '<Invoice '
-          'xmlns="$_ubl" '
-          'xmlns:cac="$_cac" '
-          'xmlns:cbc="$_cbc" '
-          'xmlns:ext="$_ext" '
-          'xmlns:ds="http://www.w3.org/2000/09/xmldsig#">',
+      'xmlns="$_ubl" '
+      'xmlns:cac="$_cac" '
+      'xmlns:cbc="$_cbc" '
+      'xmlns:ext="$_ext" '
+      'xmlns:ds="http://www.w3.org/2000/09/xmldsig#">',
     );
 
     // ==========================================================
@@ -71,42 +66,32 @@ class ComprobanteXmlService {
     // INFORMACIÓN GENERAL
     // ==========================================================
 
-    buffer.writeln(
-      '<cbc:UBLVersionID>2.1</cbc:UBLVersionID>',
-    );
+    buffer.writeln('<cbc:UBLVersionID>2.1</cbc:UBLVersionID>');
 
-    buffer.writeln(
-      '<cbc:CustomizationID>2.0</cbc:CustomizationID>',
-    );
+    buffer.writeln('<cbc:CustomizationID>2.0</cbc:CustomizationID>');
 
-    buffer.writeln(
-      '<cbc:ID>${_escape(comprobante.numeroCompleto)}</cbc:ID>',
-    );
+    buffer.writeln('<cbc:ID>${_escape(comprobante.numeroCompleto)}</cbc:ID>');
 
-    buffer.writeln(
-      '<cbc:IssueDate>$fecha</cbc:IssueDate>',
-    );
+    buffer.writeln('<cbc:IssueDate>$fecha</cbc:IssueDate>');
 
-    buffer.writeln(
-      '<cbc:IssueTime>$hora</cbc:IssueTime>',
-    );
+    buffer.writeln('<cbc:IssueTime>$hora</cbc:IssueTime>');
 
     buffer.writeln(
       '<cbc:InvoiceTypeCode '
-          'listAgencyName="PE:SUNAT" '
-          'listName="SUNAT:Identificador de Tipo de Documento" '
-          'listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01">'
-          '$tipoDocumento'
-          '</cbc:InvoiceTypeCode>',
+      'listAgencyName="PE:SUNAT" '
+      'listName="SUNAT:Identificador de Tipo de Documento" '
+      'listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01">'
+      '$tipoDocumento'
+      '</cbc:InvoiceTypeCode>',
     );
 
     buffer.writeln(
       '<cbc:DocumentCurrencyCode '
-          'listID="ISO 4217 Alpha" '
-          'listName="Currency" '
-          'listAgencyName="United Nations Economic Commission for Europe">'
-          '$moneda'
-          '</cbc:DocumentCurrencyCode>',
+      'listID="ISO 4217 Alpha" '
+      'listName="Currency" '
+      'listAgencyName="United Nations Economic Commission for Europe">'
+      '$moneda'
+      '</cbc:DocumentCurrencyCode>',
     );
 
     // ==========================================================
@@ -120,20 +105,19 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:ID schemeID="6">'
-          '${_escape(rucEmisor)}'
-          '</cbc:ID>',
+      '${_escape(rucEmisor)}'
+      '</cbc:ID>',
     );
 
     buffer.writeln('</cac:PartyIdentification>');
 
-    if (nombreComercial != null &&
-        nombreComercial.trim().isNotEmpty) {
+    if (nombreComercial != null && nombreComercial.trim().isNotEmpty) {
       buffer.writeln('<cac:PartyName>');
 
       buffer.writeln(
         '<cbc:Name>'
-            '${_escape(nombreComercial)}'
-            '</cbc:Name>',
+        '${_escape(nombreComercial)}'
+        '</cbc:Name>',
       );
 
       buffer.writeln('</cac:PartyName>');
@@ -143,19 +127,18 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:RegistrationName>'
-          '${_escape(razonSocialEmisor)}'
-          '</cbc:RegistrationName>',
+      '${_escape(razonSocialEmisor)}'
+      '</cbc:RegistrationName>',
     );
 
-    if (direccionEmisor != null &&
-        direccionEmisor.trim().isNotEmpty) {
+    if (direccionEmisor != null && direccionEmisor.trim().isNotEmpty) {
       buffer.writeln('<cac:RegistrationAddress>');
       buffer.writeln('<cac:AddressLine>');
 
       buffer.writeln(
         '<cbc:Line>'
-            '${_escape(direccionEmisor)}'
-            '</cbc:Line>',
+        '${_escape(direccionEmisor)}'
+        '</cbc:Line>',
       );
 
       buffer.writeln('</cac:AddressLine>');
@@ -173,22 +156,17 @@ class ComprobanteXmlService {
     buffer.writeln('<cac:AccountingCustomerParty>');
     buffer.writeln('<cac:Party>');
 
-    final numeroDocumento =
-    esFactura
-        ? comprobante.ruc
-        : comprobante.dni;
+    final numeroDocumento = esFactura ? comprobante.ruc : comprobante.dni;
 
-    final tipoDocumentoCliente =
-    esFactura ? '6' : '1';
+    final tipoDocumentoCliente = esFactura ? '6' : '1';
 
-    if (numeroDocumento != null &&
-        numeroDocumento.trim().isNotEmpty) {
+    if (numeroDocumento != null && numeroDocumento.trim().isNotEmpty) {
       buffer.writeln('<cac:PartyIdentification>');
 
       buffer.writeln(
         '<cbc:ID schemeID="$tipoDocumentoCliente">'
-            '${_escape(numeroDocumento)}'
-            '</cbc:ID>',
+        '${_escape(numeroDocumento)}'
+        '</cbc:ID>',
       );
 
       buffer.writeln('</cac:PartyIdentification>');
@@ -198,12 +176,8 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:RegistrationName>'
-          '${_escape(
-        (comprobante.nombreCliente ?? '').trim().isEmpty
-            ? 'CLIENTE GENERAL'
-            : comprobante.nombreCliente!.trim(),
-      )}'
-          '</cbc:RegistrationName>',
+      '${_escape((comprobante.nombreCliente ?? '').trim().isEmpty ? 'CLIENTE GENERAL' : comprobante.nombreCliente!.trim())}'
+      '</cbc:RegistrationName>',
     );
 
     if (comprobante.direccionFiscal != null &&
@@ -213,8 +187,8 @@ class ComprobanteXmlService {
 
       buffer.writeln(
         '<cbc:Line>'
-            '${_escape(comprobante.direccionFiscal!)}'
-            '</cbc:Line>',
+        '${_escape(comprobante.direccionFiscal!)}'
+        '</cbc:Line>',
       );
 
       buffer.writeln('</cac:AddressLine>');
@@ -233,66 +207,60 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:TaxAmount currencyID="$moneda">'
-          '${_decimal(comprobante.igv)}'
-          '</cbc:TaxAmount>',
+      '${_decimal(comprobante.igv)}'
+      '</cbc:TaxAmount>',
     );
 
     buffer.writeln('<cac:TaxSubtotal>');
 
     buffer.writeln(
       '<cbc:TaxableAmount currencyID="$moneda">'
-          '${_decimal(comprobante.subtotal)}'
-          '</cbc:TaxableAmount>',
+      '${_decimal(comprobante.subtotal)}'
+      '</cbc:TaxableAmount>',
     );
 
     buffer.writeln(
       '<cbc:TaxAmount currencyID="$moneda">'
-          '${_decimal(comprobante.igv)}'
-          '</cbc:TaxAmount>',
+      '${_decimal(comprobante.igv)}'
+      '</cbc:TaxAmount>',
     );
 
     buffer.writeln('<cac:TaxCategory>');
 
     buffer.writeln(
       '<cbc:ID '
-          'schemeID="UN/ECE 5305" '
-          'schemeName="Tax Category Identifier" '
-          'schemeAgencyName="United Nations Economic Commission for Europe">'
-          'S'
-          '</cbc:ID>',
+      'schemeID="UN/ECE 5305" '
+      'schemeName="Tax Category Identifier" '
+      'schemeAgencyName="United Nations Economic Commission for Europe">'
+      'S'
+      '</cbc:ID>',
     );
 
-    buffer.writeln(
-      '<cbc:Percent>18.00</cbc:Percent>',
-    );
+    buffer.writeln('<cbc:Percent>18.00</cbc:Percent>');
 
     buffer.writeln(
       '<cbc:TaxExemptionReasonCode '
-          'listAgencyName="PE:SUNAT" '
-          'listName="SUNAT:Codigo de Tipo de Afectación del IGV" '
-          'listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo07">'
-          '10'
-          '</cbc:TaxExemptionReasonCode>',
+      'listAgencyName="PE:SUNAT" '
+      'listName="SUNAT:Codigo de Tipo de Afectación del IGV" '
+      'listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo07">'
+      '10'
+      '</cbc:TaxExemptionReasonCode>',
     );
 
     buffer.writeln('<cac:TaxScheme>');
 
     buffer.writeln(
       '<cbc:ID '
-          'schemeID="UN/ECE 5153" '
-          'schemeName="Tax Scheme Identifier" '
-          'schemeAgencyName="United Nations Economic Commission for Europe">'
-          '1000'
-          '</cbc:ID>',
+      'schemeID="UN/ECE 5153" '
+      'schemeName="Tax Scheme Identifier" '
+      'schemeAgencyName="United Nations Economic Commission for Europe">'
+      '1000'
+      '</cbc:ID>',
     );
 
-    buffer.writeln(
-      '<cbc:Name>IGV</cbc:Name>',
-    );
+    buffer.writeln('<cbc:Name>IGV</cbc:Name>');
 
-    buffer.writeln(
-      '<cbc:TaxTypeCode>VAT</cbc:TaxTypeCode>',
-    );
+    buffer.writeln('<cbc:TaxTypeCode>VAT</cbc:TaxTypeCode>');
 
     buffer.writeln('</cac:TaxScheme>');
     buffer.writeln('</cac:TaxCategory>');
@@ -307,20 +275,20 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:LineExtensionAmount currencyID="$moneda">'
-          '${_decimal(comprobante.subtotal)}'
-          '</cbc:LineExtensionAmount>',
+      '${_decimal(comprobante.subtotal)}'
+      '</cbc:LineExtensionAmount>',
     );
 
     buffer.writeln(
       '<cbc:TaxInclusiveAmount currencyID="$moneda">'
-          '${_decimal(comprobante.total)}'
-          '</cbc:TaxInclusiveAmount>',
+      '${_decimal(comprobante.total)}'
+      '</cbc:TaxInclusiveAmount>',
     );
 
     buffer.writeln(
       '<cbc:PayableAmount currencyID="$moneda">'
-          '${_decimal(comprobante.total)}'
-          '</cbc:PayableAmount>',
+      '${_decimal(comprobante.total)}'
+      '</cbc:PayableAmount>',
     );
 
     buffer.writeln('</cac:LegalMonetaryTotal>');
@@ -359,32 +327,24 @@ class ComprobanteXmlService {
     required int numeroLinea,
     required String moneda,
   }) {
-    final cantidad =
-    _leerDouble(detalle, 'cantidad');
+    final cantidad = _leerDouble(detalle, 'cantidad');
 
-    final precioUnitario =
-    _leerDouble(detalle, 'precioUnitario');
+    final precioUnitario = _leerDouble(detalle, 'precioUnitario');
 
-    final subtotal =
-    _leerDouble(detalle, 'subtotal');
+    final subtotal = _leerDouble(detalle, 'subtotal');
 
-    final nombre =
-        _leerString(detalle, 'nombreProducto') ??
-            'PRODUCTO';
+    final nombre = _leerString(detalle, 'nombreProducto') ?? 'PRODUCTO';
 
     // El precio almacenado en AZUL OS es precio de venta
     // con IGV incluido.
     //
     // Calculamos el valor unitario sin IGV para UBL.
 
-    final valorUnitario =
-        precioUnitario / 1.18;
+    final valorUnitario = precioUnitario / 1.18;
 
-    final valorVenta =
-        subtotal / 1.18;
+    final valorVenta = subtotal / 1.18;
 
-    final igvLinea =
-        subtotal - valorVenta;
+    final igvLinea = subtotal - valorVenta;
 
     buffer.writeln('<cac:InvoiceLine>');
 
@@ -392,9 +352,7 @@ class ComprobanteXmlService {
     // ID DE LÍNEA
     // ========================================================
 
-    buffer.writeln(
-      '<cbc:ID>$numeroLinea</cbc:ID>',
-    );
+    buffer.writeln('<cbc:ID>$numeroLinea</cbc:ID>');
 
     // ========================================================
     // CANTIDAD
@@ -402,8 +360,8 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:InvoicedQuantity unitCode="NIU">'
-          '${_decimalCantidad(cantidad)}'
-          '</cbc:InvoicedQuantity>',
+      '${_decimalCantidad(cantidad)}'
+      '</cbc:InvoicedQuantity>',
     );
 
     // ========================================================
@@ -412,8 +370,8 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:LineExtensionAmount currencyID="$moneda">'
-          '${_decimal(valorVenta)}'
-          '</cbc:LineExtensionAmount>',
+      '${_decimal(valorVenta)}'
+      '</cbc:LineExtensionAmount>',
     );
 
     // ========================================================
@@ -425,14 +383,14 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:PriceAmount currencyID="$moneda">'
-          '${_decimal(precioUnitario)}'
-          '</cbc:PriceAmount>',
+      '${_decimal(precioUnitario)}'
+      '</cbc:PriceAmount>',
     );
 
     buffer.writeln(
       '<cbc:PriceTypeCode>'
-          '01'
-          '</cbc:PriceTypeCode>',
+      '01'
+      '</cbc:PriceTypeCode>',
     );
 
     buffer.writeln('</cac:AlternativeConditionPrice>');
@@ -446,46 +404,44 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:TaxAmount currencyID="$moneda">'
-          '${_decimal(igvLinea)}'
-          '</cbc:TaxAmount>',
+      '${_decimal(igvLinea)}'
+      '</cbc:TaxAmount>',
     );
 
     buffer.writeln('<cac:TaxSubtotal>');
 
     buffer.writeln(
       '<cbc:TaxableAmount currencyID="$moneda">'
-          '${_decimal(valorVenta)}'
-          '</cbc:TaxableAmount>',
+      '${_decimal(valorVenta)}'
+      '</cbc:TaxableAmount>',
     );
 
     buffer.writeln(
       '<cbc:TaxAmount currencyID="$moneda">'
-          '${_decimal(igvLinea)}'
-          '</cbc:TaxAmount>',
+      '${_decimal(igvLinea)}'
+      '</cbc:TaxAmount>',
     );
 
     buffer.writeln('<cac:TaxCategory>');
 
     buffer.writeln(
       '<cbc:ID '
-          'schemeID="UN/ECE 5305" '
-          'schemeName="Tax Category Identifier" '
-          'schemeAgencyName="United Nations Economic Commission for Europe">'
-          'S'
-          '</cbc:ID>',
+      'schemeID="UN/ECE 5305" '
+      'schemeName="Tax Category Identifier" '
+      'schemeAgencyName="United Nations Economic Commission for Europe">'
+      'S'
+      '</cbc:ID>',
     );
 
-    buffer.writeln(
-      '<cbc:Percent>18.00</cbc:Percent>',
-    );
+    buffer.writeln('<cbc:Percent>18.00</cbc:Percent>');
 
     buffer.writeln(
       '<cbc:TaxExemptionReasonCode '
-          'listAgencyName="PE:SUNAT" '
-          'listName="SUNAT:Codigo de Tipo de Afectación del IGV" '
-          'listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo07">'
-          '10'
-          '</cbc:TaxExemptionReasonCode>',
+      'listAgencyName="PE:SUNAT" '
+      'listName="SUNAT:Codigo de Tipo de Afectación del IGV" '
+      'listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo07">'
+      '10'
+      '</cbc:TaxExemptionReasonCode>',
     );
 
     buffer.writeln('<cac:TaxScheme>');
@@ -507,8 +463,8 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:Description>'
-          '${_escape(nombre)}'
-          '</cbc:Description>',
+      '${_escape(nombre)}'
+      '</cbc:Description>',
     );
 
     buffer.writeln('</cac:Item>');
@@ -521,8 +477,8 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:PriceAmount currencyID="$moneda">'
-          '${_decimal(valorUnitario)}'
-          '</cbc:PriceAmount>',
+      '${_decimal(valorUnitario)}'
+      '</cbc:PriceAmount>',
     );
 
     buffer.writeln('</cac:Price>');
@@ -534,34 +490,18 @@ class ComprobanteXmlService {
   // LECTURA SEGURA
   // ==========================================================
 
-  static double _leerDouble(
-      dynamic objeto,
-      String campo,
-      ) {
-    final valor = _leerValor(
-      objeto,
-      campo,
-    );
+  static double _leerDouble(dynamic objeto, String campo) {
+    final valor = _leerValor(objeto, campo);
 
     if (valor is num) {
       return valor.toDouble();
     }
 
-    return double.tryParse(
-      valor?.toString() ?? '',
-    ) ??
-        0.0;
+    return double.tryParse(valor?.toString() ?? '') ?? 0.0;
   }
 
-  static String? _leerString(
-      dynamic objeto,
-      String campo,
-      ) {
-    final valor =
-    _leerValor(
-      objeto,
-      campo,
-    );
+  static String? _leerString(dynamic objeto, String campo) {
+    final valor = _leerValor(objeto, campo);
 
     if (valor == null) {
       return null;
@@ -570,10 +510,7 @@ class ComprobanteXmlService {
     return valor.toString();
   }
 
-  static dynamic _leerValor(
-      dynamic objeto,
-      String campo,
-      ) {
+  static dynamic _leerValor(dynamic objeto, String campo) {
     switch (campo) {
       case 'cantidad':
         return objeto.cantidad;
@@ -596,9 +533,7 @@ class ComprobanteXmlService {
   // FECHA
   // ==========================================================
 
-  static String _formatearFecha(
-      DateTime fecha,
-      ) {
+  static String _formatearFecha(DateTime fecha) {
     return '${fecha.year.toString().padLeft(4, '0')}-'
         '${fecha.month.toString().padLeft(2, '0')}-'
         '${fecha.day.toString().padLeft(2, '0')}';
@@ -608,9 +543,7 @@ class ComprobanteXmlService {
   // HORA
   // ==========================================================
 
-  static String _formatearHora(
-      DateTime fecha,
-      ) {
+  static String _formatearHora(DateTime fecha) {
     return '${fecha.hour.toString().padLeft(2, '0')}:'
         '${fecha.minute.toString().padLeft(2, '0')}:'
         '${fecha.second.toString().padLeft(2, '0')}';
@@ -620,15 +553,11 @@ class ComprobanteXmlService {
   // DECIMALES
   // ==========================================================
 
-  static String _decimal(
-      double valor,
-      ) {
+  static String _decimal(double valor) {
     return valor.toStringAsFixed(2);
   }
 
-  static String _decimalCantidad(
-      double valor,
-      ) {
+  static String _decimalCantidad(double valor) {
     if (valor == valor.roundToDouble()) {
       return valor.toInt().toString();
     }
@@ -640,9 +569,7 @@ class ComprobanteXmlService {
   // ESCAPE XML
   // ==========================================================
 
-  static String _escape(
-      String valor,
-      ) {
+  static String _escape(String valor) {
     return valor
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')

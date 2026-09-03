@@ -15,8 +15,8 @@ class VentasRepository {
   final ProductoRepository _productoRepository;
 
   VentasRepository(AppDatabase database)
-      : _dao = VentasDao(database),
-        _productoRepository = ProductoRepository(database);
+    : _dao = VentasDao(database),
+      _productoRepository = ProductoRepository(database);
 
   // ==========================================================
   // GUARDAR VENTA COMPLETA
@@ -30,14 +30,9 @@ class VentasRepository {
   Future<int> guardarVenta(model.Venta venta) async {
     final ventaCompanion = _crearVentaCompanion(venta);
 
-    final detalles = venta.items
-        .map(_crearDetalle)
-        .toList();
+    final detalles = venta.items.map(_crearDetalle).toList();
 
-    return _dao.guardarVentaCompleta(
-      venta: ventaCompanion,
-      detalles: detalles,
-    );
+    return _dao.guardarVentaCompleta(venta: ventaCompanion, detalles: detalles);
   }
 
   // ==========================================================
@@ -61,14 +56,10 @@ class VentasRepository {
   // Si cualquier parte falla, todo podrá revertirse.
   // ==========================================================
 
-  Future<int> guardarVentaSinTransaccion(
-      model.Venta venta,
-      ) async {
+  Future<int> guardarVentaSinTransaccion(model.Venta venta) async {
     final ventaCompanion = _crearVentaCompanion(venta);
 
-    final detalles = venta.items
-        .map(_crearDetalle)
-        .toList();
+    final detalles = venta.items.map(_crearDetalle).toList();
 
     return _dao.guardarVentaCompletaSinTransaccion(
       venta: ventaCompanion,
@@ -80,9 +71,7 @@ class VentasRepository {
   // CREAR COMPANION DE VENTA
   // ==========================================================
 
-  VentasCompanion _crearVentaCompanion(
-      model.Venta venta,
-      ) {
+  VentasCompanion _crearVentaCompanion(model.Venta venta) {
     return VentasCompanion.insert(
       numero: venta.numero,
       fecha: Value(venta.fecha),
@@ -105,9 +94,7 @@ class VentasRepository {
   // CONVERTIR ITEM -> DETALLE SQLITE
   // ==========================================================
 
-  DetalleVentasCompanion _crearDetalle(
-      ItemCarrito item,
-      ) {
+  DetalleVentasCompanion _crearDetalle(ItemCarrito item) {
     return DetalleVentasCompanion.insert(
       ventaId: 0,
       productoId: item.producto.id!,
@@ -128,18 +115,13 @@ class VentasRepository {
   // CONVERTIR DETALLE SQLITE -> ITEM CARRITO
   // ==========================================================
 
-  Future<ItemCarrito?> _crearItemDesdeDetalle(
-      dynamic detalle,
-      ) async {
-    final producto =
-    await _productoRepository.obtenerPorId(
-      detalle.productoId,
-    );
+  Future<ItemCarrito?> _crearItemDesdeDetalle(dynamic detalle) async {
+    final producto = await _productoRepository.obtenerPorId(detalle.productoId);
 
     if (producto == null) {
       debugPrint(
         '⚠️ No se encontró el producto '
-            '${detalle.productoId} para la reimpresión.',
+        '${detalle.productoId} para la reimpresión.',
       );
 
       return null;
@@ -161,17 +143,13 @@ class VentasRepository {
   // CONVERTIR VENTA DB -> MODELO COMPLETO
   // ==========================================================
 
-  Future<model.Venta> _crearVentaCompleta(
-      dynamic venta,
-      ) async {
-    final detalles =
-    await _dao.obtenerDetalleVenta(venta.id);
+  Future<model.Venta> _crearVentaCompleta(dynamic venta) async {
+    final detalles = await _dao.obtenerDetalleVenta(venta.id);
 
     final items = <ItemCarrito>[];
 
     for (final detalle in detalles) {
-      final item =
-      await _crearItemDesdeDetalle(detalle);
+      final item = await _crearItemDesdeDetalle(detalle);
 
       if (item != null) {
         items.add(item);
@@ -202,14 +180,12 @@ class VentasRepository {
   // ==========================================================
 
   Future<List<model.Venta>> obtenerVentas() async {
-    final ventasDb =
-    await _dao.obtenerVentas();
+    final ventasDb = await _dao.obtenerVentas();
 
     final ventas = <model.Venta>[];
 
     for (final venta in ventasDb) {
-      final ventaCompleta =
-      await _crearVentaCompleta(venta);
+      final ventaCompleta = await _crearVentaCompleta(venta);
 
       ventas.add(ventaCompleta);
     }
@@ -221,11 +197,8 @@ class VentasRepository {
   // OBTENER UNA VENTA COMPLETA
   // ==========================================================
 
-  Future<model.Venta?> obtenerVenta(
-      int id,
-      ) async {
-    final ventaDb =
-    await _dao.obtenerVenta(id);
+  Future<model.Venta?> obtenerVenta(int id) async {
+    final ventaDb = await _dao.obtenerVenta(id);
 
     if (ventaDb == null) {
       return null;
@@ -239,95 +212,82 @@ class VentasRepository {
   // ==========================================================
 
   Future<double> obtenerTotalVentasHoy() async {
-    final ventas =
-    await obtenerVentas();
+    final ventas = await obtenerVentas();
 
     final hoy = DateTime.now();
 
     final ventasHoy = ventas.where(
-          (v) =>
-      v.fecha.year == hoy.year &&
+      (v) =>
+          v.fecha.year == hoy.year &&
           v.fecha.month == hoy.month &&
           v.fecha.day == hoy.day,
     );
 
-    return ventasHoy.fold<double>(
-      0.0,
-          (total, venta) => total + venta.total,
-    );
+    return ventasHoy.fold<double>(0.0, (total, venta) => total + venta.total);
   }
 
   Future<int> obtenerCantidadVentasHoy() async {
-    final ventas =
-    await obtenerVentas();
-
-    final hoy = DateTime.now();
-
-    return ventas.where(
-          (v) =>
-      v.fecha.year == hoy.year &&
-          v.fecha.month == hoy.month &&
-          v.fecha.day == hoy.day,
-    ).length;
-  }
-
-  Future<int> obtenerCantidadClientesHoy() async {
-    final ventas =
-    await obtenerVentas();
+    final ventas = await obtenerVentas();
 
     final hoy = DateTime.now();
 
     return ventas
         .where(
           (v) =>
-      v.fecha.year == hoy.year &&
-          v.fecha.month == hoy.month &&
-          v.fecha.day == hoy.day,
-    )
-        .map(
+              v.fecha.year == hoy.year &&
+              v.fecha.month == hoy.month &&
+              v.fecha.day == hoy.day,
+        )
+        .length;
+  }
+
+  Future<int> obtenerCantidadClientesHoy() async {
+    final ventas = await obtenerVentas();
+
+    final hoy = DateTime.now();
+
+    return ventas
+        .where(
           (v) =>
-      v.nombreCliente ??
-          'Cliente General',
-    )
+              v.fecha.year == hoy.year &&
+              v.fecha.month == hoy.month &&
+              v.fecha.day == hoy.day,
+        )
+        .map((v) => v.nombreCliente ?? 'Cliente General')
         .toSet()
         .length;
   }
 
-  Future<DashboardResumen>
-  obtenerResumenDashboard() async {
+  Future<DashboardResumen> obtenerResumenDashboard() async {
     final ventas = await obtenerVentas();
 
     final ahora = DateTime.now();
 
-    final ventasHoy = ventas.where(
+    final ventasHoy = ventas
+        .where(
           (venta) =>
-      venta.fecha.year == ahora.year &&
-          venta.fecha.month == ahora.month &&
-          venta.fecha.day == ahora.day,
-    ).toList();
+              venta.fecha.year == ahora.year &&
+              venta.fecha.month == ahora.month &&
+              venta.fecha.day == ahora.day,
+        )
+        .toList();
 
-    final ventasMes = ventas.where(
+    final ventasMes = ventas
+        .where(
           (venta) =>
-      venta.fecha.year == ahora.year &&
-          venta.fecha.month == ahora.month,
-    ).toList();
+              venta.fecha.year == ahora.year &&
+              venta.fecha.month == ahora.month,
+        )
+        .toList();
 
     final clientesHoy = ventasHoy
-        .map(
-          (venta) =>
-      venta.nombreCliente?.trim() ??
-          'Cliente General',
-    )
+        .map((venta) => venta.nombreCliente?.trim() ?? 'Cliente General')
         .where((nombre) => nombre.isNotEmpty)
         .toSet()
         .length;
 
     final clientesMes = ventasMes
-        .map(
-          (venta) =>
-      venta.nombreCliente?.trim() ??
-          'Cliente General',
-    )
+        .map((venta) => venta.nombreCliente?.trim() ?? 'Cliente General')
         .where((nombre) => nombre.isNotEmpty)
         .toSet()
         .length;
@@ -335,12 +295,12 @@ class VentasRepository {
     return DashboardResumen(
       ventasHoy: ventasHoy.fold<double>(
         0.0,
-            (total, venta) => total + venta.total,
+        (total, venta) => total + venta.total,
       ),
 
       ventasMes: ventasMes.fold<double>(
         0.0,
-            (total, venta) => total + venta.total,
+        (total, venta) => total + venta.total,
       ),
 
       ticketsHoy: ventasHoy.length,
@@ -360,17 +320,13 @@ class VentasRepository {
   // ==========================================================
 
   Future<String> obtenerSiguienteNumeroVenta() async {
-    final ultimoNumero =
-    await _dao.obtenerUltimoNumeroVenta();
+    final ultimoNumero = await _dao.obtenerUltimoNumeroVenta();
 
     if (ultimoNumero == null) {
       return 'V000001';
     }
 
-    final numero = int.tryParse(
-      ultimoNumero.replaceAll('V', ''),
-    ) ??
-        0;
+    final numero = int.tryParse(ultimoNumero.replaceAll('V', '')) ?? 0;
 
     final siguiente = numero + 1;
 

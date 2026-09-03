@@ -16,17 +16,13 @@ class ClientesRepository {
   Future<List<ClienteModel>> obtenerClientes() async {
     final clientes = await database.clientesDao.obtenerClientes();
 
-    return clientes
-        .map(ClienteMapper.fromDatabase)
-        .toList();
+    return clientes.map(ClienteMapper.fromDatabase).toList();
   }
 
   Future<List<ClienteModel>> buscarClientes(String texto) async {
     final clientes = await database.clientesDao.buscarClientes(texto);
 
-    return clientes
-        .map(ClienteMapper.fromDatabase)
-        .toList();
+    return clientes.map(ClienteMapper.fromDatabase).toList();
   }
 
   Future<ClienteModel?> buscarPorDni(String dni) async {
@@ -37,13 +33,8 @@ class ClientesRepository {
     return ClienteMapper.fromDatabase(cliente);
   }
 
-  Future<ClienteModel?> buscarPorTelefono(
-      String telefono,
-      ) async {
-    final cliente =
-    await database.clientesDao.buscarPorTelefono(
-      telefono,
-    );
+  Future<ClienteModel?> buscarPorTelefono(String telefono) async {
+    final cliente = await database.clientesDao.buscarPorTelefono(telefono);
 
     if (cliente == null) return null;
 
@@ -57,8 +48,6 @@ class ClientesRepository {
   }
 
   Future<void> eliminarCliente(String id) async {
-    await database.clientesDao.eliminarCliente(
-      int.parse(id),
-    );
+    await database.clientesDao.eliminarCliente(int.parse(id));
   }
 }

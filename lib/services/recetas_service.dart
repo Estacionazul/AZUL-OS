@@ -14,11 +14,9 @@ class RecetasService extends ChangeNotifier {
 
   List<RecetaDetalleModel> _detalle = [];
 
-  List<RecetaModel> get recetas =>
-      List.unmodifiable(_recetasFiltradas);
+  List<RecetaModel> get recetas => List.unmodifiable(_recetasFiltradas);
 
-  List<RecetaDetalleModel> get detalle =>
-      List.unmodifiable(_detalle);
+  List<RecetaDetalleModel> get detalle => List.unmodifiable(_detalle);
 
   /// ============================
   /// RECETAS
@@ -32,57 +30,41 @@ class RecetasService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> guardarReceta(
-      RecetaModel receta,
-      ) async {
+  Future<void> guardarReceta(RecetaModel receta) async {
     await _repository.insertarReceta(receta);
 
     await cargarRecetas();
   }
 
-  Future<void> actualizarReceta(
-      RecetaModel receta,
-      ) async {
+  Future<void> actualizarReceta(RecetaModel receta) async {
     await _repository.actualizarReceta(receta);
 
     await cargarRecetas();
   }
 
-  Future<void> eliminarReceta(
-      int id,
-      ) async {
+  Future<void> eliminarReceta(int id) async {
     await _repository.eliminarReceta(id);
 
     await cargarRecetas();
   }
 
-  RecetaModel? obtenerPorProducto(
-      int productoId,
-      ) {
+  RecetaModel? obtenerPorProducto(int productoId) {
     try {
-      return _recetas.firstWhere(
-            (r) => r.productoId == productoId,
-      );
+      return _recetas.firstWhere((r) => r.productoId == productoId);
     } catch (_) {
       return null;
     }
   }
 
-  void buscarRecetas(
-      String texto,
-      ) {
+  void buscarRecetas(String texto) {
     if (texto.trim().isEmpty) {
       _recetasFiltradas = List.from(_recetas);
     } else {
       final busqueda = texto.toLowerCase();
 
       _recetasFiltradas = _recetas.where((receta) {
-        return receta.nombre
-            .toLowerCase()
-            .contains(busqueda) ||
-            receta.productoId
-                .toString()
-                .contains(busqueda);
+        return receta.nombre.toLowerCase().contains(busqueda) ||
+            receta.productoId.toString().contains(busqueda);
       }).toList();
     }
 
@@ -93,17 +75,13 @@ class RecetasService extends ChangeNotifier {
   /// DETALLE
   /// ============================
 
-  void agregarDetalle(
-      RecetaDetalleModel item,
-      ) {
+  void agregarDetalle(RecetaDetalleModel item) {
     _detalle.add(item);
 
     notifyListeners();
   }
 
-  void eliminarDetalle(
-      int index,
-      ) {
+  void eliminarDetalle(int index) {
     _detalle.removeAt(index);
 
     notifyListeners();
@@ -119,12 +97,9 @@ class RecetasService extends ChangeNotifier {
   /// DASHBOARD
   /// ============================
 
-  int get totalRecetas =>
-      _recetas.length;
+  int get totalRecetas => _recetas.length;
 
-  int get recetasActivas =>
-      _recetas.where((r) => r.activo).length;
+  int get recetasActivas => _recetas.where((r) => r.activo).length;
 
-  int get recetasInactivas =>
-      _recetas.where((r) => !r.activo).length;
+  int get recetasInactivas => _recetas.where((r) => !r.activo).length;
 }

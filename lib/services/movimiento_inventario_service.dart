@@ -22,11 +22,11 @@ class MovimientoInventarioService extends ChangeNotifier {
     required InsumoRepository insumoRepository,
     required ProductoService productoService,
     required InsumoService insumoService,
-  })  : _repository = repository,
-        _productoRepository = productoRepository,
-        _insumoRepository = insumoRepository,
-        _productoService = productoService,
-        _insumoService = insumoService;
+  }) : _repository = repository,
+       _productoRepository = productoRepository,
+       _insumoRepository = insumoRepository,
+       _productoService = productoService,
+       _insumoService = insumoService;
 
   List<MovimientoInventarioModel> _movimientos = [];
 
@@ -48,8 +48,8 @@ class MovimientoInventarioService extends ChangeNotifier {
   // ==========================================================
 
   Future<void> validarDisponibilidad(
-      List<MovimientoInventarioModel> movimientos,
-      ) async {
+    List<MovimientoInventarioModel> movimientos,
+  ) async {
     await _calcularNuevosStocks(movimientos);
   }
 
@@ -57,12 +57,8 @@ class MovimientoInventarioService extends ChangeNotifier {
   // REGISTRAR UN SOLO MOVIMIENTO
   // ==========================================================
 
-  Future<void> registrarMovimiento(
-      MovimientoInventarioModel movimiento,
-      ) async {
-    await registrarMovimientos([
-      movimiento,
-    ]);
+  Future<void> registrarMovimiento(MovimientoInventarioModel movimiento) async {
+    await registrarMovimientos([movimiento]);
   }
 
   // ==========================================================
@@ -74,15 +70,13 @@ class MovimientoInventarioService extends ChangeNotifier {
   // ==========================================================
 
   Future<void> registrarMovimientos(
-      List<MovimientoInventarioModel> movimientos,
-      ) async {
+    List<MovimientoInventarioModel> movimientos,
+  ) async {
     if (movimientos.isEmpty) {
       return;
     }
 
-    final stocks = await _calcularNuevosStocks(
-      movimientos,
-    );
+    final stocks = await _calcularNuevosStocks(movimientos);
 
     await _repository.registrarMovimientos(
       movimientos: movimientos,
@@ -105,15 +99,13 @@ class MovimientoInventarioService extends ChangeNotifier {
   // ==========================================================
 
   Future<void> registrarMovimientosSinTransaccion(
-      List<MovimientoInventarioModel> movimientos,
-      ) async {
+    List<MovimientoInventarioModel> movimientos,
+  ) async {
     if (movimientos.isEmpty) {
       return;
     }
 
-    final stocks = await _calcularNuevosStocks(
-      movimientos,
-    );
+    final stocks = await _calcularNuevosStocks(movimientos);
 
     await _repository.registrarMovimientosSinTransaccion(
       movimientos: movimientos,
@@ -137,8 +129,8 @@ class MovimientoInventarioService extends ChangeNotifier {
   // ==========================================================
 
   Future<_StocksCalculados> _calcularNuevosStocks(
-      List<MovimientoInventarioModel> movimientos,
-      ) async {
+    List<MovimientoInventarioModel> movimientos,
+  ) async {
     final nuevosProductos = <int, int>{};
     final nuevosInsumos = <int, double>{};
 
@@ -148,28 +140,21 @@ class MovimientoInventarioService extends ChangeNotifier {
       // ======================================================
 
       if (movimiento.cantidad <= 0) {
-        throw StateError(
-          'La cantidad del movimiento debe ser mayor a 0.',
-        );
+        throw StateError('La cantidad del movimiento debe ser mayor a 0.');
       }
 
-      if (movimiento.signo != 1 &&
-          movimiento.signo != -1) {
-        throw StateError(
-          'El signo del movimiento debe ser 1 o -1.',
-        );
+      if (movimiento.signo != 1 && movimiento.signo != -1) {
+        throw StateError('El signo del movimiento debe ser 1 o -1.');
       }
 
-      final tieneProducto =
-          movimiento.productoId != null;
+      final tieneProducto = movimiento.productoId != null;
 
-      final tieneInsumo =
-          movimiento.insumoId != null;
+      final tieneInsumo = movimiento.insumoId != null;
 
       if (tieneProducto == tieneInsumo) {
         throw StateError(
           'Un movimiento debe pertenecer a un producto '
-              'O a un insumo, pero no a ambos.',
+          'O a un insumo, pero no a ambos.',
         );
       }
 
@@ -180,45 +165,31 @@ class MovimientoInventarioService extends ChangeNotifier {
       if (tieneProducto) {
         final productoId = movimiento.productoId!;
 
-        if (movimiento.cantidad !=
-            movimiento.cantidad.roundToDouble()) {
-          throw StateError(
-            'Los productos se manejan en unidades enteras.',
-          );
+        if (movimiento.cantidad != movimiento.cantidad.roundToDouble()) {
+          throw StateError('Los productos se manejan en unidades enteras.');
         }
 
-        final producto =
-        await _productoRepository.obtenerPorId(
-          productoId,
-        );
+        final producto = await _productoRepository.obtenerPorId(productoId);
 
         if (producto == null) {
-          throw StateError(
-            'No existe el producto ID $productoId.',
-          );
+          throw StateError('No existe el producto ID $productoId.');
         }
 
-        final stockActual =
-            nuevosProductos[productoId] ??
-                producto.stock;
+        final stockActual = nuevosProductos[productoId] ?? producto.stock;
 
-        final delta =
-            movimiento.cantidad.round() *
-                movimiento.signo;
+        final delta = movimiento.cantidad.round() * movimiento.signo;
 
-        final nuevoStock =
-            stockActual + delta;
+        final nuevoStock = stockActual + delta;
 
         if (nuevoStock < 0) {
           throw StateError(
             'Stock insuficiente de ${producto.nombre}. '
-                'Stock actual: ${producto.stock}. '
-                'Cantidad solicitada: ${movimiento.cantidad}.',
+            'Stock actual: ${producto.stock}. '
+            'Cantidad solicitada: ${movimiento.cantidad}.',
           );
         }
 
-        nuevosProductos[productoId] =
-            nuevoStock;
+        nuevosProductos[productoId] = nuevoStock;
       }
 
       // ======================================================
@@ -228,39 +199,28 @@ class MovimientoInventarioService extends ChangeNotifier {
       if (tieneInsumo) {
         final insumoId = movimiento.insumoId!;
 
-        final insumo =
-        await _insumoRepository.obtenerPorId(
-          insumoId,
-        );
+        final insumo = await _insumoRepository.obtenerPorId(insumoId);
 
         if (insumo == null) {
-          throw StateError(
-            'No existe el insumo ID $insumoId.',
-          );
+          throw StateError('No existe el insumo ID $insumoId.');
         }
 
-        final stockActual =
-            nuevosInsumos[insumoId] ??
-                insumo.stock;
+        final stockActual = nuevosInsumos[insumoId] ?? insumo.stock;
 
-        final delta =
-            movimiento.cantidad *
-                movimiento.signo;
+        final delta = movimiento.cantidad * movimiento.signo;
 
-        final nuevoStock =
-            stockActual + delta;
+        final nuevoStock = stockActual + delta;
 
         if (nuevoStock < -0.000001) {
           throw StateError(
             'Stock insuficiente de ${insumo.nombre}. '
-                'Stock actual: '
-                '${insumo.stock.toStringAsFixed(3)} '
-                '${insumo.unidadMedida}.',
+            'Stock actual: '
+            '${insumo.stock.toStringAsFixed(3)} '
+            '${insumo.unidadMedida}.',
           );
         }
 
-        nuevosInsumos[insumoId] =
-        nuevoStock < 0 ? 0 : nuevoStock;
+        nuevosInsumos[insumoId] = nuevoStock < 0 ? 0 : nuevoStock;
       }
     }
 
@@ -280,8 +240,8 @@ class MovimientoInventarioService extends ChangeNotifier {
   Future<void> eliminarMovimiento(int id) async {
     throw StateError(
       'Los movimientos de inventario no se eliminan. '
-          'Para corregir un movimiento se debe registrar '
-          'una reversión o ajuste.',
+      'Para corregir un movimiento se debe registrar '
+      'una reversión o ajuste.',
     );
   }
 
@@ -289,25 +249,16 @@ class MovimientoInventarioService extends ChangeNotifier {
   // STOCK HISTÓRICO DEL KARDEX
   // ==========================================================
 
-  double calcularStock({
-    required int? insumoId,
-    required int? productoId,
-  }) {
+  double calcularStock({required int? insumoId, required int? productoId}) {
     double total = 0;
 
     for (final movimiento in _movimientos) {
-      if (insumoId != null &&
-          movimiento.insumoId == insumoId) {
-        total +=
-            movimiento.cantidad *
-                movimiento.signo;
+      if (insumoId != null && movimiento.insumoId == insumoId) {
+        total += movimiento.cantidad * movimiento.signo;
       }
 
-      if (productoId != null &&
-          movimiento.productoId == productoId) {
-        total +=
-            movimiento.cantidad *
-                movimiento.signo;
+      if (productoId != null && movimiento.productoId == productoId) {
+        total += movimiento.cantidad * movimiento.signo;
       }
     }
 
@@ -323,8 +274,5 @@ class _StocksCalculados {
   final Map<int, int> productos;
   final Map<int, double> insumos;
 
-  const _StocksCalculados({
-    required this.productos,
-    required this.insumos,
-  });
+  const _StocksCalculados({required this.productos, required this.insumos});
 }

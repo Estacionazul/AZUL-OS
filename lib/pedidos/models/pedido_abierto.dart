@@ -1,9 +1,9 @@
-﻿import '../../models/item_carrito.dart';
+import '../../models/item_carrito.dart';
 import 'estado_pedido.dart';
 import 'ubicacion_pedido.dart';
 
 class PedidoAbierto {
-  final String id;
+  String id;
   final String numero;
   final UbicacionPedido ubicacion;
   final DateTime fechaApertura;
@@ -28,19 +28,13 @@ class PedidoAbierto {
   }) : items = items ?? [];
 
   double get total {
-    return items.fold<double>(
-      0,
-      (total, item) => total + item.subtotal,
-    );
+    return items.fold<double>(0, (total, item) => total + item.subtotal);
   }
 
   bool get estaVacio => items.isEmpty;
 
   int get cantidadItems {
-    return items.fold<int>(
-      0,
-      (total, item) => total + item.cantidad,
-    );
+    return items.fold<int>(0, (total, item) => total + item.cantidad);
   }
 
   void agregarItems(List<ItemCarrito> nuevosItems) {

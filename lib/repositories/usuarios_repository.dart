@@ -1,4 +1,4 @@
-﻿import 'package:drift/drift.dart';
+import 'package:drift/drift.dart';
 
 import '../database/app_database.dart';
 import '../database/dao/usuarios_dao.dart';
@@ -6,8 +6,7 @@ import '../database/dao/usuarios_dao.dart';
 class UsuariosRepository {
   final UsuariosDao _dao;
 
-  UsuariosRepository(AppDatabase database)
-      : _dao = UsuariosDao(database);
+  UsuariosRepository(AppDatabase database) : _dao = UsuariosDao(database);
 
   // ==========================================================
   // CREAR USUARIO
@@ -69,10 +68,7 @@ class UsuariosRepository {
     required String nombre,
     required String pin,
   }) {
-    return _dao.validarAcceso(
-      nombre.trim(),
-      pin,
-    );
+    return _dao.validarAcceso(nombre.trim(), pin);
   }
 
   // ==========================================================
@@ -87,10 +83,7 @@ class UsuariosRepository {
   // CAMBIAR ESTADO
   // ==========================================================
 
-  Future<int> cambiarEstado(
-    int id,
-    bool activo,
-  ) {
+  Future<int> cambiarEstado(int id, bool activo) {
     return _dao.cambiarEstado(id, activo);
   }
 

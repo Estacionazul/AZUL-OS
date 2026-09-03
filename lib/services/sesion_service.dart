@@ -1,4 +1,4 @@
-﻿import '../database/app_database.dart';
+import '../database/app_database.dart';
 
 class SesionService {
   SesionService._();
@@ -33,11 +33,9 @@ class SesionService {
   // PERMISOS BASICOS
   // ==========================================================
 
-  bool get esCEO =>
-      _usuarioActual?.rol.toUpperCase() == 'CEO';
+  bool get esCEO => _usuarioActual?.rol.toUpperCase() == 'CEO';
 
-  bool get esCajero =>
-      _usuarioActual?.rol.toUpperCase() == 'CAJERO';
+  bool get esCajero => _usuarioActual?.rol.toUpperCase() == 'CAJERO';
 
   // ==========================================================
   // INICIAR SESION

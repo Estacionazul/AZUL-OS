@@ -1,4 +1,8 @@
 ﻿import 'package:flutter/material.dart';
+import 'facturacion/config/sunat_config.dart';
+import 'facturacion/firma/certificado_service.dart';
+import 'facturacion/firma/firma_digital_service.dart';
+import 'facturacion/sunat/sunat_service.dart';
 import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
@@ -14,6 +18,7 @@ import 'repositories/insumo_repository.dart';
 import 'screens/auth/auth_gate.dart';
 
 import 'seed/datos_iniciales.dart';
+import 'pedidos/services/pedidos_service.dart';
 
 import 'services/carrito_service.dart';
 import 'services/cobro_service.dart';
@@ -67,23 +72,18 @@ Future<void> main() async {
     await printerAdapter.selectPrinter(nombreImpresora);
 
     print('');
-    print('âœ… IMPRESORA AUTOMÃTICAMENTE SELECCIONADA');
-    print('ðŸ–¨ï¸ $nombreImpresora');
+    print('Ã¢Å“â€¦ IMPRESORA AUTOMÃƒÂTICAMENTE SELECCIONADA');
+    print('Ã°Å¸â€“Â¨Ã¯Â¸Â $nombreImpresora');
   } else {
     print('');
-    print('âš ï¸ NO SE ENCONTRÃ“ LA IMPRESORA:');
-    print('ðŸ–¨ï¸ $nombreImpresora');
+    print('Ã¢Å¡Â Ã¯Â¸Â NO SE ENCONTRÃƒâ€œ LA IMPRESORA:');
+    print('Ã°Å¸â€“Â¨Ã¯Â¸Â $nombreImpresora');
   }
 
   print('==============================================');
   print('');
 
-  runApp(
-    AzulOSApp(
-      database: database,
-      printerAdapter: printerAdapter,
-    ),
-  );
+  runApp(AzulOSApp(database: database, printerAdapter: printerAdapter));
 }
 
 class AzulOSApp extends StatelessWidget {
@@ -100,72 +100,61 @@ class AzulOSApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider.value(
-          value: database,
-        ),
+        Provider.value(value: database),
 
-        Provider(
-          create: (_) => ProductoRepository(database),
-        ),
+        Provider(create: (_) => ProductoRepository(database)),
 
-        Provider(
-          create: (_) => ClientesRepository(database),
-        ),
+        Provider(create: (_) => ClientesRepository(database)),
 
-        Provider(
-          create: (_) => EmpresaRepository(database),
-        ),
+        Provider(create: (_) => EmpresaRepository(database)),
 
         Provider<ComprobantesElectronicosRepository>(
           create: (_) => ComprobantesElectronicosRepository(database),
         ),
 
-        Provider<FacturacionService>(
+        Provider<FirmaDigitalService>(
+  create: (context) => FirmaDigitalService(
+    rutaCertificado: CertificadoService.rutaCertificado,
+    passwordCertificado: SunatConfig.passwordCertificado,
+  ),
+),
+Provider<SunatService>(
+  create: (context) => SunatService(
+    ruc: SunatConfig.ruc,
+    usuarioSol: SunatConfig.usuarioSol,
+    claveSol: SunatConfig.claveSol,
+    produccion: SunatConfig.produccion,
+  ),
+),
+Provider<FacturacionService>(
           create: (context) => FacturacionService(
-            comprobantesElectronicosRepository:
-            context.read<ComprobantesElectronicosRepository>(),
+            comprobantesElectronicosRepository: context
+                .read<ComprobantesElectronicosRepository>(),
           ),
         ),
 
-        Provider(
-          create: (_) => UsuariosRepository(database),
-        ),
+        Provider(create: (_) => UsuariosRepository(database)),
 
-        Provider(
-          create: (_) => PermisosUsuarioRepository(database),
-        ),
+        Provider(create: (_) => PermisosUsuarioRepository(database)),
 
-        Provider(
-          create: (_) => CajasRepository(database),
-        ),
+        Provider(create: (_) => CajasRepository(database)),
 
         ChangeNotifierProvider(
-          create: (context) => ClientesService(
-            context.read<ClientesRepository>(),
-          ),
+          create: (context) =>
+              ClientesService(context.read<ClientesRepository>()),
         ),
 
-        Provider(
-          create: (_) => EmpresaService(database),
-        ),
+        Provider(create: (_) => EmpresaService(database)),
+
+        Provider(create: (_) => VentasRepository(database)),
+
+        Provider(create: (_) => RecetasRepository(database)),
 
         Provider(
-          create: (_) => VentasRepository(database),
+          create: (_) => RecetaDetalleRepository(database.recetaDetalleDao),
         ),
 
-        Provider(
-          create: (_) => RecetasRepository(database),
-        ),
-
-        Provider(
-          create: (_) => RecetaDetalleRepository(
-            database.recetaDetalleDao,
-          ),
-        ),
-
-        Provider(
-          create: (_) => InsumoRepository(database),
-        ),
+        Provider(create: (_) => InsumoRepository(database)),
 
         Provider(
           create: (context) => DisponibilidadProductoService(
@@ -176,59 +165,45 @@ class AzulOSApp extends StatelessWidget {
         ),
 
         ChangeNotifierProvider(
-          create: (context) => ProductoService(
-            context.read<ProductoRepository>(),
-          )..cargarProductos(),
+          create: (context) =>
+              ProductoService(context.read<ProductoRepository>())
+                ..cargarProductos(),
         ),
 
         ChangeNotifierProvider(
-          create: (context) => RecetasService(
-            context.read<RecetasRepository>(),
-          ),
+          create: (context) =>
+              RecetasService(context.read<RecetasRepository>()),
         ),
 
         ChangeNotifierProvider(
-          create: (context) => RecetaDetalleService(
-            context.read<RecetaDetalleRepository>(),
-          ),
+          create: (context) =>
+              RecetaDetalleService(context.read<RecetaDetalleRepository>()),
         ),
 
+        ChangeNotifierProvider(create: (_) => CarritoService()),
         ChangeNotifierProvider(
-          create: (_) => CarritoService(),
+          create: (context) => PedidosService(context.read<AppDatabase>()),
         ),
 
-        ChangeNotifierProvider(
-          create: (_) => VentasService(),
-        ),
+        ChangeNotifierProvider(create: (_) => VentasService()),
 
-        Provider(
-          create: (_) => VentaService.instance,
-        ),
+        Provider(create: (_) => VentaService.instance),
 
         ChangeNotifierProvider(
           create: (_) => InsumoService(database)..obtenerTodos(),
         ),
 
-        Provider(
-          create: (_) => InventarioService(),
-        ),
+        Provider(create: (_) => InventarioService()),
 
-        Provider(
-          create: (_) => MovimientoInventarioRepository(database),
-        ),
+        Provider(create: (_) => MovimientoInventarioRepository(database)),
 
         ChangeNotifierProvider(
           create: (context) => MovimientoInventarioService(
-            repository:
-            context.read<MovimientoInventarioRepository>(),
-            productoRepository:
-            context.read<ProductoRepository>(),
-            insumoRepository:
-            context.read<InsumoRepository>(),
-            productoService:
-            context.read<ProductoService>(),
-            insumoService:
-            context.read<InsumoService>(),
+            repository: context.read<MovimientoInventarioRepository>(),
+            productoRepository: context.read<ProductoRepository>(),
+            insumoRepository: context.read<InsumoRepository>(),
+            productoService: context.read<ProductoService>(),
+            insumoService: context.read<InsumoService>(),
           ),
         ),
 
@@ -236,95 +211,76 @@ class AzulOSApp extends StatelessWidget {
           create: (context) => ProduccionService(
             productoService: context.read<ProductoService>(),
             insumoService: context.read<InsumoService>(),
-            recetaDetalleService:
-            context.read<RecetaDetalleService>(),
-            movimientoService:
-            context.read<MovimientoInventarioService>(),
+            recetaDetalleService: context.read<RecetaDetalleService>(),
+            movimientoService: context.read<MovimientoInventarioService>(),
           ),
         ),
 
         Provider(
           create: (context) => InventarioAutomaticoService(
-            recetasRepository:
-            context.read<RecetasRepository>(),
-            productoService:
-            context.read<ProductoService>(),
-            insumoService:
-            context.read<InsumoService>(),
-            movimientoService:
-            context.read<MovimientoInventarioService>(),
+            recetasRepository: context.read<RecetasRepository>(),
+            productoService: context.read<ProductoService>(),
+            insumoService: context.read<InsumoService>(),
+            movimientoService: context.read<MovimientoInventarioService>(),
           ),
         ),
 
         // ==========================================
         // IMPRESORA
         // ==========================================
-
-        Provider<WindowsPrinterAdapter>.value(
-          value: printerAdapter,
-        ),
+        Provider<WindowsPrinterAdapter>.value(value: printerAdapter),
 
         Provider(
-          create: (context) => PrinterService(
-            context.read<WindowsPrinterAdapter>(),
-          ),
+          create: (context) =>
+              PrinterService(context.read<WindowsPrinterAdapter>()),
         ),
 
-        Provider(
-          create: (_) => const EscPosRenderer(),
-        ),
+        Provider(create: (_) => const EscPosRenderer()),
 
-        Provider(
-          create: (_) => const TicketPrintService(),
-        ),
+        Provider(create: (_) => const TicketPrintService()),
 
         // ==========================================
-// COBRO
-// ==========================================
-
+        // COBRO
+        // ==========================================
         ProxyProvider6<
-            CarritoService,
-            VentasService,
-            VentaService,
-            VentasRepository,
-            InventarioAutomaticoService,
-            EmpresaRepository,
-            CobroService>(
-          update: (
-              context,
-              carrito,
-              ventas,
-              ventaService,
-              ventasRepository,
-              inventarioAutomaticoService,
-              empresaRepository,
-              __,
-              ) =>
-              CobroService(
+          CarritoService,
+          VentasService,
+          VentaService,
+          VentasRepository,
+          InventarioAutomaticoService,
+          EmpresaRepository,
+          CobroService
+        >(
+          update:
+              (
+                context,
+                carrito,
+                ventas,
+                ventaService,
+                ventasRepository,
+                inventarioAutomaticoService,
+                empresaRepository,
+                __,
+              ) => CobroService(
                 carritoService: carrito,
                 ventasService: ventas,
                 ventaService: ventaService,
                 ventasRepository: ventasRepository,
-                inventarioAutomaticoService:
-                inventarioAutomaticoService,
+                inventarioAutomaticoService: inventarioAutomaticoService,
 
-                empresaRepository:
-                empresaRepository,
+                empresaRepository: empresaRepository,
 
-                cajasRepository:
-                context.read<CajasRepository>(),
+                cajasRepository: context.read<CajasRepository>(),
 
-                facturacionService:
-                context.read<FacturacionService>(),
+                facturacionService: context.read<FacturacionService>(),
+              firmaDigitalService: context.read<FirmaDigitalService>(),
+              sunatService: context.read<SunatService>(),
 
-                ticketPrintService:
-                context.read<TicketPrintService>(),
+                ticketPrintService: context.read<TicketPrintService>(),
 
-                escPosRenderer:
-                context.read<EscPosRenderer>(),
+                escPosRenderer: context.read<EscPosRenderer>(),
 
-                printerService:
-                context.read<PrinterService>(),
+                printerService: context.read<PrinterService>(),
               ),
         ),
       ],
@@ -337,3 +293,5 @@ class AzulOSApp extends StatelessWidget {
     );
   }
 }
+
+

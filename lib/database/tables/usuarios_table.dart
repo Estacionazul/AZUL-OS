@@ -23,17 +23,11 @@ class Usuarios extends Table {
   // ROL
   // ==========================================================
 
-  TextColumn get rol =>
-      text().withDefault(
-        const Constant('CAJERO'),
-      )();
+  TextColumn get rol => text().withDefault(const Constant('CAJERO'))();
 
   // ==========================================================
   // ESTADO
   // ==========================================================
 
-  BoolColumn get activo =>
-      boolean().withDefault(
-        const Constant(true),
-      )();
+  BoolColumn get activo => boolean().withDefault(const Constant(true))();
 }

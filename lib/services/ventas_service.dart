@@ -16,20 +16,26 @@ class VentasService extends ChangeNotifier {
     final hoy = DateTime.now();
 
     return _ventas
-        .where((v) =>
-    v.fecha.year == hoy.year &&
-        v.fecha.month == hoy.month &&
-        v.fecha.day == hoy.day)
+        .where(
+          (v) =>
+              v.fecha.year == hoy.year &&
+              v.fecha.month == hoy.month &&
+              v.fecha.day == hoy.day,
+        )
         .fold(0.0, (total, venta) => total + venta.total);
   }
 
   int get cantidadVentasHoy {
     final hoy = DateTime.now();
 
-    return _ventas.where((v) =>
-    v.fecha.year == hoy.year &&
-        v.fecha.month == hoy.month &&
-        v.fecha.day == hoy.day).length;
+    return _ventas
+        .where(
+          (v) =>
+              v.fecha.year == hoy.year &&
+              v.fecha.month == hoy.month &&
+              v.fecha.day == hoy.day,
+        )
+        .length;
   }
 
   void limpiarVentas() {

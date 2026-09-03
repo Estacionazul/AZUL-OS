@@ -12,10 +12,7 @@ class PosCart extends StatelessWidget {
       builder: (context, carrito, child) {
         if (carrito.items.isEmpty) {
           return const Center(
-            child: Text(
-              "Carrito vacío",
-              style: TextStyle(fontSize: 18),
-            ),
+            child: Text("Carrito vacío", style: TextStyle(fontSize: 18)),
           );
         }
 
@@ -134,10 +131,7 @@ class PosCart extends StatelessWidget {
                       onPressed: () {
                         carrito.eliminarProducto(item);
                       },
-                      icon: const Icon(
-                        Icons.delete_outline,
-                        size: 21,
-                      ),
+                      icon: const Icon(Icons.delete_outline, size: 21),
                     ),
                   ],
                 ),

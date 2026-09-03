@@ -5,11 +5,7 @@ import '../tables/productos_table.dart';
 
 part 'productos_dao.g.dart';
 
-@DriftAccessor(
-  tables: [
-    Productos,
-  ],
-)
+@DriftAccessor(tables: [Productos])
 class ProductosDao extends DatabaseAccessor<AppDatabase>
     with _$ProductosDaoMixin {
   ProductosDao(AppDatabase db) : super(db);
@@ -21,9 +17,7 @@ class ProductosDao extends DatabaseAccessor<AppDatabase>
 
   /// Obtener por ID
   Future<Producto?> obtenerPorId(int id) {
-    return (select(productos)
-      ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    return (select(productos)..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 
   /// Insertar
@@ -38,20 +32,13 @@ class ProductosDao extends DatabaseAccessor<AppDatabase>
 
   /// Actualizar solamente el stock
   Future<bool> actualizarStock(int id, int stock) {
-    return (update(productos)
-      ..where((t) => t.id.equals(id)))
-        .write(
-      ProductosCompanion(
-        stock: Value(stock),
-      ),
-    )
+    return (update(productos)..where((t) => t.id.equals(id)))
+        .write(ProductosCompanion(stock: Value(stock)))
         .then((cantidad) => cantidad > 0);
   }
 
   /// Eliminar
   Future<int> eliminar(int id) {
-    return (delete(productos)
-      ..where((t) => t.id.equals(id)))
-        .go();
+    return (delete(productos)..where((t) => t.id.equals(id))).go();
   }
 }

@@ -1,9 +1,4 @@
-﻿enum TipoComprobanteElectronico {
-  notaVenta,
-  boleta,
-  factura,
-  notaCredito,
-}
+enum TipoComprobanteElectronico { notaVenta, boleta, factura, notaCredito }
 
 enum EstadoComprobanteElectronico {
   pendiente,
@@ -200,21 +195,18 @@ class ComprobanteElectronico {
       total: total ?? this.total,
       metodoPago: metodoPago ?? this.metodoPago,
       estado: estado ?? this.estado,
-      codigoRespuestaSunat:
-          codigoRespuestaSunat ?? this.codigoRespuestaSunat,
+      codigoRespuestaSunat: codigoRespuestaSunat ?? this.codigoRespuestaSunat,
       mensajeRespuestaSunat:
           mensajeRespuestaSunat ?? this.mensajeRespuestaSunat,
       cdr: cdr ?? this.cdr,
       xml: xml ?? this.xml,
       fechaEnvioSunat: fechaEnvioSunat ?? this.fechaEnvioSunat,
-      fechaRespuestaSunat:
-          fechaRespuestaSunat ?? this.fechaRespuestaSunat,
+      fechaRespuestaSunat: fechaRespuestaSunat ?? this.fechaRespuestaSunat,
       comprobanteRelacionadoId:
           comprobanteRelacionadoId ?? this.comprobanteRelacionadoId,
       codigoMotivoNotaCredito:
           codigoMotivoNotaCredito ?? this.codigoMotivoNotaCredito,
-      motivoNotaCredito:
-          motivoNotaCredito ?? this.motivoNotaCredito,
+      motivoNotaCredito: motivoNotaCredito ?? this.motivoNotaCredito,
       observaciones: observaciones ?? this.observaciones,
     );
   }

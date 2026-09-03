@@ -83,9 +83,7 @@ class _CajaScreenState extends State<CajaScreen> {
           content: TextField(
             controller: controlador,
             autofocus: true,
-            keyboardType: const TextInputType.numberWithOptions(
-              decimal: true,
-            ),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: const InputDecoration(
               labelText: 'Monto inicial',
               prefixText: 'S/ ',
@@ -122,9 +120,7 @@ class _CajaScreenState extends State<CajaScreen> {
 
     if (monto == null) return;
 
-    await _repository.abrir(
-      montoInicial: monto,
-    );
+    await _repository.abrir(montoInicial: monto);
 
     await _cargarCaja();
   }
@@ -165,18 +161,12 @@ class _CajaScreenState extends State<CajaScreen> {
               children: [
                 const Text(
                   'Resumen de cierre',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 18),
 
-                _FilaCierre(
-                  titulo: 'Monto inicial',
-                  valor: caja.montoInicial,
-                ),
+                _FilaCierre(titulo: 'Monto inicial', valor: caja.montoInicial),
 
                 const SizedBox(height: 10),
 
@@ -206,7 +196,7 @@ class _CajaScreenState extends State<CajaScreen> {
                     prefixText: 'S/ ',
                     border: OutlineInputBorder(),
                     helperText:
-                    'Cuenta únicamente el dinero físico de la caja.',
+                        'Cuenta únicamente el dinero físico de la caja.',
                   ),
                 ),
               ],
@@ -253,18 +243,15 @@ class _CajaScreenState extends State<CajaScreen> {
 
     if (diferencia.abs() < 0.01) {
       titulo = 'Caja cuadrada';
-      mensaje =
-      'El dinero contado coincide exactamente con el saldo esperado.';
+      mensaje = 'El dinero contado coincide exactamente con el saldo esperado.';
       icono = Icons.check_circle;
     } else if (diferencia > 0) {
       titulo = 'Sobrante de caja';
-      mensaje =
-      'Hay más dinero físico del esperado.';
+      mensaje = 'Hay más dinero físico del esperado.';
       icono = Icons.trending_up;
     } else {
       titulo = 'Faltante de caja';
-      mensaje =
-      'Hay menos dinero físico del esperado.';
+      mensaje = 'Hay menos dinero físico del esperado.';
       icono = Icons.warning;
     }
 
@@ -280,9 +267,7 @@ class _CajaScreenState extends State<CajaScreen> {
             children: [
               Icon(icono),
               const SizedBox(width: 10),
-              Expanded(
-                child: Text(titulo),
-              ),
+              Expanded(child: Text(titulo)),
             ],
           ),
           content: SizedBox(
@@ -290,17 +275,11 @@ class _CajaScreenState extends State<CajaScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _FilaCierre(
-                  titulo: 'Saldo esperado',
-                  valor: saldoEsperado,
-                ),
+                _FilaCierre(titulo: 'Saldo esperado', valor: saldoEsperado),
 
                 const SizedBox(height: 10),
 
-                _FilaCierre(
-                  titulo: 'Monto contado',
-                  valor: monto,
-                ),
+                _FilaCierre(titulo: 'Monto contado', valor: monto),
 
                 const Divider(height: 28),
 
@@ -313,19 +292,14 @@ class _CajaScreenState extends State<CajaScreen> {
 
                 const SizedBox(height: 18),
 
-                Text(
-                  mensaje,
-                  textAlign: TextAlign.center,
-                ),
+                Text(mensaje, textAlign: TextAlign.center),
 
                 const SizedBox(height: 18),
 
                 const Text(
                   '¿Deseas cerrar definitivamente esta caja?',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -377,9 +351,7 @@ class _CajaScreenState extends State<CajaScreen> {
       // Una venta solamente afecta Caja si fue pagada en efectivo.
       //
       if (movimiento.tipo == 'VENTA') {
-        final metodo = movimiento.metodoPago
-            ?.trim()
-            .toLowerCase();
+        final metodo = movimiento.metodoPago?.trim().toLowerCase();
 
         if (metodo == 'efectivo') {
           total += movimiento.monto;
@@ -441,9 +413,7 @@ class _CajaScreenState extends State<CajaScreen> {
   @override
   Widget build(BuildContext context) {
     if (_cargando) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     final caja = _cajaActual;
@@ -457,26 +427,18 @@ class _CajaScreenState extends State<CajaScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.point_of_sale,
-              size: 64,
-            ),
+            const Icon(Icons.point_of_sale, size: 64),
 
             const SizedBox(height: 16),
 
             const Text(
               'No hay una caja abierta',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 8),
 
-            const Text(
-              'Abre una caja para comenzar a registrar movimientos.',
-            ),
+            const Text('Abre una caja para comenzar a registrar movimientos.'),
 
             const SizedBox(height: 24),
 
@@ -502,22 +464,15 @@ class _CajaScreenState extends State<CajaScreen> {
           // ----------------------------------------------------
           // ENCABEZADO
           // ----------------------------------------------------
-
           Row(
             children: [
-              const Icon(
-                Icons.point_of_sale,
-                size: 32,
-              ),
+              const Icon(Icons.point_of_sale, size: 32),
 
               const SizedBox(width: 12),
 
               const Text(
                 'Caja',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
 
               const Spacer(),
@@ -535,7 +490,6 @@ class _CajaScreenState extends State<CajaScreen> {
           // ----------------------------------------------------
           // RESUMEN
           // ----------------------------------------------------
-
           Row(
             children: [
               Expanded(
@@ -573,13 +527,9 @@ class _CajaScreenState extends State<CajaScreen> {
           // ----------------------------------------------------
           // TÍTULO MOVIMIENTOS
           // ----------------------------------------------------
-
           const Text(
             'Movimientos de caja',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 12),
@@ -587,52 +537,43 @@ class _CajaScreenState extends State<CajaScreen> {
           // ----------------------------------------------------
           // LISTA
           // ----------------------------------------------------
-
           Expanded(
             child: _movimientos.isEmpty
                 ? const Center(
-              child: Text(
-                'Todavía no hay movimientos registrados.',
-              ),
-            )
+                    child: Text('Todavía no hay movimientos registrados.'),
+                  )
                 : ListView.separated(
-              itemCount: _movimientos.length,
-              separatorBuilder: (_, __) =>
-              const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final movimiento = _movimientos[index];
+                    itemCount: _movimientos.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final movimiento = _movimientos[index];
 
-                final esEgreso =
-                    movimiento.tipo == 'EGRESO';
+                      final esEgreso = movimiento.tipo == 'EGRESO';
 
-                return ListTile(
-                  leading: CircleAvatar(
-                    child: Icon(
-                      esEgreso
-                          ? Icons.arrow_downward
-                          : Icons.arrow_upward,
-                    ),
+                      return ListTile(
+                        leading: CircleAvatar(
+                          child: Icon(
+                            esEgreso
+                                ? Icons.arrow_downward
+                                : Icons.arrow_upward,
+                          ),
+                        ),
+
+                        title: Text(movimiento.concepto),
+
+                        subtitle: Text(
+                          '${movimiento.tipo}'
+                          '${movimiento.metodoPago != null ? ' • ${movimiento.metodoPago}' : ''}',
+                        ),
+
+                        trailing: Text(
+                          '${esEgreso ? '-' : '+'} '
+                          'S/ ${movimiento.monto.toStringAsFixed(2)}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      );
+                    },
                   ),
-
-                  title: Text(
-                    movimiento.concepto,
-                  ),
-
-                  subtitle: Text(
-                    '${movimiento.tipo}'
-                        '${movimiento.metodoPago != null ? ' • ${movimiento.metodoPago}' : ''}',
-                  ),
-
-                  trailing: Text(
-                    '${esEgreso ? '-' : '+'} '
-                        'S/ ${movimiento.monto.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                );
-              },
-            ),
           ),
         ],
       ),
@@ -671,8 +612,7 @@ class _FilaCierre extends StatelessWidget {
         Text(
           titulo,
           style: TextStyle(
-            fontWeight:
-            destacado ? FontWeight.bold : FontWeight.normal,
+            fontWeight: destacado ? FontWeight.bold : FontWeight.normal,
             fontSize: destacado ? 16 : 14,
           ),
         ),
@@ -680,8 +620,7 @@ class _FilaCierre extends StatelessWidget {
         Text(
           '${signo}S/ ${valor.toStringAsFixed(2)}',
           style: TextStyle(
-            fontWeight:
-            destacado ? FontWeight.bold : FontWeight.bold,
+            fontWeight: destacado ? FontWeight.bold : FontWeight.bold,
             fontSize: destacado ? 18 : 16,
           ),
         ),
@@ -712,10 +651,7 @@ class _ResumenCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Row(
           children: [
-            Icon(
-              icono,
-              size: 32,
-            ),
+            Icon(icono, size: 32),
 
             const SizedBox(width: 16),
 
@@ -723,12 +659,7 @@ class _ResumenCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    titulo,
-                    style: const TextStyle(
-                      fontSize: 14,
-                    ),
-                  ),
+                  Text(titulo, style: const TextStyle(fontSize: 14)),
 
                   const SizedBox(height: 6),
 

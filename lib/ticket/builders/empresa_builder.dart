@@ -5,11 +5,7 @@ import '../../models/ticket.dart';
 class EmpresaBuilder {
   const EmpresaBuilder();
 
-  void build(
-      Generator generator,
-      List<int> bytes,
-      Ticket ticket,
-      ) {
+  void build(Generator generator, List<int> bytes, Ticket ticket) {
     bytes.addAll(
       generator.text(
         ticket.empresa.nombre,
@@ -26,9 +22,7 @@ class EmpresaBuilder {
       bytes.addAll(
         generator.text(
           ticket.empresa.eslogan,
-          styles: const PosStyles(
-            align: PosAlign.center,
-          ),
+          styles: const PosStyles(align: PosAlign.center),
         ),
       );
     }
@@ -37,10 +31,7 @@ class EmpresaBuilder {
       bytes.addAll(
         generator.text(
           ticket.empresa.instagram,
-          styles: const PosStyles(
-            align: PosAlign.center,
-            bold: true,
-          ),
+          styles: const PosStyles(align: PosAlign.center, bold: true),
         ),
       );
     }

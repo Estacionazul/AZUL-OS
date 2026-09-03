@@ -21,9 +21,7 @@ class SidebarMenu extends StatelessWidget {
     required this.onItemSelected,
   });
 
-  Future<Map<String, bool>> _cargarPermisos(
-      BuildContext context,
-      ) async {
+  Future<Map<String, bool>> _cargarPermisos(BuildContext context) async {
     final sesion = SesionService.instancia;
 
     // ==========================================================
@@ -58,8 +56,7 @@ class SidebarMenu extends StatelessWidget {
     // CAJERO: consultar permisos guardados en la base de datos
     // ==========================================================
 
-    final repository =
-    context.read<PermisosUsuarioRepository>();
+    final repository = context.read<PermisosUsuarioRepository>();
 
     final usuarioId = sesion.idUsuario!;
 
@@ -113,11 +110,8 @@ class SidebarMenu extends StatelessWidget {
               child: FutureBuilder<Map<String, bool>>(
                 future: _cargarPermisos(context),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
                   }
 
                   if (snapshot.hasError) {
@@ -137,7 +131,6 @@ class SidebarMenu extends StatelessWidget {
                         // ==================================================
                         // CENTRO DE CONTROL
                         // ==================================================
-
                         if (SesionService.instancia.esCEO)
                           SidebarMenuItem(
                             icon: Icons.dashboard_rounded,
@@ -147,9 +140,8 @@ class SidebarMenu extends StatelessWidget {
                           ),
 
                         // ==================================================
-// CAFETERÍA
-// ==================================================
-
+                        // CAFETERÍA
+                        // ==================================================
                         if (permisos['CAFETERIA'] == true)
                           SidebarMenuItem(
                             icon: Icons.local_cafe_rounded,
@@ -161,7 +153,6 @@ class SidebarMenu extends StatelessWidget {
                         // ==================================================
                         // PRODUCTOS
                         // ==================================================
-
                         if (permisos['PRODUCTOS'] == true)
                           SidebarMenuItem(
                             icon: Icons.shopping_bag_rounded,
@@ -173,7 +164,6 @@ class SidebarMenu extends StatelessWidget {
                         // ==================================================
                         // INVENTARIO
                         // ==================================================
-
                         if (permisos['INVENTARIO'] == true)
                           SidebarMenuItem(
                             icon: Icons.inventory_2_rounded,
@@ -183,9 +173,8 @@ class SidebarMenu extends StatelessWidget {
                           ),
 
                         // ==================================================
-// RECETAS
-// ==================================================
-
+                        // RECETAS
+                        // ==================================================
                         if (permisos['RECETAS'] == true)
                           SidebarMenuItem(
                             icon: Icons.restaurant_menu_rounded,
@@ -194,10 +183,9 @@ class SidebarMenu extends StatelessWidget {
                             onTap: () => onItemSelected(4),
                           ),
 
-// ==================================================
-// PRODUCCIÓN
-// ==================================================
-
+                        // ==================================================
+                        // PRODUCCIÓN
+                        // ==================================================
                         if (permisos['PRODUCCION'] == true)
                           SidebarMenuItem(
                             icon: Icons.factory_rounded,
@@ -209,7 +197,6 @@ class SidebarMenu extends StatelessWidget {
                         // ==================================================
                         // PEDIDOS
                         // ==================================================
-
                         if (permisos['PEDIDOS'] == true)
                           SidebarMenuItem(
                             icon: Icons.receipt_long_rounded,
@@ -217,9 +204,9 @@ class SidebarMenu extends StatelessWidget {
                             selected: selectedIndex == 6,
                             onTap: () => onItemSelected(6),
                           ),
+
                         // VENTAS
                         // ==================================================
-
                         if (permisos['VENTAS'] == true)
                           SidebarMenuItem(
                             icon: Icons.receipt_long_rounded,
@@ -231,7 +218,6 @@ class SidebarMenu extends StatelessWidget {
                         // ==================================================
                         // CLIENTES
                         // ==================================================
-
                         if (permisos['CLIENTES'] == true)
                           SidebarMenuItem(
                             icon: Icons.people_alt_rounded,
@@ -243,7 +229,6 @@ class SidebarMenu extends StatelessWidget {
                         // ==================================================
                         // CAJA
                         // ==================================================
-
                         if (permisos['CAJA'] == true)
                           SidebarMenuItem(
                             icon: Icons.point_of_sale_rounded,
@@ -255,7 +240,6 @@ class SidebarMenu extends StatelessWidget {
                         // ==================================================
                         // REPORTES
                         // ==================================================
-
                         if (permisos['REPORTES'] == true)
                           SidebarMenuItem(
                             icon: Icons.bar_chart_rounded,

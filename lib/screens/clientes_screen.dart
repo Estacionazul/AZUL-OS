@@ -5,6 +5,7 @@ import '../models/cliente.dart';
 import '../services/clientes_service.dart';
 import '../widgets/dialogs/cliente_dialog.dart';
 import '../widgets/dialogs/cliente_detalle_dialog.dart';
+import '../widgets/module_header.dart';
 
 class ClientesScreen extends StatefulWidget {
   const ClientesScreen({super.key});
@@ -16,8 +17,7 @@ class ClientesScreen extends StatefulWidget {
 class _ClientesScreenState extends State<ClientesScreen> {
   List<ClienteModel> clientes = [];
 
-  final TextEditingController _buscarController =
-  TextEditingController();
+  final TextEditingController _buscarController = TextEditingController();
 
   bool cargando = true;
 
@@ -34,8 +34,7 @@ class _ClientesScreenState extends State<ClientesScreen> {
   }
 
   Future<void> cargarClientes() async {
-    final lista =
-    await context.read<ClientesService>().obtenerClientes();
+    final lista = await context.read<ClientesService>().obtenerClientes();
 
     if (!mounted) return;
 
@@ -53,9 +52,7 @@ class _ClientesScreenState extends State<ClientesScreen> {
       return;
     }
 
-    final lista = await context
-        .read<ClientesService>()
-        .buscarPorNombre(texto);
+    final lista = await context.read<ClientesService>().buscarPorNombre(texto);
 
     debugPrint("Clientes encontrados: ${lista.length}");
 
@@ -79,31 +76,22 @@ class _ClientesScreenState extends State<ClientesScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment:
-              MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Clientes",
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    await showDialog(
-                      context: context,
-                      builder: (_) =>
-                      const ClienteDialog(),
-                    );
+            ModuleHeader(
+              icon: Icons.people_alt_rounded,
+              title: 'Clientes',
+              subtitle: 'Gestiona tus clientes y su información',
+              trailing: FilledButton.icon(
+                onPressed: () async {
+                  await showDialog(
+                    context: context,
+                    builder: (_) => const ClienteDialog(),
+                  );
 
-                    await cargarClientes();
-                  },
-                  icon: const Icon(Icons.person_add),
-                  label: const Text("Nuevo cliente"),
-                ),
-              ],
+                  await cargarClientes();
+                },
+                icon: const Icon(Icons.person_add),
+                label: const Text('Nuevo cliente'),
+              ),
             ),
 
             const SizedBox(height: 25),
@@ -112,13 +100,10 @@ class _ClientesScreenState extends State<ClientesScreen> {
               controller: _buscarController,
               onChanged: buscarClientes,
               decoration: InputDecoration(
-                hintText:
-                "Buscar por nombre, teléfono o DNI...",
-                prefixIcon:
-                const Icon(Icons.search),
+                hintText: "Buscar por nombre, teléfono o DNI...",
+                prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
@@ -129,23 +114,18 @@ class _ClientesScreenState extends State<ClientesScreen> {
               child: Card(
                 elevation: 2,
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                  BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(15),
                 ),
                 child: Builder(
                   builder: (_) {
                     if (cargando) {
-                      return const Center(
-                        child:
-                        CircularProgressIndicator(),
-                      );
+                      return const Center(child: CircularProgressIndicator());
                     }
 
                     if (clientes.isEmpty) {
                       return const Center(
                         child: Column(
-                          mainAxisAlignment:
-                          MainAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               Icons.people_outline,
@@ -157,59 +137,42 @@ class _ClientesScreenState extends State<ClientesScreen> {
                               "No hay clientes registrados",
                               style: TextStyle(
                                 fontSize: 22,
-                                fontWeight:
-                                FontWeight.bold,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                             SizedBox(height: 10),
-                            Text(
-                              "Presiona 'Nuevo cliente' para comenzar.",
-                            ),
+                            Text("Presiona 'Nuevo cliente' para comenzar."),
                           ],
                         ),
                       );
                     }
 
                     return ListView.separated(
-                      padding:
-                      const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       itemCount: clientes.length,
-                      separatorBuilder: (_, __) =>
-                      const SizedBox(height: 12),
-                      itemBuilder:
-                          (context, index) {
-                        final cliente =
-                        clientes[index];
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final cliente = clientes[index];
 
                         return Card(
                           elevation: 1,
                           child: ListTile(
-                            leading:
-                            const CircleAvatar(
-                              child:
-                              Icon(Icons.person),
+                            leading: const CircleAvatar(
+                              child: Icon(Icons.person),
                             ),
                             title: Text(
                               cliente.nombre,
                               style: const TextStyle(
-                                fontWeight:
-                                FontWeight.bold,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                             subtitle: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment
-                                  .start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (cliente
-                                    .telefono
-                                    .isNotEmpty)
-                                  Text(
-                                      "📱 ${cliente.telefono}"),
-                                if (cliente.dni !=
-                                    null)
-                                  Text(
-                                      "DNI: ${cliente.dni}"),
+                                if (cliente.telefono.isNotEmpty)
+                                  Text("📱 ${cliente.telefono}"),
+                                if (cliente.dni != null)
+                                  Text("DNI: ${cliente.dni}"),
                               ],
                             ),
                             trailing: PopupMenuButton<String>(
@@ -224,9 +187,8 @@ class _ClientesScreenState extends State<ClientesScreen> {
                                         onEditar: () async {
                                           await showDialog(
                                             context: context,
-                                            builder: (_) => ClienteDialog(
-                                              cliente: cliente,
-                                            ),
+                                            builder: (_) =>
+                                                ClienteDialog(cliente: cliente),
                                           );
 
                                           await cargarClientes();
@@ -236,20 +198,30 @@ class _ClientesScreenState extends State<ClientesScreen> {
                                           final confirmar = await showDialog<bool>(
                                             context: context,
                                             builder: (_) => AlertDialog(
-                                              title: const Text("Eliminar cliente"),
+                                              title: const Text(
+                                                "Eliminar cliente",
+                                              ),
                                               content: Text(
                                                 "¿Deseas eliminar a '${cliente.nombre}'?\n\nEsta acción no se puede deshacer.",
                                               ),
                                               actions: [
                                                 TextButton(
-                                                  onPressed: () => Navigator.pop(context, false),
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                        context,
+                                                        false,
+                                                      ),
                                                   child: const Text("Cancelar"),
                                                 ),
                                                 FilledButton(
                                                   style: FilledButton.styleFrom(
                                                     backgroundColor: Colors.red,
                                                   ),
-                                                  onPressed: () => Navigator.pop(context, true),
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                        context,
+                                                        true,
+                                                      ),
                                                   child: const Text("Eliminar"),
                                                 ),
                                               ],
@@ -264,7 +236,9 @@ class _ClientesScreenState extends State<ClientesScreen> {
                                             await cargarClientes();
 
                                             if (context.mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
                                                 const SnackBar(
                                                   content: Text(
                                                     "Cliente eliminado correctamente",
@@ -282,9 +256,8 @@ class _ClientesScreenState extends State<ClientesScreen> {
                                   case "editar":
                                     await showDialog(
                                       context: context,
-                                      builder: (_) => ClienteDialog(
-                                        cliente: cliente,
-                                      ),
+                                      builder: (_) =>
+                                          ClienteDialog(cliente: cliente),
                                     );
 
                                     await cargarClientes();
@@ -301,14 +274,16 @@ class _ClientesScreenState extends State<ClientesScreen> {
                                           ),
                                           actions: [
                                             TextButton(
-                                              onPressed: () => Navigator.pop(context, false),
+                                              onPressed: () =>
+                                                  Navigator.pop(context, false),
                                               child: const Text("Cancelar"),
                                             ),
                                             FilledButton(
                                               style: FilledButton.styleFrom(
                                                 backgroundColor: Colors.red,
                                               ),
-                                              onPressed: () => Navigator.pop(context, true),
+                                              onPressed: () =>
+                                                  Navigator.pop(context, true),
                                               child: const Text("Eliminar"),
                                             ),
                                           ],
@@ -324,7 +299,9 @@ class _ClientesScreenState extends State<ClientesScreen> {
                                       await cargarClientes();
 
                                       if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
                                           const SnackBar(
                                             content: Text(
                                               "Cliente eliminado correctamente",

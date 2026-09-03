@@ -26,19 +26,13 @@ class InventarioService {
 
   Insumo? buscarPorCodigo(String codigo) {
     try {
-      return _insumos.firstWhere(
-            (i) => i.codigo == codigo,
-      );
+      return _insumos.firstWhere((i) => i.codigo == codigo);
     } catch (_) {
       return null;
     }
   }
 
-  List<Insumo> obtenerStockBajo({
-    double minimo = 5,
-  }) {
-    return _insumos.where(
-          (i) => i.stock <= minimo,
-    ).toList();
+  List<Insumo> obtenerStockBajo({double minimo = 5}) {
+    return _insumos.where((i) => i.stock <= minimo).toList();
   }
 }

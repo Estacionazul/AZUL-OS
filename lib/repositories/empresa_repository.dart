@@ -6,8 +6,7 @@ import '../models/empresa_model.dart';
 class EmpresaRepository {
   final EmpresaDao _dao;
 
-  EmpresaRepository(AppDatabase database)
-      : _dao = EmpresaDao(database);
+  EmpresaRepository(AppDatabase database) : _dao = EmpresaDao(database);
 
   /// Obtiene la configuración del negocio.
   Future<EmpresaModel?> obtener() async {
@@ -22,16 +21,12 @@ class EmpresaRepository {
 
   /// Guarda una nueva configuración.
   Future<void> guardar(EmpresaModel empresa) {
-    return _dao.guardarEmpresa(
-      EmpresaMapper.toCompanion(empresa),
-    );
+    return _dao.guardarEmpresa(EmpresaMapper.toCompanion(empresa));
   }
 
   /// Actualiza la configuración.
   Future<bool> actualizar(EmpresaModel empresa) {
-    return _dao.actualizarEmpresa(
-      EmpresaMapper.toCompanion(empresa),
-    );
+    return _dao.actualizarEmpresa(EmpresaMapper.toCompanion(empresa));
   }
 
   // ==========================================================
@@ -42,9 +37,7 @@ class EmpresaRepository {
     final empresa = await obtener();
 
     if (empresa == null) {
-      throw StateError(
-        'No existe la configuración de la empresa.',
-      );
+      throw StateError('No existe la configuración de la empresa.');
     }
 
     final numero = empresa.correlativoBoleta;
@@ -60,9 +53,7 @@ class EmpresaRepository {
     final empresa = await obtener();
 
     if (empresa == null) {
-      throw StateError(
-        'No existe la configuración de la empresa.',
-      );
+      throw StateError('No existe la configuración de la empresa.');
     }
 
     final numero = empresa.correlativoFactura;
@@ -78,9 +69,7 @@ class EmpresaRepository {
     final empresa = await obtener();
 
     if (empresa == null) {
-      throw StateError(
-        'No existe la configuración de la empresa.',
-      );
+      throw StateError('No existe la configuración de la empresa.');
     }
 
     final actualizada = EmpresaModel(
@@ -104,9 +93,7 @@ class EmpresaRepository {
     final actualizado = await actualizar(actualizada);
 
     if (!actualizado) {
-      throw StateError(
-        'No se pudo actualizar el correlativo de Boleta.',
-      );
+      throw StateError('No se pudo actualizar el correlativo de Boleta.');
     }
   }
 
@@ -118,9 +105,7 @@ class EmpresaRepository {
     final empresa = await obtener();
 
     if (empresa == null) {
-      throw StateError(
-        'No existe la configuración de la empresa.',
-      );
+      throw StateError('No existe la configuración de la empresa.');
     }
 
     final actualizada = EmpresaModel(
@@ -144,9 +129,7 @@ class EmpresaRepository {
     final actualizado = await actualizar(actualizada);
 
     if (!actualizado) {
-      throw StateError(
-        'No se pudo actualizar el correlativo de Factura.',
-      );
+      throw StateError('No se pudo actualizar el correlativo de Factura.');
     }
   }
 }

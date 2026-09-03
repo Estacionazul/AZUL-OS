@@ -10,7 +10,6 @@ class SidebarLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-
         Container(
           width: 78,
           height: 78,
@@ -44,11 +43,7 @@ class SidebarLogo extends StatelessWidget {
         const Text(
           "La plataforma integral\npara Estación Azul",
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white70,
-            height: 1.4,
-            fontSize: 13,
-          ),
+          style: TextStyle(color: Colors.white70, height: 1.4, fontSize: 13),
         ),
       ],
     );

@@ -18,10 +18,7 @@ class PagoCliente extends StatefulWidget {
 
 class _PagoClienteState extends State<PagoCliente> {
   double get montoIngresado {
-    return double.tryParse(
-      widget.controller.text.replaceAll(",", "."),
-    ) ??
-        0;
+    return double.tryParse(widget.controller.text.replaceAll(",", ".")) ?? 0;
   }
 
   double get vuelto {
@@ -72,18 +69,11 @@ class _PagoClienteState extends State<PagoCliente> {
         ),
         child: Column(
           children: [
-            const Icon(
-              Icons.qr_code_2,
-              size: 90,
-              color: Color(0xff0A2E6E),
-            ),
+            const Icon(Icons.qr_code_2, size: 90, color: Color(0xff0A2E6E)),
             const SizedBox(height: 15),
             Text(
               "Pago mediante ${widget.metodoPago}",
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             const Text(
@@ -100,19 +90,14 @@ class _PagoClienteState extends State<PagoCliente> {
       children: [
         const Text(
           "Cliente paga",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
 
         const SizedBox(height: 10),
 
         TextField(
           controller: widget.controller,
-          keyboardType: const TextInputType.numberWithOptions(
-            decimal: true,
-          ),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: const InputDecoration(
             prefixText: "S/. ",
             border: OutlineInputBorder(),

@@ -25,18 +25,15 @@ class DetalleVentas extends Table {
   // Cantidad
   //==========================
 
-  IntColumn get cantidad =>
-      integer().withDefault(const Constant(1))();
+  IntColumn get cantidad => integer().withDefault(const Constant(1))();
 
   //==========================
   // Precio
   //==========================
 
-  RealColumn get precioUnitario =>
-      real().withDefault(const Constant(0))();
+  RealColumn get precioUnitario => real().withDefault(const Constant(0))();
 
-  RealColumn get subtotal =>
-      real().withDefault(const Constant(0))();
+  RealColumn get subtotal => real().withDefault(const Constant(0))();
 
   //==========================
   // Personalización
@@ -50,8 +47,7 @@ class DetalleVentas extends Table {
 
   TextColumn get infusion => text().nullable()();
 
-  BoolColumn get extraShot =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get extraShot => boolean().withDefault(const Constant(false))();
 
   TextColumn get observaciones => text().nullable()();
 }

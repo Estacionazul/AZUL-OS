@@ -3,11 +3,7 @@ import 'package:drift/drift.dart';
 import '../database/app_database.dart';
 
 class JugosSeed {
-  static Future<void> cargar(
-      AppDatabase db,
-      int categoriaId,
-      ) async {
-
+  static Future<void> cargar(AppDatabase db, int categoriaId) async {
     // ==========================================================
     // INSERTAR SOLO PRODUCTOS QUE NO EXISTAN
     // ==========================================================
@@ -19,25 +15,26 @@ class JugosSeed {
       required double precioVenta,
       required String emoji,
     }) async {
-
-      final existente = await (db.select(db.productos)
-        ..where((p) => p.codigo.equals(codigo)))
-          .getSingleOrNull();
+      final existente = await (db.select(
+        db.productos,
+      )..where((p) => p.codigo.equals(codigo))).getSingleOrNull();
 
       if (existente != null) {
         return;
       }
 
-      await db.into(db.productos).insert(
-        ProductosCompanion.insert(
-          codigo: codigo,
-          nombre: nombre,
-          categoriaId: categoriaId,
-          costo: costo,
-          precioVenta: precioVenta,
-          emoji: Value(emoji),
-        ),
-      );
+      await db
+          .into(db.productos)
+          .insert(
+            ProductosCompanion.insert(
+              codigo: codigo,
+              nombre: nombre,
+              categoriaId: categoriaId,
+              costo: costo,
+              precioVenta: precioVenta,
+              emoji: Value(emoji),
+            ),
+          );
     }
 
     // ==========================================================
@@ -124,9 +121,9 @@ class JugosSeed {
     // VERIFICACIÓN
     // ==========================================================
 
-    final productos = await (db.select(db.productos)
-      ..where((p) => p.categoriaId.equals(categoriaId)))
-        .get();
+    final productos = await (db.select(
+      db.productos,
+    )..where((p) => p.categoriaId.equals(categoriaId))).get();
 
     print("====================================");
     print("JUGOS REGISTRADOS: ${productos.length}");
@@ -134,8 +131,8 @@ class JugosSeed {
     for (final producto in productos) {
       print(
         "${producto.codigo} - "
-            "${producto.nombre} - "
-            "S/. ${producto.precioVenta.toStringAsFixed(2)}",
+        "${producto.nombre} - "
+        "S/. ${producto.precioVenta.toStringAsFixed(2)}",
       );
     }
 

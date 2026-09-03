@@ -37,10 +37,7 @@ class TicketPrintService {
   }
 
   TicketHeader _crearHeader(Venta venta) {
-    return TicketHeader(
-      numero: venta.numero,
-      fecha: venta.fecha,
-    );
+    return TicketHeader(numero: venta.numero, fecha: venta.fecha);
   }
 
   TicketCliente _crearCliente(Venta venta) {
@@ -81,8 +78,7 @@ class TicketPrintService {
       opciones.add('Extra Shot');
     }
 
-    if (item.observaciones != null &&
-        item.observaciones!.trim().isNotEmpty) {
+    if (item.observaciones != null && item.observaciones!.trim().isNotEmpty) {
       opciones.add('Observación: ${item.observaciones}');
     }
 
@@ -104,9 +100,6 @@ class TicketPrintService {
   }
 
   TicketFooter _crearFooter() {
-    return const TicketFooter(
-      mensaje: _mensaje,
-      frase: _frase,
-    );
+    return const TicketFooter(mensaje: _mensaje, frase: _frase);
   }
 }

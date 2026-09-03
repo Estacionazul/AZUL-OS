@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../database/app_database.dart';
 import '../../repositories/cajas_repository.dart';
+import '../../widgets/module_header.dart';
 
 class CajaScreen extends StatefulWidget {
   const CajaScreen({super.key});
@@ -34,9 +35,11 @@ class _CajaScreenState extends State<CajaScreen> {
   // ==========================================================
 
   Future<void> _cargarCaja() async {
-    setState(() {
-      _cargando = true;
-    });
+    if (mounted) {
+      setState(() {
+        _cargando = true;
+      });
+    }
 
     final caja = await _repository.obtenerAbierta();
 
@@ -47,30 +50,12 @@ class _CajaScreenState extends State<CajaScreen> {
       await _repository.obtenerMovimientos(caja.id);
 
       movimientos = todosLosMovimientos.where((movimiento) {
-        // ----------------------------------------------------------
-        // VENTAS
-        // ----------------------------------------------------------
-        //
-        // TODAS las ventas deben aparecer en el historial de Caja.
-        //
-        // El método de pago NO determina si la venta se muestra.
-        //
-        // El método de pago solamente determina si afecta
-        // el EFECTIVO ESPERADO, lo cual se calcula en
-        // _totalMovimientos().
-        // ----------------------------------------------------------
-
+        // Todas las ventas aparecen en el historial de Caja.
         if (movimiento.tipo == 'VENTA') {
           return true;
         }
 
-        // ----------------------------------------------------------
-        // INGRESOS Y EGRESOS
-        // ----------------------------------------------------------
-        //
-        // Ambos representan movimientos físicos de efectivo.
-        // ----------------------------------------------------------
-
+        // Los ingresos y egresos manuales también aparecen.
         if (movimiento.tipo == 'INGRESO') {
           return true;
         }
@@ -79,14 +64,7 @@ class _CajaScreenState extends State<CajaScreen> {
           return true;
         }
 
-        // ----------------------------------------------------------
-        // OTROS TIPOS
-        // ----------------------------------------------------------
-        //
-        // APERTURA y CIERRE no se muestran como movimientos
-        // operativos del historial.
-        // ----------------------------------------------------------
-
+        // Apertura, cierre u otros movimientos no se muestran.
         return false;
       }).toList();
     }
@@ -128,7 +106,8 @@ class _CajaScreenState extends State<CajaScreen> {
               labelText: 'Monto inicial',
               prefixText: 'S/ ',
               border: OutlineInputBorder(),
-              helperText: 'Ingresa el efectivo con el que inicia la caja.',
+              helperText:
+              'Ingresa el efectivo con el que inicia la caja.',
             ),
           ),
           actions: [
@@ -160,9 +139,7 @@ class _CajaScreenState extends State<CajaScreen> {
 
     if (monto == null) return;
 
-    await _repository.abrir(
-      montoInicial: monto,
-    );
+    await _repository.abrir(montoInicial: monto);
 
     await _cargarCaja();
   }
@@ -180,9 +157,9 @@ class _CajaScreenState extends State<CajaScreen> {
 
     final controlador = TextEditingController();
 
-    // ----------------------------------------------------------
-    // PRIMERA VENTANA: INGRESAR DINERO CONTADO
-    // ----------------------------------------------------------
+    // ========================================================
+    // PRIMERA VENTANA: DINERO CONTADO
+    // ========================================================
 
     final monto = await showDialog<double>(
       context: context,
@@ -208,31 +185,23 @@ class _CajaScreenState extends State<CajaScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 const SizedBox(height: 18),
-
                 _FilaCierre(
                   titulo: 'Monto inicial',
                   valor: caja.montoInicial,
                 ),
-
                 const SizedBox(height: 10),
-
                 _FilaCierre(
                   titulo: 'Movimientos de efectivo',
                   valor: _totalMovimientos(),
                 ),
-
                 const Divider(height: 28),
-
                 _FilaCierre(
                   titulo: 'SALDO ESPERADO',
                   valor: saldoEsperado,
                   destacado: true,
                 ),
-
                 const SizedBox(height: 22),
-
                 TextField(
                   controller: controlador,
                   autofocus: true,
@@ -279,9 +248,9 @@ class _CajaScreenState extends State<CajaScreen> {
 
     if (monto == null) return;
 
-    // ----------------------------------------------------------
+    // ========================================================
     // CALCULAR DIFERENCIA
-    // ----------------------------------------------------------
+    // ========================================================
 
     final diferencia = monto - saldoEsperado;
 
@@ -296,19 +265,17 @@ class _CajaScreenState extends State<CajaScreen> {
       icono = Icons.check_circle;
     } else if (diferencia > 0) {
       titulo = 'Sobrante de caja';
-      mensaje =
-      'Hay más dinero físico del esperado.';
+      mensaje = 'Hay más dinero físico del esperado.';
       icono = Icons.trending_up;
     } else {
       titulo = 'Faltante de caja';
-      mensaje =
-      'Hay menos dinero físico del esperado.';
+      mensaje = 'Hay menos dinero físico del esperado.';
       icono = Icons.warning;
     }
 
-    // ----------------------------------------------------------
+    // ========================================================
     // SEGUNDA VENTANA: CONFIRMAR CIERRE
-    // ----------------------------------------------------------
+    // ========================================================
 
     final confirmar = await showDialog<bool>(
       context: context,
@@ -318,9 +285,7 @@ class _CajaScreenState extends State<CajaScreen> {
             children: [
               Icon(icono),
               const SizedBox(width: 10),
-              Expanded(
-                child: Text(titulo),
-              ),
+              Expanded(child: Text(titulo)),
             ],
           ),
           content: SizedBox(
@@ -332,32 +297,24 @@ class _CajaScreenState extends State<CajaScreen> {
                   titulo: 'Saldo esperado',
                   valor: saldoEsperado,
                 ),
-
                 const SizedBox(height: 10),
-
                 _FilaCierre(
                   titulo: 'Monto contado',
                   valor: monto,
                 ),
-
                 const Divider(height: 28),
-
                 _FilaCierre(
                   titulo: 'Diferencia',
                   valor: diferencia,
                   mostrarSigno: true,
                   destacado: true,
                 ),
-
                 const SizedBox(height: 18),
-
                 Text(
                   mensaje,
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 18),
-
                 const Text(
                   '¿Deseas cerrar definitivamente esta caja?',
                   textAlign: TextAlign.center,
@@ -385,9 +342,9 @@ class _CajaScreenState extends State<CajaScreen> {
 
     if (confirmar != true) return;
 
-    // ----------------------------------------------------------
+    // ========================================================
     // GUARDAR CIERRE
-    // ----------------------------------------------------------
+    // ========================================================
 
     final cajaCerrada = caja.copyWith(
       fechaCierre: Value(DateTime.now()),
@@ -408,16 +365,12 @@ class _CajaScreenState extends State<CajaScreen> {
     double total = 0;
 
     for (final movimiento in _movimientos) {
-      // --------------------------------------------------------
       // VENTA
-      // --------------------------------------------------------
-      //
-      // Una venta solamente afecta Caja si fue pagada en efectivo.
-      //
+      // Solamente las ventas pagadas en efectivo
+      // afectan el efectivo esperado.
+
       if (movimiento.tipo == 'VENTA') {
-        final metodo = movimiento.metodoPago
-            ?.trim()
-            .toLowerCase();
+        final metodo = movimiento.metodoPago?.trim().toLowerCase();
 
         if (metodo == 'efectivo') {
           total += movimiento.monto;
@@ -426,35 +379,19 @@ class _CajaScreenState extends State<CajaScreen> {
         continue;
       }
 
-      // --------------------------------------------------------
       // INGRESO
-      // --------------------------------------------------------
-      //
-      // Los ingresos manuales representan entrada de efectivo.
-      //
+
       if (movimiento.tipo == 'INGRESO') {
         total += movimiento.monto;
         continue;
       }
 
-      // --------------------------------------------------------
       // EGRESO
-      // --------------------------------------------------------
-      //
-      // Los egresos manuales representan salida de efectivo.
-      //
+
       if (movimiento.tipo == 'EGRESO') {
         total -= movimiento.monto;
         continue;
       }
-
-      // --------------------------------------------------------
-      // OTROS TIPOS
-      // --------------------------------------------------------
-      //
-      // APERTURA, CIERRE u otros movimientos no modifican
-      // el efectivo esperado.
-      //
     }
 
     return total;
@@ -520,13 +457,10 @@ class _CajaScreenState extends State<CajaScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
                 TextField(
                   controller: montoController,
-                  keyboardType:
-                  const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -545,11 +479,9 @@ class _CajaScreenState extends State<CajaScreen> {
               },
               child: const Text('Cancelar'),
             ),
-
             FilledButton.icon(
               onPressed: () {
-                final concepto =
-                conceptoController.text.trim();
+                final concepto = conceptoController.text.trim();
 
                 final monto = double.tryParse(
                   montoController.text.replaceAll(',', '.'),
@@ -571,7 +503,9 @@ class _CajaScreenState extends State<CajaScreen> {
               },
               icon: Icon(icono),
               label: Text(
-                esIngreso ? 'Registrar ingreso' : 'Registrar egreso',
+                esIngreso
+                    ? 'Registrar ingreso'
+                    : 'Registrar egreso',
               ),
             ),
           ],
@@ -584,15 +518,12 @@ class _CajaScreenState extends State<CajaScreen> {
 
     if (resultado == null) return;
 
-    final concepto =
-    resultado['concepto'] as String;
-
-    final monto =
-    resultado['monto'] as double;
+    final concepto = resultado['concepto'] as String;
+    final monto = resultado['monto'] as double;
 
     // ==========================================================
-// VALIDAR EFECTIVO DISPONIBLE PARA EGRESOS
-// ==========================================================
+    // VALIDAR EFECTIVO DISPONIBLE PARA EGRESOS
+    // ==========================================================
 
     if (!esIngreso) {
       final efectivoDisponible = _saldoEsperado();
@@ -605,7 +536,8 @@ class _CajaScreenState extends State<CajaScreen> {
             backgroundColor: Colors.red,
             content: Text(
               'Efectivo insuficiente. '
-                  'Disponible: S/ ${efectivoDisponible.toStringAsFixed(2)}',
+                  'Disponible: S/ '
+                  '${efectivoDisponible.toStringAsFixed(2)}',
             ),
           ),
         );
@@ -650,37 +582,55 @@ class _CajaScreenState extends State<CajaScreen> {
     // ========================================================
 
     if (caja == null) {
-      return Center(
+      return Padding(
+        padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
-              Icons.point_of_sale,
-              size: 64,
+            const ModuleHeader(
+              icon: Icons.point_of_sale,
+              title: 'Caja',
+              subtitle: 'Gestiona la caja y los movimientos de efectivo',
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 32),
 
-            const Text(
-              'No hay una caja abierta',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.point_of_sale,
+                      size: 64,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    const Text(
+                      'No hay una caja abierta',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    const Text(
+                      'Abre una caja para comenzar a registrar movimientos.',
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    FilledButton.icon(
+                      onPressed: _abrirCaja,
+                      icon: const Icon(Icons.lock_open),
+                      label: const Text('Abrir caja'),
+                    ),
+                  ],
+                ),
               ),
-            ),
-
-            const SizedBox(height: 8),
-
-            const Text(
-              'Abre una caja para comenzar a registrar movimientos.',
-            ),
-
-            const SizedBox(height: 24),
-
-            FilledButton.icon(
-              onPressed: _abrirCaja,
-              icon: const Icon(Icons.lock_open),
-              label: const Text('Abrir caja'),
             ),
           ],
         ),
@@ -696,42 +646,26 @@ class _CajaScreenState extends State<CajaScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ----------------------------------------------------
-          // ENCABEZADO
-          // ----------------------------------------------------
+          // ======================================================
+          // ENCABEZADO DEL MÓDULO
+          // ======================================================
 
-          Row(
-            children: [
-              const Icon(
-                Icons.point_of_sale,
-                size: 32,
-              ),
-
-              const SizedBox(width: 12),
-
-              const Text(
-                'Caja',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const Spacer(),
-
-              FilledButton.icon(
-                onPressed: _cerrarCaja,
-                icon: const Icon(Icons.lock),
-                label: const Text('Cerrar caja'),
-              ),
-            ],
+          ModuleHeader(
+            icon: Icons.point_of_sale,
+            title: 'Caja',
+            subtitle: 'Gestiona la caja y los movimientos de efectivo',
+            trailing: FilledButton.icon(
+              onPressed: _cerrarCaja,
+              icon: const Icon(Icons.lock),
+              label: const Text('Cerrar caja'),
+            ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
-          // ----------------------------------------------------
+          // ======================================================
           // RESUMEN
-          // ----------------------------------------------------
+          // ======================================================
 
           Row(
             children: [
@@ -767,9 +701,9 @@ class _CajaScreenState extends State<CajaScreen> {
 
           const SizedBox(height: 32),
 
-          // ----------------------------------------------------
+          // ======================================================
           // TÍTULO MOVIMIENTOS
-          // ----------------------------------------------------
+          // ======================================================
 
           const Text(
             'Movimientos de caja',
@@ -781,9 +715,9 @@ class _CajaScreenState extends State<CajaScreen> {
 
           const SizedBox(height: 12),
 
-          // ----------------------------------------------------
+          // ======================================================
           // ACCIONES DE CAJA
-          // ----------------------------------------------------
+          // ======================================================
 
           Row(
             children: [
@@ -825,9 +759,9 @@ class _CajaScreenState extends State<CajaScreen> {
 
           const SizedBox(height: 20),
 
-          // ----------------------------------------------------
+          // ======================================================
           // LISTA
-          // ----------------------------------------------------
+          // ======================================================
 
           Expanded(
             child: _movimientos.isEmpty
@@ -854,16 +788,13 @@ class _CajaScreenState extends State<CajaScreen> {
                           : Icons.arrow_upward,
                     ),
                   ),
-
                   title: Text(
                     movimiento.concepto,
                   ),
-
                   subtitle: Text(
                     '${movimiento.tipo}'
                         '${movimiento.metodoPago != null ? ' • ${movimiento.metodoPago}' : ''}',
                   ),
-
                   trailing: Text(
                     '${esEgreso ? '-' : '+'} '
                         'S/ ${movimiento.monto.toStringAsFixed(2)}',
@@ -917,12 +848,10 @@ class _FilaCierre extends StatelessWidget {
             fontSize: destacado ? 16 : 14,
           ),
         ),
-
         Text(
           '${signo}S/ ${valor.toStringAsFixed(2)}',
           style: TextStyle(
-            fontWeight:
-            destacado ? FontWeight.bold : FontWeight.bold,
+            fontWeight: FontWeight.bold,
             fontSize: destacado ? 18 : 16,
           ),
         ),
@@ -962,7 +891,8 @@ class _ResumenCard extends StatelessWidget {
 
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
                 children: [
                   Text(
                     titulo,

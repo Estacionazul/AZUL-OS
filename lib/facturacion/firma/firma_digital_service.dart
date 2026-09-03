@@ -32,7 +32,7 @@ class FirmaDigitalService {
     if (!await archivo.exists()) {
       throw StateError(
         'No se encontró el certificado digital:\n'
-            '$rutaCertificado',
+        '$rutaCertificado',
       );
     }
 
@@ -54,10 +54,7 @@ class FirmaDigitalService {
     late final dynamic pfx;
 
     try {
-      pfx = Pkcs12.load(
-        bytes,
-        passwordCertificado,
-      );
+      pfx = Pkcs12.load(bytes, passwordCertificado);
     } catch (e) {
       print('❌ ERROR AL ABRIR EL CERTIFICADO');
       print(e);
@@ -70,13 +67,10 @@ class FirmaDigitalService {
     // 4. OBTENER CLAVE PRIVADA
     // ----------------------------------------------------------
 
-    final String privateKeyPem =
-    pfx.privateKeyPem.toString();
+    final String privateKeyPem = pfx.privateKeyPem.toString();
 
     if (privateKeyPem.trim().isEmpty) {
-      throw StateError(
-        'El certificado no contiene una clave privada.',
-      );
+      throw StateError('El certificado no contiene una clave privada.');
     }
 
     print('🔑 Clave privada encontrada.');
@@ -85,13 +79,10 @@ class FirmaDigitalService {
     // 5. OBTENER CERTIFICADO X.509
     // ----------------------------------------------------------
 
-    final String certificatePem =
-    pfx.certificatePem.toString();
+    final String certificatePem = pfx.certificatePem.toString();
 
     if (certificatePem.trim().isEmpty) {
-      throw StateError(
-        'El certificado no contiene un certificado X.509.',
-      );
+      throw StateError('El certificado no contiene un certificado X.509.');
     }
 
     print('📜 Certificado X.509 encontrado.');
@@ -100,17 +91,13 @@ class FirmaDigitalService {
     // 6. CERTIFICADO → BASE64
     // ----------------------------------------------------------
 
-    final certificateBase64 =
-    _certificadoPemABase64(
-      certificatePem,
-    );
+    final certificateBase64 = _certificadoPemABase64(certificatePem);
 
     // ----------------------------------------------------------
     // 7. PREPARAR KEY INFO
     // ----------------------------------------------------------
 
-    final keyInfoProvider =
-    _SunatKeyInfoProvider(
+    final keyInfoProvider = _SunatKeyInfoProvider(
       certificateBase64: certificateBase64,
       privateKeyPem: privateKeyPem,
     );
@@ -122,31 +109,31 @@ class FirmaDigitalService {
     final signature = SignedXml();
 
     // SUNAT utiliza RSA-SHA1 en sus ejemplos XMLDSig.
-    signature.signatureAlgorithm =
-    'http://www.w3.org/2000/09/xmldsig#rsa-sha1';
+    signature.signatureAlgorithm = 'http://www.w3.org/2000/09/xmldsig#rsa-sha1';
 
     // SUNAT muestra canonicalización C14N con comentarios.
     signature.canonicalizationAlgorithm =
-    'http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments';
+        'http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments';
 
-    signature.signingKey =
-        Uint8List.fromList(
-          utf8.encode(privateKeyPem),
-        );
+    signature.signingKey = Uint8List.fromList(utf8.encode(privateKeyPem));
 
-    signature.keyInfoProvider =
-        keyInfoProvider;
+    signature.keyInfoProvider = keyInfoProvider;
 
     // ----------------------------------------------------------
     // 9. REFERENCIA AL INVOICE
     // ----------------------------------------------------------
 
     signature.addReference(
-      "//*[local-name()='Invoice']",
+      "/*",
       [
         'http://www.w3.org/2000/09/xmldsig#enveloped-signature',
+        'http://www.w3.org/TR/2001/REC-xml-c14n-20010315',
       ],
       'http://www.w3.org/2000/09/xmldsig#sha1',
+      null,
+      null,
+      null,
+      true,
     );
 
     // ----------------------------------------------------------
@@ -157,46 +144,30 @@ class FirmaDigitalService {
       xml,
       opts: {
         'prefix': 'ds',
-        'existingPrefixes': {
-          'ds': 'http://www.w3.org/2000/09/xmldsig#',
-        },
+        'existingPrefixes': {'ds': 'http://www.w3.org/2000/09/xmldsig#'},
         'location': {
-          'reference':
-          "//*[local-name()='ExtensionContent']",
+          'reference': "//*[local-name()='ExtensionContent']",
           'action': 'append',
         },
       },
     );
 
-    final xmlFirmado =
-        signature.signedXml;
+    final xmlFirmado = signature.signedXml;
 
     // ----------------------------------------------------------
     // 11. VALIDACIONES
     // ----------------------------------------------------------
 
-    if (!xmlFirmado.contains(
-      '<ds:Signature',
-    )) {
-      throw StateError(
-        'No se encontró ds:Signature en el XML firmado.',
-      );
+    if (!xmlFirmado.contains('<ds:Signature')) {
+      throw StateError('No se encontró ds:Signature en el XML firmado.');
     }
 
-    if (!xmlFirmado.contains(
-      '<ds:SignatureValue>',
-    )) {
-      throw StateError(
-        'No se encontró ds:SignatureValue.',
-      );
+    if (!xmlFirmado.contains('<ds:SignatureValue>')) {
+      throw StateError('No se encontró ds:SignatureValue.');
     }
 
-    if (!xmlFirmado.contains(
-      '<ds:X509Certificate>',
-    )) {
-      throw StateError(
-        'No se encontró ds:X509Certificate.',
-      );
+    if (!xmlFirmado.contains('<ds:X509Certificate>')) {
+      throw StateError('No se encontró ds:X509Certificate.');
     }
 
     // ----------------------------------------------------------
@@ -220,27 +191,14 @@ class FirmaDigitalService {
   // PEM → BASE64
   // ==========================================================
 
-  String _certificadoPemABase64(
-      String certificadoPem,
-      ) {
+  String _certificadoPemABase64(String certificadoPem) {
     final limpio = certificadoPem
-        .replaceAll(
-      '-----BEGIN CERTIFICATE-----',
-      '',
-    )
-        .replaceAll(
-      '-----END CERTIFICATE-----',
-      '',
-    )
-        .replaceAll(
-      RegExp(r'\s+'),
-      '',
-    );
+        .replaceAll('-----BEGIN CERTIFICATE-----', '')
+        .replaceAll('-----END CERTIFICATE-----', '')
+        .replaceAll(RegExp(r'\s+'), '');
 
     if (limpio.isEmpty) {
-      throw StateError(
-        'El certificado X.509 está vacío.',
-      );
+      throw StateError('El certificado X.509 está vacío.');
     }
 
     try {
@@ -248,7 +206,7 @@ class FirmaDigitalService {
     } catch (e) {
       throw StateError(
         'El certificado X.509 no contiene '
-            'Base64 válido.',
+        'Base64 válido.',
       );
     }
 
@@ -273,13 +231,8 @@ class _SunatKeyInfoProvider implements KeyInfoProvider {
   Map<String, String> get attrs => {};
 
   @override
-  String getKeyInfo(
-      Uint8List? signingKey,
-      String? prefix,
-      ) {
-    final p = prefix != null && prefix.isNotEmpty
-        ? '$prefix:'
-        : '';
+  String getKeyInfo(Uint8List? signingKey, String? prefix) {
+    final p = prefix != null && prefix.isNotEmpty ? '$prefix:' : '';
 
     return '''
 <${p}X509Data>
@@ -291,11 +244,7 @@ class _SunatKeyInfoProvider implements KeyInfoProvider {
   }
 
   @override
-  Uint8List? getKey(
-      String? keyInfo,
-      ) {
-    return Uint8List.fromList(
-      utf8.encode(privateKeyPem),
-    );
+  Uint8List? getKey(String? keyInfo) {
+    return Uint8List.fromList(utf8.encode(privateKeyPem));
   }
 }

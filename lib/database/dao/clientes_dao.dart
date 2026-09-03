@@ -23,11 +23,9 @@ class ClientesDao extends DatabaseAccessor<AppDatabase>
   //=========================================================
 
   Future<List<Cliente>> obtenerClientes() {
-    return (select(clientes)
-      ..orderBy([
-            (t) => OrderingTerm.asc(t.nombre),
-      ]))
-        .get();
+    return (select(
+      clientes,
+    )..orderBy([(t) => OrderingTerm.asc(t.nombre)])).get();
   }
 
   //=========================================================
@@ -36,10 +34,8 @@ class ClientesDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<Cliente>> buscarClientes(String texto) {
     return (select(clientes)
-      ..where((t) => t.nombre.like('%$texto%'))
-      ..orderBy([
-            (t) => OrderingTerm.asc(t.nombre),
-      ]))
+          ..where((t) => t.nombre.like('%$texto%'))
+          ..orderBy([(t) => OrderingTerm.asc(t.nombre)]))
         .get();
   }
 
@@ -48,19 +44,19 @@ class ClientesDao extends DatabaseAccessor<AppDatabase>
   //=========================================================
 
   Future<Cliente?> buscarPorDni(String dni) {
-    return (select(clientes)
-      ..where((t) => t.dni.equals(dni)))
-        .getSingleOrNull();
+    return (select(
+      clientes,
+    )..where((t) => t.dni.equals(dni))).getSingleOrNull();
   }
 
   //=========================================================
-// BUSCAR POR TELÉFONO
-//=========================================================
+  // BUSCAR POR TELÉFONO
+  //=========================================================
 
   Future<Cliente?> buscarPorTelefono(String telefono) {
-    return (select(clientes)
-      ..where((t) => t.telefono.equals(telefono)))
-        .getSingleOrNull();
+    return (select(
+      clientes,
+    )..where((t) => t.telefono.equals(telefono))).getSingleOrNull();
   }
 
   //=========================================================
@@ -72,12 +68,10 @@ class ClientesDao extends DatabaseAccessor<AppDatabase>
   }
 
   //=========================================================
-// ELIMINAR
-//=========================================================
+  // ELIMINAR
+  //=========================================================
 
   Future<int> eliminarCliente(int id) {
-    return (delete(clientes)
-      ..where((t) => t.id.equals(id)))
-        .go();
+    return (delete(clientes)..where((t) => t.id.equals(id))).go();
   }
 }

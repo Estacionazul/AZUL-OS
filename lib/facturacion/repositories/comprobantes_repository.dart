@@ -5,15 +5,13 @@ class ComprobantesRepository {
   final ComprobantesElectronicosDao dao;
 
   ComprobantesRepository(AppDatabase database)
-      : dao = ComprobantesElectronicosDao(database);
+    : dao = ComprobantesElectronicosDao(database);
 
   // ==========================================================
   // CREAR COMPROBANTE
   // ==========================================================
 
-  Future<int> crearComprobante(
-      ComprobantesElectronicosCompanion comprobante,
-      ) {
+  Future<int> crearComprobante(ComprobantesElectronicosCompanion comprobante) {
     return dao.crearComprobante(comprobante);
   }
 
@@ -21,9 +19,7 @@ class ComprobantesRepository {
   // OBTENER POR ID
   // ==========================================================
 
-  Future<ComprobantesElectronico?> obtenerPorId(
-      int id,
-      ) {
+  Future<ComprobantesElectronico?> obtenerPorId(int id) {
     return dao.obtenerPorId(id);
   }
 
@@ -31,9 +27,7 @@ class ComprobantesRepository {
   // OBTENER POR VENTA
   // ==========================================================
 
-  Future<List<ComprobantesElectronico>> obtenerPorVenta(
-      int ventaId,
-      ) {
+  Future<List<ComprobantesElectronico>> obtenerPorVenta(int ventaId) {
     return dao.obtenerPorVenta(ventaId);
   }
 
@@ -49,9 +43,7 @@ class ComprobantesRepository {
   // OBTENER POR TIPO
   // ==========================================================
 
-  Future<List<ComprobantesElectronico>> obtenerPorTipo(
-      String tipo,
-      ) {
+  Future<List<ComprobantesElectronico>> obtenerPorTipo(String tipo) {
     return dao.obtenerPorTipo(tipo);
   }
 
@@ -59,9 +51,7 @@ class ComprobantesRepository {
   // OBTENER POR SERIE
   // ==========================================================
 
-  Future<List<ComprobantesElectronico>> obtenerPorSerie(
-      String serie,
-      ) {
+  Future<List<ComprobantesElectronico>> obtenerPorSerie(String serie) {
     return dao.obtenerPorSerie(serie);
   }
 
@@ -69,9 +59,7 @@ class ComprobantesRepository {
   // OBTENER ÚLTIMO CORRELATIVO
   // ==========================================================
 
-  Future<ComprobantesElectronico?> obtenerUltimoPorSerie(
-      String serie,
-      ) {
+  Future<ComprobantesElectronico?> obtenerUltimoPorSerie(String serie) {
     return dao.obtenerUltimoPorSerie(serie);
   }
 
@@ -79,9 +67,7 @@ class ComprobantesRepository {
   // SIGUIENTE CORRELATIVO
   // ==========================================================
 
-  Future<int> obtenerSiguienteNumero(
-      String serie,
-      ) {
+  Future<int> obtenerSiguienteNumero(String serie) {
     return dao.obtenerSiguienteNumero(serie);
   }
 
@@ -89,14 +75,8 @@ class ComprobantesRepository {
   // ACTUALIZAR ESTADO
   // ==========================================================
 
-  Future<bool> actualizarEstado(
-      int id,
-      String estado,
-      ) {
-    return dao.actualizarEstado(
-      id,
-      estado,
-    );
+  Future<bool> actualizarEstado(int id, String estado) {
+    return dao.actualizarEstado(id, estado);
   }
 
   // ==========================================================
@@ -129,28 +109,16 @@ class ComprobantesRepository {
   // ACTUALIZAR XML
   // ==========================================================
 
-  Future<bool> actualizarXml(
-      int id,
-      String xml,
-      ) {
-    return dao.actualizarXml(
-      id,
-      xml,
-    );
+  Future<bool> actualizarXml(int id, String xml) {
+    return dao.actualizarXml(id, xml);
   }
 
   // ==========================================================
   // ACTUALIZAR CDR
   // ==========================================================
 
-  Future<bool> actualizarCdr(
-      int id,
-      String cdr,
-      ) {
-    return dao.actualizarCdr(
-      id,
-      cdr,
-    );
+  Future<bool> actualizarCdr(int id, String cdr) {
+    return dao.actualizarCdr(id, cdr);
   }
 
   // ==========================================================
@@ -158,24 +126,19 @@ class ComprobantesRepository {
   // ==========================================================
 
   Future<ComprobantesElectronico?> obtenerRelacionado(
-      int comprobanteRelacionadoId,
-      ) {
-    return dao.obtenerRelacionado(
-      comprobanteRelacionadoId,
-    );
+    int comprobanteRelacionadoId,
+  ) {
+    return dao.obtenerRelacionado(comprobanteRelacionadoId);
   }
 
   // ==========================================================
   // OBTENER NOTAS DE CRÉDITO RELACIONADAS
   // ==========================================================
 
-  Future<List<ComprobantesElectronico>>
-  obtenerNotasCreditoRelacionadas(
-      int comprobanteId,
-      ) {
-    return dao.obtenerNotasCreditoRelacionadas(
-      comprobanteId,
-    );
+  Future<List<ComprobantesElectronico>> obtenerNotasCreditoRelacionadas(
+    int comprobanteId,
+  ) {
+    return dao.obtenerNotasCreditoRelacionadas(comprobanteId);
   }
 
   // ==========================================================
@@ -183,12 +146,9 @@ class ComprobantesRepository {
   // ==========================================================
 
   Future<ComprobantesElectronico?> obtenerPorSerieNumero(
-      String serie,
-      int numero,
-      ) {
-    return dao.obtenerPorSerieNumero(
-      serie,
-      numero,
-    );
+    String serie,
+    int numero,
+  ) {
+    return dao.obtenerPorSerieNumero(serie, numero);
   }
 }

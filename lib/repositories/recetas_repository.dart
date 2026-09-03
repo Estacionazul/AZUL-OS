@@ -12,8 +12,8 @@ class RecetasRepository {
   final RecetaDetalleDao _detalleDao;
 
   RecetasRepository(AppDatabase database)
-      : _recetasDao = RecetasDao(database),
-        _detalleDao = RecetaDetalleDao(database);
+    : _recetasDao = RecetasDao(database),
+      _detalleDao = RecetaDetalleDao(database);
 
   // ==========================
   // RECETAS
@@ -22,30 +22,21 @@ class RecetasRepository {
   Future<List<RecetaModel>> obtenerTodas() async {
     final recetas = await _recetasDao.obtenerTodas();
 
-    return recetas
-        .map(RecetaMapper.toModel)
-        .toList();
+    return recetas.map(RecetaMapper.toModel).toList();
   }
 
-  Future<int> insertarReceta(
-      RecetaModel receta,
-      ) {
-    return _recetasDao.insertar(
-      RecetaMapper.toCompanion(receta),
-    );
+  Future<int> insertarReceta(RecetaModel receta) {
+    return _recetasDao.insertar(RecetaMapper.toCompanion(receta));
   }
 
-  Future<bool> actualizarReceta(
-      RecetaModel receta,
-      ) {
+  Future<bool> actualizarReceta(RecetaModel receta) {
     return _recetasDao.actualizar(
       Receta(
         id: receta.id!,
         productoId: receta.productoId,
         nombre: receta.nombre,
         activo: receta.activo,
-        fechaCreacion:
-        receta.fechaCreacion ?? DateTime.now(),
+        fechaCreacion: receta.fechaCreacion ?? DateTime.now(),
       ),
     );
   }
@@ -69,27 +60,17 @@ class RecetasRepository {
   // DETALLE
   // ==========================
 
-  Future<List<RecetaDetalleModel>>
-  obtenerDetalle() async {
-    final detalle =
-    await _detalleDao.obtenerTodos();
+  Future<List<RecetaDetalleModel>> obtenerDetalle() async {
+    final detalle = await _detalleDao.obtenerTodos();
 
-    return detalle
-        .map(RecetaMapper.toDetalleModel)
-        .toList();
+    return detalle.map(RecetaMapper.toDetalleModel).toList();
   }
 
-  Future<int> insertarDetalle(
-      RecetaDetalleModel detalle,
-      ) {
-    return _detalleDao.insertar(
-      RecetaMapper.toDetalleCompanion(detalle),
-    );
+  Future<int> insertarDetalle(RecetaDetalleModel detalle) {
+    return _detalleDao.insertar(RecetaMapper.toDetalleCompanion(detalle));
   }
 
-  Future<bool> actualizarDetalle(
-      RecetaDetalleModel detalle,
-      ) {
+  Future<bool> actualizarDetalle(RecetaDetalleModel detalle) {
     return _detalleDao.actualizar(
       RecetaDetalleData(
         id: detalle.id!,

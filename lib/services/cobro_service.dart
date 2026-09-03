@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+﻿import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 
 import '../models/venta.dart';
@@ -16,6 +16,9 @@ import 'ticket_print_service.dart';
 
 import '../ticket/esc_pos_renderer.dart';
 import '../facturacion/services/facturacion_service.dart';
+import '../facturacion/firma/firma_digital_service.dart';
+import '../facturacion/sunat/sunat_service.dart';
+import '../facturacion/models/comprobante_electronico.dart';
 
 class CobroService {
   final CarritoService carritoService;
@@ -26,6 +29,8 @@ class CobroService {
   final EmpresaRepository empresaRepository;
   final CajasRepository cajasRepository;
   final FacturacionService facturacionService;
+  final FirmaDigitalService firmaDigitalService;
+  final SunatService sunatService;
 
   final TicketPrintService ticketPrintService;
   final EscPosRenderer escPosRenderer;
@@ -43,11 +48,11 @@ class CobroService {
     required this.printerService,
     required this.cajasRepository,
     required this.facturacionService,
+    required this.firmaDigitalService,
+    required this.sunatService,
   });
 
-  Future<void> cobrar({
-    required String metodoPago,
-  }) async {
+  Future<void> cobrar({required String metodoPago}) async {
     if (carritoService.items.isEmpty) return;
 
     final ahora = DateTime.now();
@@ -55,26 +60,23 @@ class CobroService {
     final ventaActual = ventaService.venta;
 
     // ==========================================================
-    // OBTENER NÚMERO SEGÚN EL TIPO DE DOCUMENTO
+    // OBTENER NÃšMERO SEGÃšN EL TIPO DE DOCUMENTO
     // ==========================================================
 
     late final String numeroVenta;
 
     switch (ventaActual.tipoDocumento) {
       case 'Boleta':
-        numeroVenta =
-        await empresaRepository.obtenerSiguienteNumeroBoleta();
+        numeroVenta = await empresaRepository.obtenerSiguienteNumeroBoleta();
         break;
 
       case 'Factura':
-        numeroVenta =
-        await empresaRepository.obtenerSiguienteNumeroFactura();
+        numeroVenta = await empresaRepository.obtenerSiguienteNumeroFactura();
         break;
 
       case 'Nota de Venta':
       default:
-        numeroVenta =
-        await ventasRepository.obtenerSiguienteNumeroVenta();
+        numeroVenta = await ventasRepository.obtenerSiguienteNumeroVenta();
         break;
     }
 
@@ -87,7 +89,7 @@ class CobroService {
     if (cajaAbierta == null) {
       throw StateError(
         'No hay una caja abierta. '
-            'Debe abrir la caja antes de registrar una venta.',
+        'Debe abrir la caja antes de registrar una venta.',
       );
     }
 
@@ -119,8 +121,8 @@ class CobroService {
 
       nombreCliente: ventaActual.tipoDocumento == 'Factura'
           ? (ventaActual.razonSocial?.trim().isNotEmpty == true
-          ? ventaActual.razonSocial!.trim()
-          : ventaActual.clienteNombre)
+                ? ventaActual.razonSocial!.trim()
+                : ventaActual.clienteNombre)
           : ventaActual.clienteNombre,
 
       razonSocial: ventaActual.razonSocial,
@@ -134,17 +136,140 @@ class CobroService {
     // VALIDAR INVENTARIO ANTES DE REGISTRAR LA VENTA
     // ==========================================================
 
-    await inventarioAutomaticoService.validarVenta(
-      venta,
-    );
+    await inventarioAutomaticoService.validarVenta(venta);
 
     // ==========================================================
     // GUARDAR VENTA
     // ==========================================================
 
-    final idGuardado = await ventasRepository.guardarVenta(
-      venta,
-    );
+    final idGuardado = await ventasRepository.guardarVenta(venta);
+
+    // ==========================================================
+    // CREAR COMPROBANTE ELECTRÃ“NICO
+    // ==========================================================
+    //
+    // Boleta y Factura requieren registro electrÃ³nico.
+    // Se utiliza EXACTAMENTE el mismo nÃºmero de la venta.
+    //
+    // Ejemplo:
+    //   Venta:       B001-00000001
+    //   Comprobante: B001-00000001
+    //
+    // Nota de Venta no genera comprobante electrÃ³nico SUNAT.
+    // ==========================================================
+
+    if (venta.tipoDocumento == 'Boleta' ||
+        venta.tipoDocumento == 'Factura') {
+      final partesNumero = venta.numero.split('-');
+
+      final serie = partesNumero.first;
+      final numero = int.parse(partesNumero.last);
+
+      final tipoComprobante =
+      venta.tipoDocumento == 'Boleta'
+          ? TipoComprobanteElectronico.boleta
+          : TipoComprobanteElectronico.factura;
+
+      final comprobanteId =
+      await facturacionService.crearComprobante(
+        ventaId: idGuardado,
+        tipo: tipoComprobante,
+        serie: serie,
+        numero: numero,
+        fechaEmision: ahora,
+        dni: venta.dni,
+        ruc: venta.ruc,
+        nombreCliente: venta.nombreCliente,
+        direccionFiscal: venta.direccionFiscal,
+        subtotal: venta.subtotal,
+        igv: venta.igv,
+        total: venta.total,
+        metodoPago: metodoPago,
+      );
+
+      debugPrint('========== COMPROBANTE ELECTRÃ“NICO CREADO ==========');
+      debugPrint('ID: $comprobanteId');
+      debugPrint('TIPO: ${venta.tipoDocumento}');
+      debugPrint('SERIE: $serie');
+      debugPrint('NÃšMERO: $numero');
+      debugPrint('COMPLETO: ${venta.numero}');
+      // ==========================================================
+      // GENERAR Y GUARDAR XML DEL COMPROBANTE
+      // ==========================================================
+
+      final empresa = await empresaRepository.obtener();
+
+      if (empresa == null) {
+        throw StateError(
+          'No existe la configuraciÃ³n de la empresa. '
+              'No se puede generar el XML del comprobante.',
+        );
+      }
+
+      final xml = await facturacionService.generarXmlComprobante(
+        comprobanteId: comprobanteId,
+        rucEmisor: empresa.ruc,
+        razonSocialEmisor: empresa.nombre,
+        direccionEmisor: empresa.direccion,
+        moneda: empresa.moneda,
+        detalles: venta.items,
+      );
+
+      final xmlFirmado = await firmaDigitalService.firmarXml(xml);
+
+      final tipoSunat = venta.tipoDocumento == 'Boleta' ? '03' : '01';
+
+      if (partesNumero.length != 2) {
+        throw StateError(
+          'Numero de comprobante invalido: ${venta.numero}',
+        );
+      }
+
+      final numeroSunat = int.parse(partesNumero[1]);
+
+      final respuestaSunat = await sunatService.enviarComprobante(
+        xmlFirmado: xmlFirmado,
+        tipoComprobante: tipoSunat,
+        serie: partesNumero[0],
+        numero: numeroSunat,
+      );
+
+      debugPrint('========== RESPUESTA SUNAT ==========');
+      debugPrint('Respuesta SUNAT: $respuestaSunat');
+      await facturacionService.guardarRespuestaSunat(
+        id: comprobanteId,
+        codigoRespuestaSunat: respuestaSunat.codigo,
+        mensajeRespuestaSunat: respuestaSunat.mensaje,
+        cdr: respuestaSunat.cdr,
+        xml: respuestaSunat.xmlRespuesta,
+        fechaEnvioSunat: DateTime.now(),
+        fechaRespuestaSunat: DateTime.now(),
+        estado: respuestaSunat.aceptado ? 'aceptado' : 'rechazado',
+      );
+
+      // ==========================================================
+      // VALIDAR RESPUESTA SUNAT
+      // ==========================================================
+
+      if (!respuestaSunat.aceptado) {
+        debugPrint('=====================================');
+        debugPrint('❌ COMPROBANTE RECHAZADO POR SUNAT');
+        debugPrint('Código: ${respuestaSunat.codigo}');
+        debugPrint('Mensaje: ${respuestaSunat.mensaje}');
+        debugPrint('=====================================');
+
+        throw StateError(
+          'SUNAT rechazó el comprobante ${venta.numero}. '
+              'Código: ${respuestaSunat.codigo}. '
+              'Mensaje: ${respuestaSunat.mensaje}',
+        );
+      }
+
+      debugPrint('=====================================');
+      debugPrint('========== XML GENERADO Y GUARDADO ==========');
+      debugPrint('COMPROBANTE: ${venta.numero}');
+      debugPrint('LONGITUD XML: ${xml.length}');
+    }
 
     // ==========================================================
     // REGISTRAR VENTA EN CAJA
@@ -158,15 +283,11 @@ class CobroService {
         monto: Value(venta.total),
         metodoPago: Value(metodoPago.toUpperCase()),
         referencia: Value(venta.numero),
-        observacion: Value(
-          venta.tipoDocumento,
-        ),
+        observacion: Value(venta.tipoDocumento),
       ),
     );
 
-    debugPrint(
-      '========== MOVIMIENTO CAJA REGISTRADO ==========',
-    );
+    debugPrint('========== MOVIMIENTO CAJA REGISTRADO ==========');
     debugPrint('CAJA ID: ${cajaAbierta.id}');
     debugPrint('TIPO: VENTA');
     debugPrint('MONTO: ${venta.total}');
@@ -177,9 +298,7 @@ class CobroService {
     // VERIFICAR DATOS GUARDADOS
     // ==========================================================
 
-    debugPrint(
-      '========== VENTA ANTES DE GUARDAR ==========',
-    );
+    debugPrint('========== VENTA ANTES DE GUARDAR ==========');
     debugPrint('NUMERO: ${venta.numero}');
     debugPrint('TIPO: ${venta.tipoDocumento}');
     debugPrint('DNI: ${venta.dni}');
@@ -188,30 +307,23 @@ class CobroService {
     debugPrint('RAZON SOCIAL: ${venta.razonSocial}');
     debugPrint('DIRECCION: ${venta.direccionFiscal}');
 
-    final ventaVerificada =
-    await ventasRepository.obtenerVenta(idGuardado);
+    final ventaVerificada = await ventasRepository.obtenerVenta(idGuardado);
 
-    debugPrint(
-      '========== VENTA DESPUES DE GUARDAR ==========',
-    );
+    debugPrint('========== VENTA DESPUES DE GUARDAR ==========');
     debugPrint('ID: $idGuardado');
     debugPrint('NUMERO: ${ventaVerificada?.numero}');
     debugPrint('TIPO: ${ventaVerificada?.tipoDocumento}');
     debugPrint('DNI: ${ventaVerificada?.dni}');
     debugPrint('RUC: ${ventaVerificada?.ruc}');
     debugPrint('NOMBRE: ${ventaVerificada?.nombreCliente}');
-    debugPrint(
-      'RAZON SOCIAL: ${ventaVerificada?.razonSocial}',
-    );
-    debugPrint(
-      'DIRECCION: ${ventaVerificada?.direccionFiscal}',
-    );
+    debugPrint('RAZON SOCIAL: ${ventaVerificada?.razonSocial}');
+    debugPrint('DIRECCION: ${ventaVerificada?.direccionFiscal}');
 
     // ==========================================================
     // INCREMENTAR CORRELATIVO
     // ==========================================================
     //
-    // Solo se incrementa DESPUÉS de guardar correctamente
+    // Solo se incrementa DESPUÃ‰S de guardar correctamente
     // la venta.
     //
     // Nota de Venta:
@@ -243,41 +355,31 @@ class CobroService {
     // REGISTRAR VENTA EN EL SERVICIO
     // ==========================================================
 
-    ventasService.registrarVenta(
-      venta,
-    );
+    ventasService.registrarVenta(venta);
 
     // ==========================================================
     // DESCONTAR INVENTARIO
     // ==========================================================
 
-    await inventarioAutomaticoService.descontarInventario(
-      venta,
-    );
+    await inventarioAutomaticoService.descontarInventario(venta);
 
     // ==========================================================
     // GENERAR TICKET
     // ==========================================================
 
-    final ticket = ticketPrintService.generarTicket(
-      venta,
-    );
+    final ticket = ticketPrintService.generarTicket(venta);
 
     // ==========================================================
     // CONVERTIR A ESC/POS
     // ==========================================================
 
-    final bytes = await escPosRenderer.render(
-      ticket,
-    );
+    final bytes = await escPosRenderer.render(ticket);
 
     // ==========================================================
     // IMPRIMIR
     // ==========================================================
 
-    await printerService.print(
-      bytes,
-    );
+    await printerService.print(bytes);
 
     // ==========================================================
     // LIMPIAR VENTA
@@ -287,3 +389,7 @@ class CobroService {
     carritoService.vaciarCarrito();
   }
 }
+
+
+
+

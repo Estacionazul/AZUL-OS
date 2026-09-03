@@ -8,6 +8,7 @@ import '../../services/insumo_service.dart';
 import '../../services/producto_service.dart';
 import '../../services/disponibilidad_producto_service.dart';
 import '../../widgets/dialogs/nuevo_insumo_dialog.dart';
+import '../../widgets/module_header.dart';
 import 'kardex_screen.dart';
 
 class InventarioScreen extends StatefulWidget {
@@ -56,12 +57,9 @@ class _InventarioScreenState extends State<InventarioScreen> {
     return Scaffold(
       backgroundColor: const Color(0xffF5F7FA),
 
-      appBar: AppBar(
-        title: const Text("INVENTARIO"),
-        centerTitle: true,
-        backgroundColor: const Color(0xff0A2E6E),
-      ),
-
+      // ==========================================================
+      // NUEVO INSUMO
+      // ==========================================================
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: const Color(0xff0A2E6E),
         icon: const Icon(
@@ -82,16 +80,28 @@ class _InventarioScreenState extends State<InventarioScreen> {
         },
       ),
 
+      // ==========================================================
+      // CONTENIDO
+      // ==========================================================
       body: Padding(
         padding: const EdgeInsets.all(20),
-
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ========================================================
+            // ENCABEZADO DEL MÓDULO
+            // ========================================================
+            const ModuleHeader(
+              icon: Icons.inventory_2_outlined,
+              title: 'Inventario',
+              subtitle: 'Gestiona el stock y los movimientos de inventario',
+            ),
 
-            // ==========================================
+            const SizedBox(height: 20),
+
+            // ========================================================
             // ESTADÍSTICAS
-            // ==========================================
-
+            // ========================================================
             FutureBuilder<List<int>>(
               future: _calcularEstadisticas(
                 insumosFiltrados,
@@ -99,8 +109,7 @@ class _InventarioScreenState extends State<InventarioScreen> {
                 disponibilidadService,
               ),
               builder: (context, snapshot) {
-                final estadisticas =
-                    snapshot.data ?? [0, 0, 0];
+                final estadisticas = snapshot.data ?? [0, 0, 0];
 
                 final total = estadisticas[0];
                 final stockBajo = estadisticas[1];
@@ -108,7 +117,6 @@ class _InventarioScreenState extends State<InventarioScreen> {
 
                 return Row(
                   children: [
-
                     Expanded(
                       child: DashboardStatCard(
                         icon: Icons.inventory_2,
@@ -146,10 +154,9 @@ class _InventarioScreenState extends State<InventarioScreen> {
 
             const SizedBox(height: 20),
 
-            // ==========================================
+            // ========================================================
             // BUSCADOR
-            // ==========================================
-
+            // ========================================================
             AppSearchField(
               hintText: "Buscar producto o insumo...",
               onChanged: buscar,
@@ -157,34 +164,24 @@ class _InventarioScreenState extends State<InventarioScreen> {
 
             const SizedBox(height: 20),
 
-            // ==========================================
+            // ========================================================
             // KARDEX
-            // ==========================================
-
+            // ========================================================
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                icon: const Icon(
-                  Icons.receipt_long,
-                ),
-                label: const Text(
-                  "Ver Kardex",
-                ),
+                icon: const Icon(Icons.receipt_long),
+                label: const Text("Ver Kardex"),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                  const Color(0xff0A2E6E),
+                  backgroundColor: const Color(0xff0A2E6E),
                   foregroundColor: Colors.white,
-                  padding:
-                  const EdgeInsets.symmetric(
-                    vertical: 16,
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) =>
-                      const KardexScreen(),
+                      builder: (_) => const KardexScreen(),
                     ),
                   );
                 },
@@ -193,309 +190,221 @@ class _InventarioScreenState extends State<InventarioScreen> {
 
             const SizedBox(height: 20),
 
-            // ==========================================
+            // ========================================================
             // LISTA
-            // ==========================================
-
+            // ========================================================
             Expanded(
-              child:
-              insumosFiltrados.isEmpty &&
+              child: insumosFiltrados.isEmpty &&
                   productosFiltrados.isEmpty
                   ? const AppEmptyState(
-                icon:
-                Icons.inventory_2_outlined,
-                titulo:
-                "No hay productos ni insumos",
+                icon: Icons.inventory_2_outlined,
+                titulo: "No hay productos ni insumos",
                 mensaje:
                 "Agrega productos o insumos para comenzar.",
               )
                   : ListView(
                 children: [
-
                   // ==================================
                   // INSUMOS
                   // ==================================
-
                   if (insumosFiltrados.isNotEmpty) ...[
                     const Padding(
-                      padding:
-                      EdgeInsets.only(
-                        bottom: 12,
-                      ),
+                      padding: EdgeInsets.only(bottom: 12),
                       child: Text(
                         "INSUMOS",
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight:
-                          FontWeight.bold,
-                          color:
-                          Color(0xff0A2E6E),
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xff0A2E6E),
                         ),
                       ),
                     ),
 
-                    ...insumosFiltrados.map(
-                          (insumo) {
-                        return Card(
-                          elevation: 2,
-                          margin:
-                          const EdgeInsets.only(
-                            bottom: 12,
-                          ),
-                          shape:
-                          RoundedRectangleBorder(
-                            borderRadius:
-                            BorderRadius.circular(
-                              14,
-                            ),
-                          ),
-                          child: ListTile(
-                            contentPadding:
-                            const EdgeInsets.all(
-                              16,
-                            ),
+                    ...insumosFiltrados.map((insumo) {
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: ListTile(
+                          contentPadding:
+                          const EdgeInsets.all(16),
 
-                            leading:
-                            CircleAvatar(
-                              radius: 28,
-                              backgroundColor:
-                              const Color(
-                                0xffEAF1FF,
-                              ),
-                              child: Text(
-                                insumo.emoji,
-                                style:
-                                const TextStyle(
-                                  fontSize: 24,
-                                ),
-                              ),
-                            ),
-
-                            title: Text(
-                              insumo.nombre,
+                          leading: CircleAvatar(
+                            radius: 28,
+                            backgroundColor:
+                            const Color(0xffEAF1FF),
+                            child: Text(
+                              insumo.emoji,
                               style:
-                              const TextStyle(
-                                fontWeight:
-                                FontWeight.bold,
-                                fontSize: 17,
-                              ),
-                            ),
-
-                            subtitle: Padding(
-                              padding:
-                              const EdgeInsets.only(
-                                top: 8,
-                              ),
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment
-                                    .start,
-                                children: [
-
-                                  const Text(
-                                    "Tipo: Insumo",
-                                  ),
-
-                                  const SizedBox(
-                                    height: 4,
-                                  ),
-
-                                  Text(
-                                    "Código: ${insumo.codigo}",
-                                  ),
-
-                                  const SizedBox(
-                                    height: 4,
-                                  ),
-
-                                  Text(
-                                    "Stock: ${insumo.stock} ${insumo.unidadMedida}",
-                                  ),
-
-                                  const SizedBox(
-                                    height: 4,
-                                  ),
-
-                                  Text(
-                                    "Stock mínimo: ${insumo.stockMinimo} ${insumo.unidadMedida}",
-                                  ),
-
-                                  const SizedBox(
-                                    height: 8,
-                                  ),
-
-                                  _EstadoStock(
-                                    stock:
-                                    insumo.stock,
-                                    stockMinimo:
-                                    insumo.stockMinimo,
-                                  ),
-                                ],
-                              ),
+                              const TextStyle(fontSize: 24),
                             ),
                           ),
-                        );
-                      },
-                    ),
+
+                          title: Text(
+                            insumo.nombre,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
+                            ),
+                          ),
+
+                          subtitle: Padding(
+                            padding:
+                            const EdgeInsets.only(top: 8),
+                            child: Column(
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                              children: [
+                                const Text("Tipo: Insumo"),
+
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  "Código: ${insumo.codigo}",
+                                ),
+
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  "Stock: ${insumo.stock} ${insumo.unidadMedida}",
+                                ),
+
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  "Stock mínimo: ${insumo.stockMinimo} ${insumo.unidadMedida}",
+                                ),
+
+                                const SizedBox(height: 8),
+
+                                _EstadoStock(
+                                  stock: insumo.stock,
+                                  stockMinimo:
+                                  insumo.stockMinimo,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
                   ],
 
                   // ==================================
                   // PRODUCTOS
                   // ==================================
-
                   if (productosFiltrados.isNotEmpty) ...[
-                    const SizedBox(
-                      height: 8,
-                    ),
+                    const SizedBox(height: 8),
 
                     const Padding(
-                      padding:
-                      EdgeInsets.only(
-                        bottom: 12,
-                      ),
+                      padding: EdgeInsets.only(bottom: 12),
                       child: Text(
                         "PRODUCTOS",
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight:
-                          FontWeight.bold,
-                          color:
-                          Color(0xff0A2E6E),
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xff0A2E6E),
                         ),
                       ),
                     ),
 
-                    ...productosFiltrados.map(
-                          (producto) {
-                        return FutureBuilder<int>(
-                          future:
-                          disponibilidadService
-                              .calcularDisponibilidad(
-                            producto,
-                          ),
-                          builder:
-                              (context, snapshot) {
-                            final stock =
-                                snapshot.data ?? 0;
+                    ...productosFiltrados.map((producto) {
+                      return FutureBuilder<int>(
+                        future: disponibilidadService
+                            .calcularDisponibilidad(producto),
+                        builder: (context, snapshot) {
+                          final stock = snapshot.data ?? 0;
 
-                            return Card(
-                              elevation: 2,
-                              margin:
-                              const EdgeInsets.only(
-                                bottom: 12,
-                              ),
-                              shape:
-                              RoundedRectangleBorder(
-                                borderRadius:
-                                BorderRadius.circular(
-                                  14,
-                                ),
-                              ),
-                              child: ListTile(
-                                contentPadding:
-                                const EdgeInsets.all(
-                                  16,
-                                ),
+                          return Card(
+                            elevation: 2,
+                            margin:
+                            const EdgeInsets.only(bottom: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                              BorderRadius.circular(14),
+                            ),
+                            child: ListTile(
+                              contentPadding:
+                              const EdgeInsets.all(16),
 
-                                leading:
-                                CircleAvatar(
-                                  radius: 28,
-                                  backgroundColor:
-                                  const Color(
-                                    0xffEAF1FF,
+                              leading: CircleAvatar(
+                                radius: 28,
+                                backgroundColor:
+                                const Color(0xffEAF1FF),
+                                child: Text(
+                                  producto.emoji,
+                                  style: const TextStyle(
+                                    fontSize: 24,
                                   ),
-                                  child: Text(
-                                    producto.emoji,
-                                    style:
-                                    const TextStyle(
-                                      fontSize: 24,
+                                ),
+                              ),
+
+                              title: Text(
+                                producto.nombre,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
+                                ),
+                              ),
+
+                              subtitle: Padding(
+                                padding:
+                                const EdgeInsets.only(top: 8),
+                                child: Column(
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      producto.tipoInventario ==
+                                          'receta'
+                                          ? "Tipo: Producto preparado"
+                                          : "Tipo: Producto",
                                     ),
-                                  ),
-                                ),
 
-                                title: Text(
-                                  producto.nombre,
-                                  style:
-                                  const TextStyle(
-                                    fontWeight:
-                                    FontWeight.bold,
-                                    fontSize: 17,
-                                  ),
-                                ),
+                                    const SizedBox(height: 4),
 
-                                subtitle: Padding(
-                                  padding:
-                                  const EdgeInsets.only(
-                                    top: 8,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment
-                                        .start,
-                                    children: [
+                                    Text(
+                                      "Código: ${producto.codigo}",
+                                    ),
 
-                                      Text(
-                                        producto.tipoInventario ==
-                                            'receta'
-                                            ? "Tipo: Producto preparado"
-                                            : "Tipo: Producto",
-                                      ),
+                                    const SizedBox(height: 4),
 
-                                      const SizedBox(
-                                        height: 4,
-                                      ),
+                                    Text(
+                                      "Categoría: ${_nombreCategoria(producto.categoriaId)}",
+                                    ),
 
-                                      Text(
-                                        "Código: ${producto.codigo}",
-                                      ),
+                                    const SizedBox(height: 4),
 
-                                      const SizedBox(
-                                        height: 4,
-                                      ),
+                                    Text(
+                                      snapshot.connectionState ==
+                                          ConnectionState.waiting
+                                          ? "Stock: Calculando..."
+                                          : "Stock: $stock und",
+                                    ),
 
-                                      Text(
-                                        "Categoría: ${_nombreCategoria(producto.categoriaId)}",
-                                      ),
+                                    const SizedBox(height: 4),
 
-                                      const SizedBox(
-                                        height: 4,
-                                      ),
+                                    Text(
+                                      "Stock mínimo: ${producto.stockMinimo} und",
+                                    ),
 
-                                      Text(
-                                        snapshot.connectionState ==
-                                            ConnectionState
-                                                .waiting
-                                            ? "Stock: Calculando..."
-                                            : "Stock: $stock und",
-                                      ),
+                                    const SizedBox(height: 8),
 
-                                      const SizedBox(
-                                        height: 4,
-                                      ),
-
-                                      Text(
-                                        "Stock mínimo: ${producto.stockMinimo} und",
-                                      ),
-
-                                      const SizedBox(
-                                        height: 8,
-                                      ),
-
-                                      _EstadoStock(
-                                        stock: stock,
-                                        stockMinimo:
-                                        producto
-                                            .stockMinimo,
-                                      ),
-                                    ],
-                                  ),
+                                    _EstadoStock(
+                                      stock: stock,
+                                      stockMinimo:
+                                      producto.stockMinimo,
+                                    ),
+                                  ],
                                 ),
                               ),
-                            );
-                          },
-                        );
-                      },
-                    ),
+                            ),
+                          );
+                        },
+                      );
+                    }),
                   ],
                 ],
               ),
@@ -524,8 +433,7 @@ class _InventarioScreenState extends State<InventarioScreen> {
     }
 
     for (final producto in productos) {
-      final stock =
-      await service.calcularDisponibilidad(producto);
+      final stock = await service.calcularDisponibilidad(producto);
 
       if (stock <= 0) {
         agotados++;
@@ -534,11 +442,7 @@ class _InventarioScreenState extends State<InventarioScreen> {
       }
     }
 
-    return [
-      total,
-      stockBajo,
-      agotados,
-    ];
+    return [total, stockBajo, agotados];
   }
 
   String _nombreCategoria(int id) {
@@ -582,8 +486,7 @@ class _EstadoStock extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: Colors.red.shade100,
-          borderRadius:
-          BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: const Text(
           "🔴 Agotado",
@@ -603,8 +506,7 @@ class _EstadoStock extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: Colors.orange.shade100,
-          borderRadius:
-          BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: const Text(
           "🟠 Stock Bajo",
@@ -623,8 +525,7 @@ class _EstadoStock extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: Colors.green.shade100,
-        borderRadius:
-        BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: const Text(
         "🟢 Stock Normal",

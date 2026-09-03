@@ -4,15 +4,14 @@ import '../database/app_database.dart';
 
 class RecetaDetalleSeed {
   static Future<void> cargar(AppDatabase db) async {
-
     // ==========================================================
     // BUSCAR RECETA
     // ==========================================================
 
     Future<int> recetaId(String nombre) async {
-      final receta = await (db.select(db.recetas)
-        ..where((r) => r.nombre.equals(nombre)))
-          .getSingle();
+      final receta = await (db.select(
+        db.recetas,
+      )..where((r) => r.nombre.equals(nombre))).getSingle();
 
       return receta.id;
     }
@@ -22,9 +21,9 @@ class RecetaDetalleSeed {
     // ==========================================================
 
     Future<int> insumoId(String codigo) async {
-      final insumo = await (db.select(db.insumos)
-        ..where((i) => i.codigo.equals(codigo)))
-          .getSingle();
+      final insumo = await (db.select(
+        db.insumos,
+      )..where((i) => i.codigo.equals(codigo))).getSingle();
 
       return insumo.id;
     }
@@ -40,31 +39,31 @@ class RecetaDetalleSeed {
       required String unidad,
       required int orden,
     }) async {
-
       final idReceta = await recetaId(receta);
       final idInsumo = await insumoId(insumo);
 
-      final existente = await (db.select(db.recetaDetalle)
-        ..where(
-              (d) =>
-          d.recetaId.equals(idReceta) &
-          d.insumoId.equals(idInsumo),
-        ))
-          .getSingleOrNull();
+      final existente =
+          await (db.select(db.recetaDetalle)..where(
+                (d) =>
+                    d.recetaId.equals(idReceta) & d.insumoId.equals(idInsumo),
+              ))
+              .getSingleOrNull();
 
       if (existente != null) {
         return;
       }
 
-      await db.into(db.recetaDetalle).insert(
-        RecetaDetalleCompanion.insert(
-          recetaId: idReceta,
-          insumoId: idInsumo,
-          cantidad: Value(cantidad),
-          unidad: Value(unidad),
-          orden: Value(orden),
-        ),
-      );
+      await db
+          .into(db.recetaDetalle)
+          .insert(
+            RecetaDetalleCompanion.insert(
+              recetaId: idReceta,
+              insumoId: idInsumo,
+              cantidad: Value(cantidad),
+              unidad: Value(unidad),
+              orden: Value(orden),
+            ),
+          );
     }
 
     // ==========================================================
@@ -399,9 +398,9 @@ class RecetaDetalleSeed {
     for (final d in total) {
       print(
         "Receta: ${d.recetaId} | "
-            "Insumo: ${d.insumoId} | "
-            "Cantidad: ${d.cantidad} | "
-            "Unidad: ${d.unidad}",
+        "Insumo: ${d.insumoId} | "
+        "Cantidad: ${d.cantidad} | "
+        "Unidad: ${d.unidad}",
       );
     }
 

@@ -5,8 +5,6 @@ import '../../services/cobro_service.dart';
 import '../dialogs/finalizar_venta_dialog.dart';
 import '../../services/carrito_service.dart';
 
-
-
 class PosCheckoutButton extends StatelessWidget {
   const PosCheckoutButton({super.key});
 
@@ -27,32 +25,24 @@ class PosCheckoutButton extends StatelessWidget {
                 final cobro = context.read<CobroService>();
 
                 try {
-                  await cobro.cobrar(
-                    metodoPago: metodoPago,
-                  );
+                  await cobro.cobrar(metodoPago: metodoPago);
 
                   if (!context.mounted) return;
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text(
-                        "Venta realizada correctamente.",
-                      ),
+                      content: Text("Venta realizada correctamente."),
                     ),
                   );
                 } catch (e) {
                   if (!context.mounted) return;
 
-                  final mensaje = e
-                      .toString()
-                      .replaceFirst('Bad state: ', '');
+                  final mensaje = e.toString().replaceFirst('Bad state: ', '');
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       backgroundColor: Colors.red,
-                      content: Text(
-                        mensaje,
-                      ),
+                      content: Text(mensaje),
                     ),
                   );
                 }

@@ -6,8 +6,7 @@ import '../tables/empresa_table.dart';
 part 'empresa_dao.g.dart';
 
 @DriftAccessor(tables: [Empresa])
-class EmpresaDao extends DatabaseAccessor<AppDatabase>
-    with _$EmpresaDaoMixin {
+class EmpresaDao extends DatabaseAccessor<AppDatabase> with _$EmpresaDaoMixin {
   EmpresaDao(super.db);
 
   /// Obtiene la configuración de la empresa.

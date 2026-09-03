@@ -14,17 +14,13 @@ class ProductoService extends ChangeNotifier {
   String _textoBusqueda = '';
   int? _categoriaSeleccionadaId;
 
-  List<ProductoModel> get productos =>
-      List.unmodifiable(_productosFiltrados);
+  List<ProductoModel> get productos => List.unmodifiable(_productosFiltrados);
 
-  List<ProductoModel> get todosProductos =>
-      List.unmodifiable(_productos);
+  List<ProductoModel> get todosProductos => List.unmodifiable(_productos);
 
-  int? get categoriaSeleccionadaId =>
-      _categoriaSeleccionadaId;
+  int? get categoriaSeleccionadaId => _categoriaSeleccionadaId;
 
-  String get textoBusqueda =>
-      _textoBusqueda;
+  String get textoBusqueda => _textoBusqueda;
 
   Future<void> cargarProductos() async {
     _productos = await _repository.obtenerTodos();
@@ -34,32 +30,24 @@ class ProductoService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> agregarProducto(
-      ProductoModel producto,
-      ) async {
+  Future<void> agregarProducto(ProductoModel producto) async {
     await _repository.insertar(producto);
     await cargarProductos();
   }
 
-  Future<void> editarProducto(
-      ProductoModel producto,
-      ) async {
+  Future<void> editarProducto(ProductoModel producto) async {
     await _repository.actualizar(producto);
     await cargarProductos();
   }
 
-  Future<void> eliminarProducto(
-      int id,
-      ) async {
+  Future<void> eliminarProducto(int id) async {
     await _repository.eliminar(id);
     await cargarProductos();
   }
 
   ProductoModel? obtenerProducto(int id) {
     try {
-      return _productos.firstWhere(
-            (p) => p.id == id,
-      );
+      return _productos.firstWhere((p) => p.id == id);
     } catch (_) {
       return null;
     }
@@ -107,8 +95,7 @@ class ProductoService extends ChangeNotifier {
   // ==========================================================
 
   void _aplicarFiltros() {
-    Iterable<ProductoModel> resultado =
-        _productos;
+    Iterable<ProductoModel> resultado = _productos;
 
     // ----------------------------------------------------------
     // CATEGORÍA
@@ -116,9 +103,7 @@ class ProductoService extends ChangeNotifier {
 
     if (_categoriaSeleccionadaId != null) {
       resultado = resultado.where(
-            (producto) =>
-        producto.categoriaId ==
-            _categoriaSeleccionadaId,
+        (producto) => producto.categoriaId == _categoriaSeleccionadaId,
       );
     }
 
@@ -127,37 +112,26 @@ class ProductoService extends ChangeNotifier {
     // ----------------------------------------------------------
 
     if (_textoBusqueda.isNotEmpty) {
-      resultado = resultado.where(
-            (producto) {
-          final nombre =
-          producto.nombre.toLowerCase();
+      resultado = resultado.where((producto) {
+        final nombre = producto.nombre.toLowerCase();
 
-          final codigo =
-          producto.codigo.toLowerCase();
+        final codigo = producto.codigo.toLowerCase();
 
-          final codigoBarras =
-          producto.codigoBarras.toLowerCase();
+        final codigoBarras = producto.codigoBarras.toLowerCase();
 
-          return nombre.contains(_textoBusqueda) ||
-              codigo.contains(_textoBusqueda) ||
-              codigoBarras.contains(_textoBusqueda);
-        },
-      );
+        return nombre.contains(_textoBusqueda) ||
+            codigo.contains(_textoBusqueda) ||
+            codigoBarras.contains(_textoBusqueda);
+      });
     }
 
-    _productosFiltrados =
-        resultado.toList();
+    _productosFiltrados = resultado.toList();
   }
 
-  int get cantidadProductos =>
-      _productos.length;
+  int get cantidadProductos => _productos.length;
 
-  Future<bool> aumentarStock(
-      int productoId,
-      double cantidad,
-      ) async {
-    final producto =
-    obtenerProducto(productoId);
+  Future<bool> aumentarStock(int productoId, double cantidad) async {
+    final producto = obtenerProducto(productoId);
 
     if (producto == null) {
       return false;

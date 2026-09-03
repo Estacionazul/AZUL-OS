@@ -9,21 +9,16 @@ class Pedidos extends Table {
 
   TextColumn get ubicacionNombre => text()();
 
-  BoolColumn get esMesa =>
-      boolean().withDefault(const Constant(true))();
+  BoolColumn get esMesa => boolean().withDefault(const Constant(true))();
 
   DateTimeColumn get fechaApertura =>
       dateTime().withDefault(currentDateAndTime)();
 
-  TextColumn get estado =>
-      text().withDefault(const Constant('abierto'))();
+  TextColumn get estado => text().withDefault(const Constant('abierto'))();
 
-  IntColumn get numeroComanda =>
-      integer().withDefault(const Constant(0))();
+  IntColumn get numeroComanda => integer().withDefault(const Constant(0))();
 
-  TextColumn get observaciones =>
-      text().withDefault(const Constant(''))();
+  TextColumn get observaciones => text().withDefault(const Constant(''))();
 
-  RealColumn get total =>
-      real().withDefault(const Constant(0))();
+  RealColumn get total => real().withDefault(const Constant(0))();
 }

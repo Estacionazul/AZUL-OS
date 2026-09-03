@@ -1,9 +1,4 @@
-﻿
-enum TipoUbicacion {
-  mesa,
-  barra,
-  paraLlevar,
-}
+enum TipoUbicacion { mesa, barra, paraLlevar }
 
 class UbicacionPedido {
   final String id;

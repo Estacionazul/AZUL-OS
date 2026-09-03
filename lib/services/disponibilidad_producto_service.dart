@@ -12,18 +12,16 @@ class DisponibilidadProductoService {
     required RecetasRepository recetasRepository,
     required RecetaDetalleRepository detalleRepository,
     required InsumoRepository insumoRepository,
-  })  : _recetasRepository = recetasRepository,
-        _detalleRepository = detalleRepository,
-        _insumoRepository = insumoRepository;
+  }) : _recetasRepository = recetasRepository,
+       _detalleRepository = detalleRepository,
+       _insumoRepository = insumoRepository;
 
   /// Calcula cuántas unidades de un producto con receta
   /// se pueden preparar con el stock actual de sus insumos.
   ///
   /// Si el producto es de inventario normal:
   /// devuelve directamente su stock.
-  Future<int> calcularDisponibilidad(
-      ProductoModel producto,
-      ) async {
+  Future<int> calcularDisponibilidad(ProductoModel producto) async {
     // ==========================================
     // PRODUCTO NORMAL
     // ==========================================
@@ -36,8 +34,7 @@ class DisponibilidadProductoService {
     // PRODUCTO CON RECETA
     // ==========================================
 
-    final receta =
-    await _recetasRepository.obtenerPorProducto(producto.id!);
+    final receta = await _recetasRepository.obtenerPorProducto(producto.id!);
 
     // Si no tiene receta, no podemos calcular
     // una disponibilidad basada en insumos.
@@ -45,8 +42,7 @@ class DisponibilidadProductoService {
       return 0;
     }
 
-    final ingredientes =
-    await _detalleRepository.obtenerPorReceta(receta.id!);
+    final ingredientes = await _detalleRepository.obtenerPorReceta(receta.id!);
 
     if (ingredientes.isEmpty) {
       return 0;
@@ -60,19 +56,15 @@ class DisponibilidadProductoService {
         continue;
       }
 
-      final insumo = await _insumoRepository.obtenerPorId(
-        ingrediente.insumoId,
-      );
+      final insumo = await _insumoRepository.obtenerPorId(ingrediente.insumoId);
 
       if (insumo == null) {
         return 0;
       }
 
-      final disponibles =
-      (insumo.stock / ingrediente.cantidad).floor();
+      final disponibles = (insumo.stock / ingrediente.cantidad).floor();
 
-      if (disponibilidadMinima == null ||
-          disponibles < disponibilidadMinima) {
+      if (disponibilidadMinima == null || disponibles < disponibilidadMinima) {
         disponibilidadMinima = disponibles;
       }
     }

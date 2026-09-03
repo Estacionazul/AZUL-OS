@@ -11,17 +11,13 @@ class PedidoDetalles extends Table {
 
   TextColumn get nombreProducto => text()();
 
-  IntColumn get cantidad =>
-      integer().withDefault(const Constant(1))();
+  IntColumn get cantidad => integer().withDefault(const Constant(1))();
 
-  IntColumn get cantidadComandada =>
-      integer().withDefault(const Constant(0))();
+  IntColumn get cantidadComandada => integer().withDefault(const Constant(0))();
 
-  RealColumn get precioUnitario =>
-      real().withDefault(const Constant(0))();
+  RealColumn get precioUnitario => real().withDefault(const Constant(0))();
 
-  RealColumn get subtotal =>
-      real().withDefault(const Constant(0))();
+  RealColumn get subtotal => real().withDefault(const Constant(0))();
 
   TextColumn get tamano => text().nullable()();
 
@@ -31,11 +27,9 @@ class PedidoDetalles extends Table {
 
   TextColumn get infusion => text().nullable()();
 
-  BoolColumn get extraShot =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get extraShot => boolean().withDefault(const Constant(false))();
 
   TextColumn get observaciones => text().nullable()();
 
-  IntColumn get orden =>
-      integer().withDefault(const Constant(0))();
+  IntColumn get orden => integer().withDefault(const Constant(0))();
 }
