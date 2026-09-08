@@ -73,6 +73,55 @@ class ComprobantesElectronicosDao extends DatabaseAccessor<AppDatabase>
   }
 
   // ==========================================================
+  // OBTENER BOLETAS POR RANGO DE FECHA
+  // ==========================================================
+
+  Future<List<ComprobantesElectronico>> obtenerBoletasPorRangoFecha(
+    DateTime inicio,
+    DateTime fin,
+  ) {
+    return (select(comprobantesElectronicos)
+          ..where(
+            (c) =>
+                c.tipo.equals('boleta') &
+                c.fechaEmision.isBiggerOrEqualValue(inicio) &
+                c.fechaEmision.isSmallerThanValue(fin),
+          )
+          ..orderBy([
+            (c) => OrderingTerm(
+              expression: c.numero,
+              mode: OrderingMode.asc,
+            ),
+          ]))
+        .get();
+  }
+
+  // ==========================================================
+  // OBTENER BOLETAS POR FECHA DE EMISIÓN
+  // ==========================================================
+
+  Future<List<ComprobantesElectronico>> obtenerBoletasPorFecha(
+    DateTime fecha,
+  ) {
+    final inicio = DateTime(fecha.year, fecha.month, fecha.day);
+    final fin = inicio.add(const Duration(days: 1));
+
+    return (select(comprobantesElectronicos)
+          ..where(
+            (c) =>
+                c.tipo.equals('boleta') &
+                c.fechaEmision.isBiggerOrEqualValue(inicio) &
+                c.fechaEmision.isSmallerThanValue(fin),
+          )
+          ..orderBy([
+            (c) => OrderingTerm(
+              expression: c.numero,
+              mode: OrderingMode.asc,
+            ),
+          ]))
+        .get();
+  }
+  // ==========================================================
   // OBTENER POR SERIE
   // ==========================================================
 
