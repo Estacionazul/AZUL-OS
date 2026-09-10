@@ -11444,6 +11444,1183 @@ class PedidoDetallesCompanion extends UpdateCompanion<PedidoDetalle> {
   }
 }
 
+class $ResumenesDiariosTable extends ResumenesDiarios
+    with TableInfo<$ResumenesDiariosTable, ResumenesDiario> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ResumenesDiariosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _fechaReferenciaMeta = const VerificationMeta(
+    'fechaReferencia',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fechaReferencia =
+      GeneratedColumn<DateTime>(
+        'fecha_referencia',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _correlativoMeta = const VerificationMeta(
+    'correlativo',
+  );
+  @override
+  late final GeneratedColumn<int> correlativo = GeneratedColumn<int>(
+    'correlativo',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nombreArchivoMeta = const VerificationMeta(
+    'nombreArchivo',
+  );
+  @override
+  late final GeneratedColumn<String> nombreArchivo = GeneratedColumn<String>(
+    'nombre_archivo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _xmlMeta = const VerificationMeta('xml');
+  @override
+  late final GeneratedColumn<String> xml = GeneratedColumn<String>(
+    'xml',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _estadoMeta = const VerificationMeta('estado');
+  @override
+  late final GeneratedColumn<String> estado = GeneratedColumn<String>(
+    'estado',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pendiente'),
+  );
+  static const VerificationMeta _ticketSunatMeta = const VerificationMeta(
+    'ticketSunat',
+  );
+  @override
+  late final GeneratedColumn<String> ticketSunat = GeneratedColumn<String>(
+    'ticket_sunat',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _codigoRespuestaSunatMeta =
+      const VerificationMeta('codigoRespuestaSunat');
+  @override
+  late final GeneratedColumn<String> codigoRespuestaSunat =
+      GeneratedColumn<String>(
+        'codigo_respuesta_sunat',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _mensajeRespuestaSunatMeta =
+      const VerificationMeta('mensajeRespuestaSunat');
+  @override
+  late final GeneratedColumn<String> mensajeRespuestaSunat =
+      GeneratedColumn<String>(
+        'mensaje_respuesta_sunat',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _cdrMeta = const VerificationMeta('cdr');
+  @override
+  late final GeneratedColumn<String> cdr = GeneratedColumn<String>(
+    'cdr',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fechaEnvioSunatMeta = const VerificationMeta(
+    'fechaEnvioSunat',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fechaEnvioSunat =
+      GeneratedColumn<DateTime>(
+        'fecha_envio_sunat',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _fechaRespuestaSunatMeta =
+      const VerificationMeta('fechaRespuestaSunat');
+  @override
+  late final GeneratedColumn<DateTime> fechaRespuestaSunat =
+      GeneratedColumn<DateTime>(
+        'fecha_respuesta_sunat',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _observacionesMeta = const VerificationMeta(
+    'observaciones',
+  );
+  @override
+  late final GeneratedColumn<String> observaciones = GeneratedColumn<String>(
+    'observaciones',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    fechaReferencia,
+    correlativo,
+    nombreArchivo,
+    xml,
+    estado,
+    ticketSunat,
+    codigoRespuestaSunat,
+    mensajeRespuestaSunat,
+    cdr,
+    fechaEnvioSunat,
+    fechaRespuestaSunat,
+    observaciones,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'resumenes_diarios';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ResumenesDiario> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('fecha_referencia')) {
+      context.handle(
+        _fechaReferenciaMeta,
+        fechaReferencia.isAcceptableOrUnknown(
+          data['fecha_referencia']!,
+          _fechaReferenciaMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_fechaReferenciaMeta);
+    }
+    if (data.containsKey('correlativo')) {
+      context.handle(
+        _correlativoMeta,
+        correlativo.isAcceptableOrUnknown(
+          data['correlativo']!,
+          _correlativoMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_correlativoMeta);
+    }
+    if (data.containsKey('nombre_archivo')) {
+      context.handle(
+        _nombreArchivoMeta,
+        nombreArchivo.isAcceptableOrUnknown(
+          data['nombre_archivo']!,
+          _nombreArchivoMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_nombreArchivoMeta);
+    }
+    if (data.containsKey('xml')) {
+      context.handle(
+        _xmlMeta,
+        xml.isAcceptableOrUnknown(data['xml']!, _xmlMeta),
+      );
+    }
+    if (data.containsKey('estado')) {
+      context.handle(
+        _estadoMeta,
+        estado.isAcceptableOrUnknown(data['estado']!, _estadoMeta),
+      );
+    }
+    if (data.containsKey('ticket_sunat')) {
+      context.handle(
+        _ticketSunatMeta,
+        ticketSunat.isAcceptableOrUnknown(
+          data['ticket_sunat']!,
+          _ticketSunatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('codigo_respuesta_sunat')) {
+      context.handle(
+        _codigoRespuestaSunatMeta,
+        codigoRespuestaSunat.isAcceptableOrUnknown(
+          data['codigo_respuesta_sunat']!,
+          _codigoRespuestaSunatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('mensaje_respuesta_sunat')) {
+      context.handle(
+        _mensajeRespuestaSunatMeta,
+        mensajeRespuestaSunat.isAcceptableOrUnknown(
+          data['mensaje_respuesta_sunat']!,
+          _mensajeRespuestaSunatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cdr')) {
+      context.handle(
+        _cdrMeta,
+        cdr.isAcceptableOrUnknown(data['cdr']!, _cdrMeta),
+      );
+    }
+    if (data.containsKey('fecha_envio_sunat')) {
+      context.handle(
+        _fechaEnvioSunatMeta,
+        fechaEnvioSunat.isAcceptableOrUnknown(
+          data['fecha_envio_sunat']!,
+          _fechaEnvioSunatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('fecha_respuesta_sunat')) {
+      context.handle(
+        _fechaRespuestaSunatMeta,
+        fechaRespuestaSunat.isAcceptableOrUnknown(
+          data['fecha_respuesta_sunat']!,
+          _fechaRespuestaSunatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('observaciones')) {
+      context.handle(
+        _observacionesMeta,
+        observaciones.isAcceptableOrUnknown(
+          data['observaciones']!,
+          _observacionesMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ResumenesDiario map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ResumenesDiario(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      fechaReferencia: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_referencia'],
+      )!,
+      correlativo: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}correlativo'],
+      )!,
+      nombreArchivo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nombre_archivo'],
+      )!,
+      xml: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}xml'],
+      ),
+      estado: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}estado'],
+      )!,
+      ticketSunat: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ticket_sunat'],
+      ),
+      codigoRespuestaSunat: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}codigo_respuesta_sunat'],
+      ),
+      mensajeRespuestaSunat: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mensaje_respuesta_sunat'],
+      ),
+      cdr: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cdr'],
+      ),
+      fechaEnvioSunat: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_envio_sunat'],
+      ),
+      fechaRespuestaSunat: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_respuesta_sunat'],
+      ),
+      observaciones: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}observaciones'],
+      ),
+    );
+  }
+
+  @override
+  $ResumenesDiariosTable createAlias(String alias) {
+    return $ResumenesDiariosTable(attachedDatabase, alias);
+  }
+}
+
+class ResumenesDiario extends DataClass implements Insertable<ResumenesDiario> {
+  final int id;
+
+  /// Fecha de emision de las boletas incluidas en el resumen.
+  final DateTime fechaReferencia;
+
+  /// Correlativo del resumen para la fecha indicada.
+  /// Ejemplo: RC-20260908-1
+  final int correlativo;
+
+  /// Nombre del archivo XML enviado a SUNAT.
+  final String nombreArchivo;
+
+  /// XML del Resumen Diario generado.
+  final String? xml;
+
+  /// pendiente
+  /// generado
+  /// enviado
+  /// aceptado
+  /// rechazado
+  final String estado;
+
+  /// Ticket devuelto por SUNAT mediante sendSummary.
+  final String? ticketSunat;
+  final String? codigoRespuestaSunat;
+  final String? mensajeRespuestaSunat;
+
+  /// CDR recibido por SUNAT al consultar el ticket.
+  final String? cdr;
+  final DateTime? fechaEnvioSunat;
+  final DateTime? fechaRespuestaSunat;
+  final String? observaciones;
+  const ResumenesDiario({
+    required this.id,
+    required this.fechaReferencia,
+    required this.correlativo,
+    required this.nombreArchivo,
+    this.xml,
+    required this.estado,
+    this.ticketSunat,
+    this.codigoRespuestaSunat,
+    this.mensajeRespuestaSunat,
+    this.cdr,
+    this.fechaEnvioSunat,
+    this.fechaRespuestaSunat,
+    this.observaciones,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['fecha_referencia'] = Variable<DateTime>(fechaReferencia);
+    map['correlativo'] = Variable<int>(correlativo);
+    map['nombre_archivo'] = Variable<String>(nombreArchivo);
+    if (!nullToAbsent || xml != null) {
+      map['xml'] = Variable<String>(xml);
+    }
+    map['estado'] = Variable<String>(estado);
+    if (!nullToAbsent || ticketSunat != null) {
+      map['ticket_sunat'] = Variable<String>(ticketSunat);
+    }
+    if (!nullToAbsent || codigoRespuestaSunat != null) {
+      map['codigo_respuesta_sunat'] = Variable<String>(codigoRespuestaSunat);
+    }
+    if (!nullToAbsent || mensajeRespuestaSunat != null) {
+      map['mensaje_respuesta_sunat'] = Variable<String>(mensajeRespuestaSunat);
+    }
+    if (!nullToAbsent || cdr != null) {
+      map['cdr'] = Variable<String>(cdr);
+    }
+    if (!nullToAbsent || fechaEnvioSunat != null) {
+      map['fecha_envio_sunat'] = Variable<DateTime>(fechaEnvioSunat);
+    }
+    if (!nullToAbsent || fechaRespuestaSunat != null) {
+      map['fecha_respuesta_sunat'] = Variable<DateTime>(fechaRespuestaSunat);
+    }
+    if (!nullToAbsent || observaciones != null) {
+      map['observaciones'] = Variable<String>(observaciones);
+    }
+    return map;
+  }
+
+  ResumenesDiariosCompanion toCompanion(bool nullToAbsent) {
+    return ResumenesDiariosCompanion(
+      id: Value(id),
+      fechaReferencia: Value(fechaReferencia),
+      correlativo: Value(correlativo),
+      nombreArchivo: Value(nombreArchivo),
+      xml: xml == null && nullToAbsent ? const Value.absent() : Value(xml),
+      estado: Value(estado),
+      ticketSunat: ticketSunat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ticketSunat),
+      codigoRespuestaSunat: codigoRespuestaSunat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(codigoRespuestaSunat),
+      mensajeRespuestaSunat: mensajeRespuestaSunat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mensajeRespuestaSunat),
+      cdr: cdr == null && nullToAbsent ? const Value.absent() : Value(cdr),
+      fechaEnvioSunat: fechaEnvioSunat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fechaEnvioSunat),
+      fechaRespuestaSunat: fechaRespuestaSunat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fechaRespuestaSunat),
+      observaciones: observaciones == null && nullToAbsent
+          ? const Value.absent()
+          : Value(observaciones),
+    );
+  }
+
+  factory ResumenesDiario.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ResumenesDiario(
+      id: serializer.fromJson<int>(json['id']),
+      fechaReferencia: serializer.fromJson<DateTime>(json['fechaReferencia']),
+      correlativo: serializer.fromJson<int>(json['correlativo']),
+      nombreArchivo: serializer.fromJson<String>(json['nombreArchivo']),
+      xml: serializer.fromJson<String?>(json['xml']),
+      estado: serializer.fromJson<String>(json['estado']),
+      ticketSunat: serializer.fromJson<String?>(json['ticketSunat']),
+      codigoRespuestaSunat: serializer.fromJson<String?>(
+        json['codigoRespuestaSunat'],
+      ),
+      mensajeRespuestaSunat: serializer.fromJson<String?>(
+        json['mensajeRespuestaSunat'],
+      ),
+      cdr: serializer.fromJson<String?>(json['cdr']),
+      fechaEnvioSunat: serializer.fromJson<DateTime?>(json['fechaEnvioSunat']),
+      fechaRespuestaSunat: serializer.fromJson<DateTime?>(
+        json['fechaRespuestaSunat'],
+      ),
+      observaciones: serializer.fromJson<String?>(json['observaciones']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'fechaReferencia': serializer.toJson<DateTime>(fechaReferencia),
+      'correlativo': serializer.toJson<int>(correlativo),
+      'nombreArchivo': serializer.toJson<String>(nombreArchivo),
+      'xml': serializer.toJson<String?>(xml),
+      'estado': serializer.toJson<String>(estado),
+      'ticketSunat': serializer.toJson<String?>(ticketSunat),
+      'codigoRespuestaSunat': serializer.toJson<String?>(codigoRespuestaSunat),
+      'mensajeRespuestaSunat': serializer.toJson<String?>(
+        mensajeRespuestaSunat,
+      ),
+      'cdr': serializer.toJson<String?>(cdr),
+      'fechaEnvioSunat': serializer.toJson<DateTime?>(fechaEnvioSunat),
+      'fechaRespuestaSunat': serializer.toJson<DateTime?>(fechaRespuestaSunat),
+      'observaciones': serializer.toJson<String?>(observaciones),
+    };
+  }
+
+  ResumenesDiario copyWith({
+    int? id,
+    DateTime? fechaReferencia,
+    int? correlativo,
+    String? nombreArchivo,
+    Value<String?> xml = const Value.absent(),
+    String? estado,
+    Value<String?> ticketSunat = const Value.absent(),
+    Value<String?> codigoRespuestaSunat = const Value.absent(),
+    Value<String?> mensajeRespuestaSunat = const Value.absent(),
+    Value<String?> cdr = const Value.absent(),
+    Value<DateTime?> fechaEnvioSunat = const Value.absent(),
+    Value<DateTime?> fechaRespuestaSunat = const Value.absent(),
+    Value<String?> observaciones = const Value.absent(),
+  }) => ResumenesDiario(
+    id: id ?? this.id,
+    fechaReferencia: fechaReferencia ?? this.fechaReferencia,
+    correlativo: correlativo ?? this.correlativo,
+    nombreArchivo: nombreArchivo ?? this.nombreArchivo,
+    xml: xml.present ? xml.value : this.xml,
+    estado: estado ?? this.estado,
+    ticketSunat: ticketSunat.present ? ticketSunat.value : this.ticketSunat,
+    codigoRespuestaSunat: codigoRespuestaSunat.present
+        ? codigoRespuestaSunat.value
+        : this.codigoRespuestaSunat,
+    mensajeRespuestaSunat: mensajeRespuestaSunat.present
+        ? mensajeRespuestaSunat.value
+        : this.mensajeRespuestaSunat,
+    cdr: cdr.present ? cdr.value : this.cdr,
+    fechaEnvioSunat: fechaEnvioSunat.present
+        ? fechaEnvioSunat.value
+        : this.fechaEnvioSunat,
+    fechaRespuestaSunat: fechaRespuestaSunat.present
+        ? fechaRespuestaSunat.value
+        : this.fechaRespuestaSunat,
+    observaciones: observaciones.present
+        ? observaciones.value
+        : this.observaciones,
+  );
+  ResumenesDiario copyWithCompanion(ResumenesDiariosCompanion data) {
+    return ResumenesDiario(
+      id: data.id.present ? data.id.value : this.id,
+      fechaReferencia: data.fechaReferencia.present
+          ? data.fechaReferencia.value
+          : this.fechaReferencia,
+      correlativo: data.correlativo.present
+          ? data.correlativo.value
+          : this.correlativo,
+      nombreArchivo: data.nombreArchivo.present
+          ? data.nombreArchivo.value
+          : this.nombreArchivo,
+      xml: data.xml.present ? data.xml.value : this.xml,
+      estado: data.estado.present ? data.estado.value : this.estado,
+      ticketSunat: data.ticketSunat.present
+          ? data.ticketSunat.value
+          : this.ticketSunat,
+      codigoRespuestaSunat: data.codigoRespuestaSunat.present
+          ? data.codigoRespuestaSunat.value
+          : this.codigoRespuestaSunat,
+      mensajeRespuestaSunat: data.mensajeRespuestaSunat.present
+          ? data.mensajeRespuestaSunat.value
+          : this.mensajeRespuestaSunat,
+      cdr: data.cdr.present ? data.cdr.value : this.cdr,
+      fechaEnvioSunat: data.fechaEnvioSunat.present
+          ? data.fechaEnvioSunat.value
+          : this.fechaEnvioSunat,
+      fechaRespuestaSunat: data.fechaRespuestaSunat.present
+          ? data.fechaRespuestaSunat.value
+          : this.fechaRespuestaSunat,
+      observaciones: data.observaciones.present
+          ? data.observaciones.value
+          : this.observaciones,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ResumenesDiario(')
+          ..write('id: $id, ')
+          ..write('fechaReferencia: $fechaReferencia, ')
+          ..write('correlativo: $correlativo, ')
+          ..write('nombreArchivo: $nombreArchivo, ')
+          ..write('xml: $xml, ')
+          ..write('estado: $estado, ')
+          ..write('ticketSunat: $ticketSunat, ')
+          ..write('codigoRespuestaSunat: $codigoRespuestaSunat, ')
+          ..write('mensajeRespuestaSunat: $mensajeRespuestaSunat, ')
+          ..write('cdr: $cdr, ')
+          ..write('fechaEnvioSunat: $fechaEnvioSunat, ')
+          ..write('fechaRespuestaSunat: $fechaRespuestaSunat, ')
+          ..write('observaciones: $observaciones')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    fechaReferencia,
+    correlativo,
+    nombreArchivo,
+    xml,
+    estado,
+    ticketSunat,
+    codigoRespuestaSunat,
+    mensajeRespuestaSunat,
+    cdr,
+    fechaEnvioSunat,
+    fechaRespuestaSunat,
+    observaciones,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ResumenesDiario &&
+          other.id == this.id &&
+          other.fechaReferencia == this.fechaReferencia &&
+          other.correlativo == this.correlativo &&
+          other.nombreArchivo == this.nombreArchivo &&
+          other.xml == this.xml &&
+          other.estado == this.estado &&
+          other.ticketSunat == this.ticketSunat &&
+          other.codigoRespuestaSunat == this.codigoRespuestaSunat &&
+          other.mensajeRespuestaSunat == this.mensajeRespuestaSunat &&
+          other.cdr == this.cdr &&
+          other.fechaEnvioSunat == this.fechaEnvioSunat &&
+          other.fechaRespuestaSunat == this.fechaRespuestaSunat &&
+          other.observaciones == this.observaciones);
+}
+
+class ResumenesDiariosCompanion extends UpdateCompanion<ResumenesDiario> {
+  final Value<int> id;
+  final Value<DateTime> fechaReferencia;
+  final Value<int> correlativo;
+  final Value<String> nombreArchivo;
+  final Value<String?> xml;
+  final Value<String> estado;
+  final Value<String?> ticketSunat;
+  final Value<String?> codigoRespuestaSunat;
+  final Value<String?> mensajeRespuestaSunat;
+  final Value<String?> cdr;
+  final Value<DateTime?> fechaEnvioSunat;
+  final Value<DateTime?> fechaRespuestaSunat;
+  final Value<String?> observaciones;
+  const ResumenesDiariosCompanion({
+    this.id = const Value.absent(),
+    this.fechaReferencia = const Value.absent(),
+    this.correlativo = const Value.absent(),
+    this.nombreArchivo = const Value.absent(),
+    this.xml = const Value.absent(),
+    this.estado = const Value.absent(),
+    this.ticketSunat = const Value.absent(),
+    this.codigoRespuestaSunat = const Value.absent(),
+    this.mensajeRespuestaSunat = const Value.absent(),
+    this.cdr = const Value.absent(),
+    this.fechaEnvioSunat = const Value.absent(),
+    this.fechaRespuestaSunat = const Value.absent(),
+    this.observaciones = const Value.absent(),
+  });
+  ResumenesDiariosCompanion.insert({
+    this.id = const Value.absent(),
+    required DateTime fechaReferencia,
+    required int correlativo,
+    required String nombreArchivo,
+    this.xml = const Value.absent(),
+    this.estado = const Value.absent(),
+    this.ticketSunat = const Value.absent(),
+    this.codigoRespuestaSunat = const Value.absent(),
+    this.mensajeRespuestaSunat = const Value.absent(),
+    this.cdr = const Value.absent(),
+    this.fechaEnvioSunat = const Value.absent(),
+    this.fechaRespuestaSunat = const Value.absent(),
+    this.observaciones = const Value.absent(),
+  }) : fechaReferencia = Value(fechaReferencia),
+       correlativo = Value(correlativo),
+       nombreArchivo = Value(nombreArchivo);
+  static Insertable<ResumenesDiario> custom({
+    Expression<int>? id,
+    Expression<DateTime>? fechaReferencia,
+    Expression<int>? correlativo,
+    Expression<String>? nombreArchivo,
+    Expression<String>? xml,
+    Expression<String>? estado,
+    Expression<String>? ticketSunat,
+    Expression<String>? codigoRespuestaSunat,
+    Expression<String>? mensajeRespuestaSunat,
+    Expression<String>? cdr,
+    Expression<DateTime>? fechaEnvioSunat,
+    Expression<DateTime>? fechaRespuestaSunat,
+    Expression<String>? observaciones,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (fechaReferencia != null) 'fecha_referencia': fechaReferencia,
+      if (correlativo != null) 'correlativo': correlativo,
+      if (nombreArchivo != null) 'nombre_archivo': nombreArchivo,
+      if (xml != null) 'xml': xml,
+      if (estado != null) 'estado': estado,
+      if (ticketSunat != null) 'ticket_sunat': ticketSunat,
+      if (codigoRespuestaSunat != null)
+        'codigo_respuesta_sunat': codigoRespuestaSunat,
+      if (mensajeRespuestaSunat != null)
+        'mensaje_respuesta_sunat': mensajeRespuestaSunat,
+      if (cdr != null) 'cdr': cdr,
+      if (fechaEnvioSunat != null) 'fecha_envio_sunat': fechaEnvioSunat,
+      if (fechaRespuestaSunat != null)
+        'fecha_respuesta_sunat': fechaRespuestaSunat,
+      if (observaciones != null) 'observaciones': observaciones,
+    });
+  }
+
+  ResumenesDiariosCompanion copyWith({
+    Value<int>? id,
+    Value<DateTime>? fechaReferencia,
+    Value<int>? correlativo,
+    Value<String>? nombreArchivo,
+    Value<String?>? xml,
+    Value<String>? estado,
+    Value<String?>? ticketSunat,
+    Value<String?>? codigoRespuestaSunat,
+    Value<String?>? mensajeRespuestaSunat,
+    Value<String?>? cdr,
+    Value<DateTime?>? fechaEnvioSunat,
+    Value<DateTime?>? fechaRespuestaSunat,
+    Value<String?>? observaciones,
+  }) {
+    return ResumenesDiariosCompanion(
+      id: id ?? this.id,
+      fechaReferencia: fechaReferencia ?? this.fechaReferencia,
+      correlativo: correlativo ?? this.correlativo,
+      nombreArchivo: nombreArchivo ?? this.nombreArchivo,
+      xml: xml ?? this.xml,
+      estado: estado ?? this.estado,
+      ticketSunat: ticketSunat ?? this.ticketSunat,
+      codigoRespuestaSunat: codigoRespuestaSunat ?? this.codigoRespuestaSunat,
+      mensajeRespuestaSunat:
+          mensajeRespuestaSunat ?? this.mensajeRespuestaSunat,
+      cdr: cdr ?? this.cdr,
+      fechaEnvioSunat: fechaEnvioSunat ?? this.fechaEnvioSunat,
+      fechaRespuestaSunat: fechaRespuestaSunat ?? this.fechaRespuestaSunat,
+      observaciones: observaciones ?? this.observaciones,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (fechaReferencia.present) {
+      map['fecha_referencia'] = Variable<DateTime>(fechaReferencia.value);
+    }
+    if (correlativo.present) {
+      map['correlativo'] = Variable<int>(correlativo.value);
+    }
+    if (nombreArchivo.present) {
+      map['nombre_archivo'] = Variable<String>(nombreArchivo.value);
+    }
+    if (xml.present) {
+      map['xml'] = Variable<String>(xml.value);
+    }
+    if (estado.present) {
+      map['estado'] = Variable<String>(estado.value);
+    }
+    if (ticketSunat.present) {
+      map['ticket_sunat'] = Variable<String>(ticketSunat.value);
+    }
+    if (codigoRespuestaSunat.present) {
+      map['codigo_respuesta_sunat'] = Variable<String>(
+        codigoRespuestaSunat.value,
+      );
+    }
+    if (mensajeRespuestaSunat.present) {
+      map['mensaje_respuesta_sunat'] = Variable<String>(
+        mensajeRespuestaSunat.value,
+      );
+    }
+    if (cdr.present) {
+      map['cdr'] = Variable<String>(cdr.value);
+    }
+    if (fechaEnvioSunat.present) {
+      map['fecha_envio_sunat'] = Variable<DateTime>(fechaEnvioSunat.value);
+    }
+    if (fechaRespuestaSunat.present) {
+      map['fecha_respuesta_sunat'] = Variable<DateTime>(
+        fechaRespuestaSunat.value,
+      );
+    }
+    if (observaciones.present) {
+      map['observaciones'] = Variable<String>(observaciones.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ResumenesDiariosCompanion(')
+          ..write('id: $id, ')
+          ..write('fechaReferencia: $fechaReferencia, ')
+          ..write('correlativo: $correlativo, ')
+          ..write('nombreArchivo: $nombreArchivo, ')
+          ..write('xml: $xml, ')
+          ..write('estado: $estado, ')
+          ..write('ticketSunat: $ticketSunat, ')
+          ..write('codigoRespuestaSunat: $codigoRespuestaSunat, ')
+          ..write('mensajeRespuestaSunat: $mensajeRespuestaSunat, ')
+          ..write('cdr: $cdr, ')
+          ..write('fechaEnvioSunat: $fechaEnvioSunat, ')
+          ..write('fechaRespuestaSunat: $fechaRespuestaSunat, ')
+          ..write('observaciones: $observaciones')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ResumenesDiariosDetallesTable extends ResumenesDiariosDetalles
+    with TableInfo<$ResumenesDiariosDetallesTable, ResumenesDiariosDetalle> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ResumenesDiariosDetallesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _resumenDiarioIdMeta = const VerificationMeta(
+    'resumenDiarioId',
+  );
+  @override
+  late final GeneratedColumn<int> resumenDiarioId = GeneratedColumn<int>(
+    'resumen_diario_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _comprobanteElectronicoIdMeta =
+      const VerificationMeta('comprobanteElectronicoId');
+  @override
+  late final GeneratedColumn<int> comprobanteElectronicoId =
+      GeneratedColumn<int>(
+        'comprobante_electronico_id',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _lineIdMeta = const VerificationMeta('lineId');
+  @override
+  late final GeneratedColumn<int> lineId = GeneratedColumn<int>(
+    'line_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    resumenDiarioId,
+    comprobanteElectronicoId,
+    lineId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'resumenes_diarios_detalles';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ResumenesDiariosDetalle> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('resumen_diario_id')) {
+      context.handle(
+        _resumenDiarioIdMeta,
+        resumenDiarioId.isAcceptableOrUnknown(
+          data['resumen_diario_id']!,
+          _resumenDiarioIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_resumenDiarioIdMeta);
+    }
+    if (data.containsKey('comprobante_electronico_id')) {
+      context.handle(
+        _comprobanteElectronicoIdMeta,
+        comprobanteElectronicoId.isAcceptableOrUnknown(
+          data['comprobante_electronico_id']!,
+          _comprobanteElectronicoIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_comprobanteElectronicoIdMeta);
+    }
+    if (data.containsKey('line_id')) {
+      context.handle(
+        _lineIdMeta,
+        lineId.isAcceptableOrUnknown(data['line_id']!, _lineIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lineIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {resumenDiarioId, comprobanteElectronicoId},
+  ];
+  @override
+  ResumenesDiariosDetalle map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ResumenesDiariosDetalle(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      resumenDiarioId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}resumen_diario_id'],
+      )!,
+      comprobanteElectronicoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}comprobante_electronico_id'],
+      )!,
+      lineId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}line_id'],
+      )!,
+    );
+  }
+
+  @override
+  $ResumenesDiariosDetallesTable createAlias(String alias) {
+    return $ResumenesDiariosDetallesTable(attachedDatabase, alias);
+  }
+}
+
+class ResumenesDiariosDetalle extends DataClass
+    implements Insertable<ResumenesDiariosDetalle> {
+  final int id;
+
+  /// Resumen Diario al que pertenece esta línea.
+  final int resumenDiarioId;
+
+  /// Comprobante electrónico incluido en esta línea.
+  final int comprobanteElectronicoId;
+
+  /// Número de línea del comprobante dentro del SummaryDocuments.
+  ///
+  /// Ejemplo:
+  /// 1 = primera boleta
+  /// 2 = segunda boleta
+  /// 3 = tercera boleta
+  final int lineId;
+  const ResumenesDiariosDetalle({
+    required this.id,
+    required this.resumenDiarioId,
+    required this.comprobanteElectronicoId,
+    required this.lineId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['resumen_diario_id'] = Variable<int>(resumenDiarioId);
+    map['comprobante_electronico_id'] = Variable<int>(comprobanteElectronicoId);
+    map['line_id'] = Variable<int>(lineId);
+    return map;
+  }
+
+  ResumenesDiariosDetallesCompanion toCompanion(bool nullToAbsent) {
+    return ResumenesDiariosDetallesCompanion(
+      id: Value(id),
+      resumenDiarioId: Value(resumenDiarioId),
+      comprobanteElectronicoId: Value(comprobanteElectronicoId),
+      lineId: Value(lineId),
+    );
+  }
+
+  factory ResumenesDiariosDetalle.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ResumenesDiariosDetalle(
+      id: serializer.fromJson<int>(json['id']),
+      resumenDiarioId: serializer.fromJson<int>(json['resumenDiarioId']),
+      comprobanteElectronicoId: serializer.fromJson<int>(
+        json['comprobanteElectronicoId'],
+      ),
+      lineId: serializer.fromJson<int>(json['lineId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'resumenDiarioId': serializer.toJson<int>(resumenDiarioId),
+      'comprobanteElectronicoId': serializer.toJson<int>(
+        comprobanteElectronicoId,
+      ),
+      'lineId': serializer.toJson<int>(lineId),
+    };
+  }
+
+  ResumenesDiariosDetalle copyWith({
+    int? id,
+    int? resumenDiarioId,
+    int? comprobanteElectronicoId,
+    int? lineId,
+  }) => ResumenesDiariosDetalle(
+    id: id ?? this.id,
+    resumenDiarioId: resumenDiarioId ?? this.resumenDiarioId,
+    comprobanteElectronicoId:
+        comprobanteElectronicoId ?? this.comprobanteElectronicoId,
+    lineId: lineId ?? this.lineId,
+  );
+  ResumenesDiariosDetalle copyWithCompanion(
+    ResumenesDiariosDetallesCompanion data,
+  ) {
+    return ResumenesDiariosDetalle(
+      id: data.id.present ? data.id.value : this.id,
+      resumenDiarioId: data.resumenDiarioId.present
+          ? data.resumenDiarioId.value
+          : this.resumenDiarioId,
+      comprobanteElectronicoId: data.comprobanteElectronicoId.present
+          ? data.comprobanteElectronicoId.value
+          : this.comprobanteElectronicoId,
+      lineId: data.lineId.present ? data.lineId.value : this.lineId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ResumenesDiariosDetalle(')
+          ..write('id: $id, ')
+          ..write('resumenDiarioId: $resumenDiarioId, ')
+          ..write('comprobanteElectronicoId: $comprobanteElectronicoId, ')
+          ..write('lineId: $lineId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, resumenDiarioId, comprobanteElectronicoId, lineId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ResumenesDiariosDetalle &&
+          other.id == this.id &&
+          other.resumenDiarioId == this.resumenDiarioId &&
+          other.comprobanteElectronicoId == this.comprobanteElectronicoId &&
+          other.lineId == this.lineId);
+}
+
+class ResumenesDiariosDetallesCompanion
+    extends UpdateCompanion<ResumenesDiariosDetalle> {
+  final Value<int> id;
+  final Value<int> resumenDiarioId;
+  final Value<int> comprobanteElectronicoId;
+  final Value<int> lineId;
+  const ResumenesDiariosDetallesCompanion({
+    this.id = const Value.absent(),
+    this.resumenDiarioId = const Value.absent(),
+    this.comprobanteElectronicoId = const Value.absent(),
+    this.lineId = const Value.absent(),
+  });
+  ResumenesDiariosDetallesCompanion.insert({
+    this.id = const Value.absent(),
+    required int resumenDiarioId,
+    required int comprobanteElectronicoId,
+    required int lineId,
+  }) : resumenDiarioId = Value(resumenDiarioId),
+       comprobanteElectronicoId = Value(comprobanteElectronicoId),
+       lineId = Value(lineId);
+  static Insertable<ResumenesDiariosDetalle> custom({
+    Expression<int>? id,
+    Expression<int>? resumenDiarioId,
+    Expression<int>? comprobanteElectronicoId,
+    Expression<int>? lineId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (resumenDiarioId != null) 'resumen_diario_id': resumenDiarioId,
+      if (comprobanteElectronicoId != null)
+        'comprobante_electronico_id': comprobanteElectronicoId,
+      if (lineId != null) 'line_id': lineId,
+    });
+  }
+
+  ResumenesDiariosDetallesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? resumenDiarioId,
+    Value<int>? comprobanteElectronicoId,
+    Value<int>? lineId,
+  }) {
+    return ResumenesDiariosDetallesCompanion(
+      id: id ?? this.id,
+      resumenDiarioId: resumenDiarioId ?? this.resumenDiarioId,
+      comprobanteElectronicoId:
+          comprobanteElectronicoId ?? this.comprobanteElectronicoId,
+      lineId: lineId ?? this.lineId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (resumenDiarioId.present) {
+      map['resumen_diario_id'] = Variable<int>(resumenDiarioId.value);
+    }
+    if (comprobanteElectronicoId.present) {
+      map['comprobante_electronico_id'] = Variable<int>(
+        comprobanteElectronicoId.value,
+      );
+    }
+    if (lineId.present) {
+      map['line_id'] = Variable<int>(lineId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ResumenesDiariosDetallesCompanion(')
+          ..write('id: $id, ')
+          ..write('resumenDiarioId: $resumenDiarioId, ')
+          ..write('comprobanteElectronicoId: $comprobanteElectronicoId, ')
+          ..write('lineId: $lineId')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -11471,6 +12648,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $CorrelativosTable correlativos = $CorrelativosTable(this);
   late final $PedidosTable pedidos = $PedidosTable(this);
   late final $PedidoDetallesTable pedidoDetalles = $PedidoDetallesTable(this);
+  late final $ResumenesDiariosTable resumenesDiarios = $ResumenesDiariosTable(
+    this,
+  );
+  late final $ResumenesDiariosDetallesTable resumenesDiariosDetalles =
+      $ResumenesDiariosDetallesTable(this);
   late final ProductosDao productosDao = ProductosDao(this as AppDatabase);
   late final InsumosDao insumosDao = InsumosDao(this as AppDatabase);
   late final RecetasDao recetasDao = RecetasDao(this as AppDatabase);
@@ -11489,6 +12671,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final ComprobantesElectronicosDao comprobantesElectronicosDao =
       ComprobantesElectronicosDao(this as AppDatabase);
+  late final ResumenesDiariosDao resumenesDiariosDao = ResumenesDiariosDao(
+    this as AppDatabase,
+  );
+  late final ResumenesDiariosDetallesDao resumenesDiariosDetallesDao =
+      ResumenesDiariosDetallesDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -11512,6 +12699,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     correlativos,
     pedidos,
     pedidoDetalles,
+    resumenesDiarios,
+    resumenesDiariosDetalles,
   ];
 }
 
@@ -17292,6 +18481,574 @@ typedef $$PedidoDetallesTableProcessedTableManager =
       PedidoDetalle,
       PrefetchHooks Function()
     >;
+typedef $$ResumenesDiariosTableCreateCompanionBuilder =
+    ResumenesDiariosCompanion Function({
+      Value<int> id,
+      required DateTime fechaReferencia,
+      required int correlativo,
+      required String nombreArchivo,
+      Value<String?> xml,
+      Value<String> estado,
+      Value<String?> ticketSunat,
+      Value<String?> codigoRespuestaSunat,
+      Value<String?> mensajeRespuestaSunat,
+      Value<String?> cdr,
+      Value<DateTime?> fechaEnvioSunat,
+      Value<DateTime?> fechaRespuestaSunat,
+      Value<String?> observaciones,
+    });
+typedef $$ResumenesDiariosTableUpdateCompanionBuilder =
+    ResumenesDiariosCompanion Function({
+      Value<int> id,
+      Value<DateTime> fechaReferencia,
+      Value<int> correlativo,
+      Value<String> nombreArchivo,
+      Value<String?> xml,
+      Value<String> estado,
+      Value<String?> ticketSunat,
+      Value<String?> codigoRespuestaSunat,
+      Value<String?> mensajeRespuestaSunat,
+      Value<String?> cdr,
+      Value<DateTime?> fechaEnvioSunat,
+      Value<DateTime?> fechaRespuestaSunat,
+      Value<String?> observaciones,
+    });
+
+class $$ResumenesDiariosTableFilterComposer
+    extends Composer<_$AppDatabase, $ResumenesDiariosTable> {
+  $$ResumenesDiariosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaReferencia => $composableBuilder(
+    column: $table.fechaReferencia,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get correlativo => $composableBuilder(
+    column: $table.correlativo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nombreArchivo => $composableBuilder(
+    column: $table.nombreArchivo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get xml => $composableBuilder(
+    column: $table.xml,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get estado => $composableBuilder(
+    column: $table.estado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ticketSunat => $composableBuilder(
+    column: $table.ticketSunat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get codigoRespuestaSunat => $composableBuilder(
+    column: $table.codigoRespuestaSunat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mensajeRespuestaSunat => $composableBuilder(
+    column: $table.mensajeRespuestaSunat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cdr => $composableBuilder(
+    column: $table.cdr,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaEnvioSunat => $composableBuilder(
+    column: $table.fechaEnvioSunat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaRespuestaSunat => $composableBuilder(
+    column: $table.fechaRespuestaSunat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ResumenesDiariosTableOrderingComposer
+    extends Composer<_$AppDatabase, $ResumenesDiariosTable> {
+  $$ResumenesDiariosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaReferencia => $composableBuilder(
+    column: $table.fechaReferencia,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get correlativo => $composableBuilder(
+    column: $table.correlativo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nombreArchivo => $composableBuilder(
+    column: $table.nombreArchivo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get xml => $composableBuilder(
+    column: $table.xml,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get estado => $composableBuilder(
+    column: $table.estado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ticketSunat => $composableBuilder(
+    column: $table.ticketSunat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get codigoRespuestaSunat => $composableBuilder(
+    column: $table.codigoRespuestaSunat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mensajeRespuestaSunat => $composableBuilder(
+    column: $table.mensajeRespuestaSunat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cdr => $composableBuilder(
+    column: $table.cdr,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaEnvioSunat => $composableBuilder(
+    column: $table.fechaEnvioSunat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaRespuestaSunat => $composableBuilder(
+    column: $table.fechaRespuestaSunat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ResumenesDiariosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ResumenesDiariosTable> {
+  $$ResumenesDiariosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fechaReferencia => $composableBuilder(
+    column: $table.fechaReferencia,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get correlativo => $composableBuilder(
+    column: $table.correlativo,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get nombreArchivo => $composableBuilder(
+    column: $table.nombreArchivo,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get xml =>
+      $composableBuilder(column: $table.xml, builder: (column) => column);
+
+  GeneratedColumn<String> get estado =>
+      $composableBuilder(column: $table.estado, builder: (column) => column);
+
+  GeneratedColumn<String> get ticketSunat => $composableBuilder(
+    column: $table.ticketSunat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get codigoRespuestaSunat => $composableBuilder(
+    column: $table.codigoRespuestaSunat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get mensajeRespuestaSunat => $composableBuilder(
+    column: $table.mensajeRespuestaSunat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cdr =>
+      $composableBuilder(column: $table.cdr, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fechaEnvioSunat => $composableBuilder(
+    column: $table.fechaEnvioSunat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get fechaRespuestaSunat => $composableBuilder(
+    column: $table.fechaRespuestaSunat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => column,
+  );
+}
+
+class $$ResumenesDiariosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ResumenesDiariosTable,
+          ResumenesDiario,
+          $$ResumenesDiariosTableFilterComposer,
+          $$ResumenesDiariosTableOrderingComposer,
+          $$ResumenesDiariosTableAnnotationComposer,
+          $$ResumenesDiariosTableCreateCompanionBuilder,
+          $$ResumenesDiariosTableUpdateCompanionBuilder,
+          (
+            ResumenesDiario,
+            BaseReferences<
+              _$AppDatabase,
+              $ResumenesDiariosTable,
+              ResumenesDiario
+            >,
+          ),
+          ResumenesDiario,
+          PrefetchHooks Function()
+        > {
+  $$ResumenesDiariosTableTableManager(
+    _$AppDatabase db,
+    $ResumenesDiariosTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ResumenesDiariosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ResumenesDiariosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ResumenesDiariosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<DateTime> fechaReferencia = const Value.absent(),
+                Value<int> correlativo = const Value.absent(),
+                Value<String> nombreArchivo = const Value.absent(),
+                Value<String?> xml = const Value.absent(),
+                Value<String> estado = const Value.absent(),
+                Value<String?> ticketSunat = const Value.absent(),
+                Value<String?> codigoRespuestaSunat = const Value.absent(),
+                Value<String?> mensajeRespuestaSunat = const Value.absent(),
+                Value<String?> cdr = const Value.absent(),
+                Value<DateTime?> fechaEnvioSunat = const Value.absent(),
+                Value<DateTime?> fechaRespuestaSunat = const Value.absent(),
+                Value<String?> observaciones = const Value.absent(),
+              }) => ResumenesDiariosCompanion(
+                id: id,
+                fechaReferencia: fechaReferencia,
+                correlativo: correlativo,
+                nombreArchivo: nombreArchivo,
+                xml: xml,
+                estado: estado,
+                ticketSunat: ticketSunat,
+                codigoRespuestaSunat: codigoRespuestaSunat,
+                mensajeRespuestaSunat: mensajeRespuestaSunat,
+                cdr: cdr,
+                fechaEnvioSunat: fechaEnvioSunat,
+                fechaRespuestaSunat: fechaRespuestaSunat,
+                observaciones: observaciones,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required DateTime fechaReferencia,
+                required int correlativo,
+                required String nombreArchivo,
+                Value<String?> xml = const Value.absent(),
+                Value<String> estado = const Value.absent(),
+                Value<String?> ticketSunat = const Value.absent(),
+                Value<String?> codigoRespuestaSunat = const Value.absent(),
+                Value<String?> mensajeRespuestaSunat = const Value.absent(),
+                Value<String?> cdr = const Value.absent(),
+                Value<DateTime?> fechaEnvioSunat = const Value.absent(),
+                Value<DateTime?> fechaRespuestaSunat = const Value.absent(),
+                Value<String?> observaciones = const Value.absent(),
+              }) => ResumenesDiariosCompanion.insert(
+                id: id,
+                fechaReferencia: fechaReferencia,
+                correlativo: correlativo,
+                nombreArchivo: nombreArchivo,
+                xml: xml,
+                estado: estado,
+                ticketSunat: ticketSunat,
+                codigoRespuestaSunat: codigoRespuestaSunat,
+                mensajeRespuestaSunat: mensajeRespuestaSunat,
+                cdr: cdr,
+                fechaEnvioSunat: fechaEnvioSunat,
+                fechaRespuestaSunat: fechaRespuestaSunat,
+                observaciones: observaciones,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ResumenesDiariosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ResumenesDiariosTable,
+      ResumenesDiario,
+      $$ResumenesDiariosTableFilterComposer,
+      $$ResumenesDiariosTableOrderingComposer,
+      $$ResumenesDiariosTableAnnotationComposer,
+      $$ResumenesDiariosTableCreateCompanionBuilder,
+      $$ResumenesDiariosTableUpdateCompanionBuilder,
+      (
+        ResumenesDiario,
+        BaseReferences<_$AppDatabase, $ResumenesDiariosTable, ResumenesDiario>,
+      ),
+      ResumenesDiario,
+      PrefetchHooks Function()
+    >;
+typedef $$ResumenesDiariosDetallesTableCreateCompanionBuilder =
+    ResumenesDiariosDetallesCompanion Function({
+      Value<int> id,
+      required int resumenDiarioId,
+      required int comprobanteElectronicoId,
+      required int lineId,
+    });
+typedef $$ResumenesDiariosDetallesTableUpdateCompanionBuilder =
+    ResumenesDiariosDetallesCompanion Function({
+      Value<int> id,
+      Value<int> resumenDiarioId,
+      Value<int> comprobanteElectronicoId,
+      Value<int> lineId,
+    });
+
+class $$ResumenesDiariosDetallesTableFilterComposer
+    extends Composer<_$AppDatabase, $ResumenesDiariosDetallesTable> {
+  $$ResumenesDiariosDetallesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get resumenDiarioId => $composableBuilder(
+    column: $table.resumenDiarioId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get comprobanteElectronicoId => $composableBuilder(
+    column: $table.comprobanteElectronicoId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lineId => $composableBuilder(
+    column: $table.lineId,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ResumenesDiariosDetallesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ResumenesDiariosDetallesTable> {
+  $$ResumenesDiariosDetallesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get resumenDiarioId => $composableBuilder(
+    column: $table.resumenDiarioId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get comprobanteElectronicoId => $composableBuilder(
+    column: $table.comprobanteElectronicoId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lineId => $composableBuilder(
+    column: $table.lineId,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ResumenesDiariosDetallesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ResumenesDiariosDetallesTable> {
+  $$ResumenesDiariosDetallesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get resumenDiarioId => $composableBuilder(
+    column: $table.resumenDiarioId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get comprobanteElectronicoId => $composableBuilder(
+    column: $table.comprobanteElectronicoId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lineId =>
+      $composableBuilder(column: $table.lineId, builder: (column) => column);
+}
+
+class $$ResumenesDiariosDetallesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ResumenesDiariosDetallesTable,
+          ResumenesDiariosDetalle,
+          $$ResumenesDiariosDetallesTableFilterComposer,
+          $$ResumenesDiariosDetallesTableOrderingComposer,
+          $$ResumenesDiariosDetallesTableAnnotationComposer,
+          $$ResumenesDiariosDetallesTableCreateCompanionBuilder,
+          $$ResumenesDiariosDetallesTableUpdateCompanionBuilder,
+          (
+            ResumenesDiariosDetalle,
+            BaseReferences<
+              _$AppDatabase,
+              $ResumenesDiariosDetallesTable,
+              ResumenesDiariosDetalle
+            >,
+          ),
+          ResumenesDiariosDetalle,
+          PrefetchHooks Function()
+        > {
+  $$ResumenesDiariosDetallesTableTableManager(
+    _$AppDatabase db,
+    $ResumenesDiariosDetallesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ResumenesDiariosDetallesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$ResumenesDiariosDetallesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ResumenesDiariosDetallesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> resumenDiarioId = const Value.absent(),
+                Value<int> comprobanteElectronicoId = const Value.absent(),
+                Value<int> lineId = const Value.absent(),
+              }) => ResumenesDiariosDetallesCompanion(
+                id: id,
+                resumenDiarioId: resumenDiarioId,
+                comprobanteElectronicoId: comprobanteElectronicoId,
+                lineId: lineId,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int resumenDiarioId,
+                required int comprobanteElectronicoId,
+                required int lineId,
+              }) => ResumenesDiariosDetallesCompanion.insert(
+                id: id,
+                resumenDiarioId: resumenDiarioId,
+                comprobanteElectronicoId: comprobanteElectronicoId,
+                lineId: lineId,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ResumenesDiariosDetallesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ResumenesDiariosDetallesTable,
+      ResumenesDiariosDetalle,
+      $$ResumenesDiariosDetallesTableFilterComposer,
+      $$ResumenesDiariosDetallesTableOrderingComposer,
+      $$ResumenesDiariosDetallesTableAnnotationComposer,
+      $$ResumenesDiariosDetallesTableCreateCompanionBuilder,
+      $$ResumenesDiariosDetallesTableUpdateCompanionBuilder,
+      (
+        ResumenesDiariosDetalle,
+        BaseReferences<
+          _$AppDatabase,
+          $ResumenesDiariosDetallesTable,
+          ResumenesDiariosDetalle
+        >,
+      ),
+      ResumenesDiariosDetalle,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -17335,4 +19092,11 @@ class $AppDatabaseManager {
       $$PedidosTableTableManager(_db, _db.pedidos);
   $$PedidoDetallesTableTableManager get pedidoDetalles =>
       $$PedidoDetallesTableTableManager(_db, _db.pedidoDetalles);
+  $$ResumenesDiariosTableTableManager get resumenesDiarios =>
+      $$ResumenesDiariosTableTableManager(_db, _db.resumenesDiarios);
+  $$ResumenesDiariosDetallesTableTableManager get resumenesDiariosDetalles =>
+      $$ResumenesDiariosDetallesTableTableManager(
+        _db,
+        _db.resumenesDiariosDetalles,
+      );
 }

@@ -51,9 +51,6 @@ class ResumenDiarioXmlService {
     buffer.writeln('  <cbc:ID>${_escape(idResumen)}</cbc:ID>');
     buffer.writeln('  <cbc:ReferenceDate>$fecha</cbc:ReferenceDate>');
     buffer.writeln('  <cbc:IssueDate>$fecha</cbc:IssueDate>');
-    buffer.writeln(
-      '  <cbc:Note>CONSOLIDADO DE BOLETAS DE VENTA</cbc:Note>',
-    );
 
     buffer.writeln('  <cac:Signature>');
     buffer.writeln('    <cbc:ID>${_escape(idResumen)}</cbc:ID>');
@@ -79,17 +76,16 @@ class ResumenDiarioXmlService {
     buffer.writeln('  </cac:Signature>');
 
     buffer.writeln('  <cac:AccountingSupplierParty>');
+    buffer.writeln(
+      '    <cbc:CustomerAssignedAccountID>${_escape(rucEmisor)}</cbc:CustomerAssignedAccountID>',
+    );
+    buffer.writeln('    <cbc:AdditionalAccountID>6</cbc:AdditionalAccountID>');
     buffer.writeln('    <cac:Party>');
-    buffer.writeln('      <cac:PartyIdentification>');
+    buffer.writeln('      <cac:PartyLegalEntity>');
     buffer.writeln(
-      '        <cbc:ID>${_escape(rucEmisor)}</cbc:ID>',
+      '        <cbc:RegistrationName>${_escape(razonSocialEmisor)}</cbc:RegistrationName>',
     );
-    buffer.writeln('      </cac:PartyIdentification>');
-    buffer.writeln('      <cac:PartyName>');
-    buffer.writeln(
-      '        <cbc:Name>${_escape(razonSocialEmisor)}</cbc:Name>',
-    );
-    buffer.writeln('      </cac:PartyName>');
+    buffer.writeln('      </cac:PartyLegalEntity>');
     buffer.writeln('    </cac:Party>');
     buffer.writeln('  </cac:AccountingSupplierParty>');
 
@@ -174,6 +170,13 @@ class ResumenDiarioXmlService {
       '        <cbc:TaxAmount currencyID="${_escape(linea.moneda)}">${_importe(linea.igv)}</cbc:TaxAmount>',
     );
     buffer.writeln('        <cac:TaxCategory>');
+    final porcentajeIgv = linea.valorVentaGravada > 0
+    ? (linea.igv / linea.valorVentaGravada) * 100
+    : 0.0;
+
+    buffer.writeln(
+    '          <cbc:Percent>${_importe(porcentajeIgv)}</cbc:Percent>',
+    );
     buffer.writeln('          <cac:TaxScheme>');
     buffer.writeln('            <cbc:ID>1000</cbc:ID>');
     buffer.writeln('            <cbc:Name>IGV</cbc:Name>');

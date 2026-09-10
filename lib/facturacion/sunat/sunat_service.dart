@@ -1,10 +1,11 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 
 import '../models/respuesta_sunat.dart';
+import '../models/respuesta_resumen_diario.dart';
 
 class SunatService {
   // ==========================================================
@@ -18,7 +19,7 @@ class SunatService {
       'https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService';
 
   // ==========================================================
-  // CONFIGURACIÃ“N
+  // CONFIGURACION
   // ==========================================================
 
   final String ruc;
@@ -49,7 +50,7 @@ class SunatService {
 
     print('');
     print('==================================================');
-    print('ðŸš€ ENVÃO DE COMPROBANTE A SUNAT');
+    print(' ENVIO DE COMPROBANTE A SUNAT');
     print('==================================================');
 
     // --------------------------------------------------------
@@ -57,7 +58,7 @@ class SunatService {
     // --------------------------------------------------------
 
     if (xmlFirmado.trim().isEmpty) {
-      throw StateError('No se puede enviar un XML vacÃ­o a SUNAT.');
+      throw StateError('No se puede enviar un XML vacio a SUNAT.');
     }
 
     if (!xmlFirmado.contains('<ds:Signature')) {
@@ -83,21 +84,21 @@ class SunatService {
 
     final nombreZip = '$nombreBase.zip';
 
-    print('ðŸ“„ XML: $nombreXml');
-    print('ðŸ“¦ ZIP: $nombreZip');
+    print('[XML] XML: $nombreXml');
+    print('[ZIP] ZIP: $nombreZip');
 
     // --------------------------------------------------------
-    // 3. XML â†’ BYTES
+    // 3. XML -> BYTES
     // --------------------------------------------------------
 
     final xmlBytes = utf8.encode(xmlFirmado);
-// --------------------------------------------------------
-    // 4. CREAR ZIP
+
+    // ==========================================================
     // --------------------------------------------------------
 
     final zipBytes = _crearZip(nombreXml, xmlBytes);
 
-    print('ðŸ“¦ ZIP generado: ${zipBytes.length} bytes');
+    print(' ZIP generado: ${zipBytes.length} bytes');
 
     // --------------------------------------------------------
     // 5. ENVIAR A SUNAT
@@ -108,7 +109,7 @@ class SunatService {
       zipBytes: zipBytes,
     );
 
-    print('ðŸ“¡ HTTP SUNAT: ${respuestaHttp.statusCode}');
+    print('[HTTP] HTTP SUNAT: ${respuestaHttp.statusCode}');
 
     // --------------------------------------------------------
     // 6. PROCESAR RESPUESTA
@@ -120,11 +121,11 @@ class SunatService {
 
     print('');
     print('==================================================');
-    print('ðŸ“¨ RESPUESTA SUNAT');
+    print('[RESPUESTA] RESPUESTA SUNAT');
     print('==================================================');
 
     print(
-      'â± Tiempo: '
+      ' Tiempo: '
       '${fechaFin.difference(fechaInicio).inMilliseconds} ms',
     );
 
@@ -133,7 +134,7 @@ class SunatService {
       '${respuesta.aceptado ? 'ACEPTADO' : 'RECHAZADO'}',
     );
 
-    print('CÃ³digo: ${respuesta.codigo ?? '-'}');
+    print('Codigo: ${respuesta.codigo ?? '-'}');
 
     print('Mensaje: ${respuesta.mensaje ?? '-'}');
 
@@ -142,6 +143,83 @@ class SunatService {
     return respuesta;
   }
 
+
+  // ==========================================================
+  // ENVIAR RESUMEN DIARIO
+  // ==========================================================
+
+  Future<RespuestaResumenDiario> enviarResumenDiario({
+    required String xmlFirmado,
+    required String nombreXml,
+    required String nombreZip,
+  }) async {
+    final fechaInicio = DateTime.now();
+
+    print('');
+    print('==================================================');
+    print(' ENVIO DE RESUMEN DIARIO A SUNAT');
+    print('==================================================');
+
+    if (xmlFirmado.trim().isEmpty) {
+      throw StateError(
+        'No se puede enviar un Resumen Diario XML vacio a SUNAT.',
+      );
+    }
+
+    if (!xmlFirmado.contains('<ds:Signature')) {
+      throw StateError(
+        'El Resumen Diario no contiene una firma digital ds:Signature.',
+      );
+    }
+
+    if (!xmlFirmado.contains('<ds:SignatureValue>')) {
+      throw StateError(
+        'El Resumen Diario no contiene ds:SignatureValue.',
+      );
+    }
+
+    if (!xmlFirmado.contains('<ds:X509Certificate>')) {
+      throw StateError(
+        'El Resumen Diario no contiene ds:X509Certificate.',
+      );
+    }
+
+    final xmlBytes = utf8.encode(xmlFirmado);
+
+    final zipBytes = _crearZip(nombreXml, xmlBytes);
+
+    print('[XML] XML: $nombreXml');
+    print('[ZIP] ZIP: $nombreZip');
+    print(' ZIP generado: ${zipBytes.length} bytes');
+
+    final respuestaHttp = await _enviarSummarySoap(
+      nombreZip: nombreZip,
+      zipBytes: zipBytes,
+    );
+
+    print('[HTTP] HTTP SUNAT: ${respuestaHttp.statusCode}');
+
+    final respuesta = _procesarRespuestaResumen(
+      respuestaHttp,
+    );
+
+    final fechaFin = DateTime.now();
+
+    print('');
+    print('==================================================');
+    print('[RESPUESTA] RESPUESTA RESUMEN DIARIO');
+    print('==================================================');
+    print(
+      ' Tiempo: '
+      '${fechaFin.difference(fechaInicio).inMilliseconds} ms',
+    );
+    print('Ticket: ${respuesta.ticket ?? '-'}');
+    print('Codigo: ${respuesta.codigo ?? '-'}');
+    print('Mensaje: ${respuesta.mensaje ?? '-'}');
+    print('==================================================');
+
+    return respuesta;
+  }
   // ==========================================================
   // CREAR ZIP
   // ==========================================================
@@ -163,6 +241,95 @@ class SunatService {
   }
 
   // ==========================================================
+  // SOAP SEND SUMMARY
+  // ==========================================================
+
+  Future<_RespuestaHttp> _enviarSummarySoap({
+    required String nombreZip,
+    required Uint8List zipBytes,
+  }) async {
+    final client = HttpClient();
+
+    try {
+      final uri = Uri.parse(endpoint);
+
+      final contentFileBase64 = base64Encode(zipBytes);
+
+      final soapEnvelope = '''
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:ser="http://service.sunat.gob.pe"
+    xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+
+  <soapenv:Header>
+    <wsse:Security>
+      <wsse:UsernameToken>
+        <wsse:Username>${_escapeXml(_usuarioSunat)}</wsse:Username>
+        <wsse:Password>${_escapeXml(claveSol)}</wsse:Password>
+      </wsse:UsernameToken>
+    </wsse:Security>
+  </soapenv:Header>
+
+  <soapenv:Body>
+    <ser:sendSummary>
+      <fileName>${_escapeXml(nombreZip)}</fileName>
+      <contentFile>$contentFileBase64</contentFile>
+    </ser:sendSummary>
+  </soapenv:Body>
+
+</soapenv:Envelope>
+''';
+
+      final body = utf8.encode(soapEnvelope);
+
+      final request = await client.postUrl(uri);
+
+      request.headers.set(
+        HttpHeaders.contentTypeHeader,
+        'text/xml; charset=UTF-8',
+      );
+
+      request.headers.set(
+        HttpHeaders.acceptHeader,
+        'text/xml',
+      );
+
+      request.headers.set(
+        'SOAPAction',
+        '"urn:sendSummary"',
+      );
+
+      request.headers.set(
+        HttpHeaders.connectionHeader,
+        'close',
+      );
+
+      request.contentLength = body.length;
+
+      print('[ENVIO] Enviando sendSummary a SUNAT...');
+      print(' SOAPAction: "urn:sendSummary"');
+
+      request.add(body);
+
+      final response = await request.close();
+
+      final responseBytes = await response.fold<List<int>>(
+        <int>[],
+            (previous, element) => previous..addAll(element),
+      );
+
+      return _RespuestaHttp(
+        statusCode: response.statusCode,
+        headers: response.headers,
+        body: Uint8List.fromList(responseBytes),
+      );
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  // ==========================================================
   // SOAP
   // ==========================================================
 
@@ -176,7 +343,7 @@ class SunatService {
       final uri = Uri.parse(endpoint);
 
       print('');
-      print('ðŸŒ Endpoint SUNAT:');
+      print(' Endpoint SUNAT:');
       print(endpoint);
 
       // ==========================================================
@@ -186,9 +353,9 @@ class SunatService {
 
       final contentFileBase64 = base64Encode(zipBytes);
 
-      print('ðŸ“¦ ZIP original: ${zipBytes.length} bytes');
+      print(' ZIP original: ${zipBytes.length} bytes');
       print(
-        'ðŸ“¦ ZIP Base64: ${contentFileBase64.length} caracteres',
+        ' ZIP Base64: ${contentFileBase64.length} caracteres',
       );
 
       // ==========================================================
@@ -224,7 +391,7 @@ class SunatService {
       final body = utf8.encode(soapEnvelope);
 
       // ==========================================================
-      // PETICIÃ“N HTTP
+      // PETICION HTTP
       // ==========================================================
 
       final request = await client.postUrl(uri);
@@ -251,11 +418,11 @@ class SunatService {
 
       request.contentLength = body.length;
 
-      print('ðŸ“„ SOAP generado: ${body.length} bytes');
-      print('ðŸ” Usuario SUNAT: $_usuarioSunat');
-      print('ðŸ“¤ Enviando sendBill a SUNAT...');
-      print('ðŸ“¡ Content-Type: text/xml; charset=UTF-8');
-      print('ðŸ“¡ SOAPAction: "urn:sendBill"');
+      print('[SOAP] SOAP generado: ${body.length} bytes');
+      print('[USUARIO] Usuario SUNAT: $_usuarioSunat');
+      print('[ENVIO] Enviando sendBill a SUNAT...');
+      print(' Content-Type: text/xml; charset=UTF-8');
+      print(' SOAPAction: "urn:sendBill"');
 
       request.add(body);
 
@@ -267,12 +434,12 @@ class SunatService {
       );
 
       print(
-        'ðŸ“¥ Respuesta recibida: '
+        ' Respuesta recibida: '
             '${responseBytes.length} bytes',
       );
 
       print(
-        'ðŸ“¡ HTTP SUNAT: ${response.statusCode}',
+        ' HTTP SUNAT: ${response.statusCode}',
       );
 
       if (response.statusCode != 200) {
@@ -298,6 +465,300 @@ class SunatService {
   }
 
   // ==========================================================
+  // CONSULTAR ESTADO DE RESUMEN DIARIO
+  // ==========================================================
+
+  Future<RespuestaResumenDiario> getStatusResumenDiario({
+    required String ticket,
+  }) async {
+    final ticketLimpio = ticket.trim();
+
+    if (ticketLimpio.isEmpty) {
+      return RespuestaResumenDiario.error(
+        codigo: 'TICKET_VACIO',
+        mensaje: 'No se puede consultar un ticket SUNAT vacio.',
+      );
+    }
+
+    print('');
+    print('==================================================');
+    print('[SUNAT] CONSULTA DE ESTADO DEL RESUMEN DIARIO');
+    print('==================================================');
+    print('Ticket: $ticketLimpio');
+
+    final respuestaHttp = await _enviarGetStatusSoap(
+      ticket: ticketLimpio,
+    );
+
+    print('[HTTP] HTTP SUNAT: ${respuestaHttp.statusCode}');
+
+    final respuesta = _procesarRespuestaGetStatus(
+      respuestaHttp,
+      ticket: ticketLimpio,
+    );
+
+    print('[SUNAT] Estado: ${respuesta.codigo ?? '-'}');
+    print('[SUNAT] Mensaje: ${respuesta.mensaje ?? '-'}');
+
+    return respuesta;
+  }
+
+  // ==========================================================
+  // SOAP GET STATUS
+  // ==========================================================
+
+  Future<_RespuestaHttp> _enviarGetStatusSoap({
+    required String ticket,
+  }) async {
+    final client = HttpClient();
+
+    try {
+      final uri = Uri.parse(endpoint);
+
+      final soapEnvelope = '''
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:ser="http://service.sunat.gob.pe"
+    xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+
+  <soapenv:Header>
+    <wsse:Security>
+      <wsse:UsernameToken>
+        <wsse:Username>${_escapeXml(_usuarioSunat)}</wsse:Username>
+        <wsse:Password>${_escapeXml(claveSol)}</wsse:Password>
+      </wsse:UsernameToken>
+    </wsse:Security>
+  </soapenv:Header>
+
+  <soapenv:Body>
+    <ser:getStatus>
+      <ticket>${_escapeXml(ticket)}</ticket>
+    </ser:getStatus>
+  </soapenv:Body>
+
+</soapenv:Envelope>
+''';
+
+      final body = utf8.encode(soapEnvelope);
+
+      final request = await client.postUrl(uri);
+
+      request.headers.set(
+        HttpHeaders.contentTypeHeader,
+        'text/xml; charset=UTF-8',
+      );
+
+      request.headers.set(
+        HttpHeaders.acceptHeader,
+        'text/xml',
+      );
+
+      request.headers.set(
+        'SOAPAction',
+        '"urn:getStatus"',
+      );
+
+      request.headers.set(
+        HttpHeaders.connectionHeader,
+        'close',
+      );
+
+      request.contentLength = body.length;
+
+      print('[ENVIO] Enviando getStatus a SUNAT...');
+      print(' SOAPAction: "urn:getStatus"');
+
+      request.add(body);
+
+      final response = await request.close();
+
+      final responseBytes = await response.fold<List<int>>(
+        <int>[],
+            (previous, element) => previous..addAll(element),
+      );
+
+      return _RespuestaHttp(
+        statusCode: response.statusCode,
+        headers: response.headers,
+        body: Uint8List.fromList(responseBytes),
+      );
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  // ==========================================================
+  // PROCESAR RESPUESTA GET STATUS
+  // ==========================================================
+
+  RespuestaResumenDiario _procesarRespuestaGetStatus(
+      _RespuestaHttp respuestaHttp, {
+        required String ticket,
+      }) {
+    final texto = utf8.decode(
+      respuestaHttp.body,
+      allowMalformed: true,
+    );
+
+    if (respuestaHttp.statusCode < 200 ||
+        respuestaHttp.statusCode >= 300) {
+      return RespuestaResumenDiario.error(
+        codigo: 'HTTP-${respuestaHttp.statusCode}',
+        mensaje:
+        _extraerMensajeSoap(texto) ??
+            'SUNAT respondio HTTP ${respuestaHttp.statusCode}.',
+        xmlRespuesta: texto,
+      );
+    }
+
+    final fault = _extraerTag(texto, 'faultstring');
+
+    if (fault != null && fault.trim().isNotEmpty) {
+      return RespuestaResumenDiario.error(
+        codigo: 'SOAP_FAULT',
+        mensaje: fault.trim(),
+        xmlRespuesta: texto,
+      );
+    }
+
+    final codigo = _extraerTag(texto, 'statusCode')?.trim();
+
+    final mensaje =
+        _extraerTag(texto, 'statusMessage') ??
+            _extraerMensajeSoap(texto);
+
+    if (codigo == '98') {
+      return RespuestaResumenDiario(
+        procesado: false,
+        ticket: ticket,
+        codigo: '98',
+        mensaje:
+        mensaje?.trim() ??
+            'El Resumen Diario continua en proceso.',
+        xmlRespuesta: texto,
+      );
+    }
+
+    final contenido = _extraerTag(texto, 'content');
+
+    if ((codigo == '0' || codigo == '99') &&
+        contenido != null &&
+        contenido.trim().isNotEmpty) {
+      try {
+        final cdrZip = base64.decode(
+          contenido.replaceAll(RegExp(r'\s+'), ''),
+        );
+
+        final respuestaCdr = _procesarCdrZip(
+          cdrZip,
+          xmlRespuesta: texto,
+        );
+
+        return RespuestaResumenDiario.procesado(
+          codigo: respuestaCdr.codigo ?? codigo,
+          mensaje:
+          respuestaCdr.mensaje ??
+              mensaje?.trim(),
+          cdr: respuestaCdr.cdr,
+          xmlRespuesta: texto,
+        );
+      } catch (e) {
+        return RespuestaResumenDiario.error(
+          codigo: 'CDR_ERROR',
+          mensaje:
+          'No se pudo interpretar el CDR del Resumen Diario: $e',
+          xmlRespuesta: texto,
+        );
+      }
+    }
+
+    if (codigo == '0') {
+      return RespuestaResumenDiario.procesado(
+        codigo: '0',
+        mensaje:
+        mensaje?.trim() ??
+            'SUNAT proceso correctamente el Resumen Diario.',
+        xmlRespuesta: texto,
+      );
+    }
+
+    if (codigo == '99') {
+      return RespuestaResumenDiario.error(
+        codigo: '99',
+        mensaje:
+        mensaje?.trim() ??
+            'SUNAT proceso el Resumen Diario con errores.',
+        xmlRespuesta: texto,
+      );
+    }
+
+    return RespuestaResumenDiario.error(
+      codigo: codigo ?? 'RESPUESTA_NO_RECONOCIDA',
+      mensaje:
+      mensaje?.trim() ??
+          'No se pudo interpretar la respuesta de getStatus.',
+      xmlRespuesta: texto,
+    );
+  }
+
+  // ==========================================================
+  // PROCESAR RESPUESTA DE RESUMEN DIARIO
+  // ==========================================================
+
+  RespuestaResumenDiario _procesarRespuestaResumen(
+      _RespuestaHttp respuestaHttp,
+      ) {
+    final texto = utf8.decode(
+      respuestaHttp.body,
+      allowMalformed: true,
+    );
+
+    if (respuestaHttp.statusCode < 200 ||
+        respuestaHttp.statusCode >= 300) {
+      return RespuestaResumenDiario.error(
+        codigo: 'HTTP-${respuestaHttp.statusCode}',
+        mensaje:
+        _extraerMensajeSoap(texto) ??
+            'SUNAT respondio HTTP ${respuestaHttp.statusCode}.',
+        xmlRespuesta: texto,
+      );
+    }
+
+    final fault = _extraerTag(texto, 'faultstring');
+
+    if (fault != null && fault.trim().isNotEmpty) {
+      return RespuestaResumenDiario.error(
+        codigo: 'SOAP_FAULT',
+        mensaje: fault.trim(),
+        xmlRespuesta: texto,
+      );
+    }
+
+    final ticket = _extraerTag(texto, 'ticket');
+
+    if (ticket != null && ticket.trim().isNotEmpty) {
+      return RespuestaResumenDiario.ticket(
+        ticket: ticket.trim(),
+        xmlRespuesta: texto,
+      );
+    }
+
+    final codigo = _extraerTag(texto, 'statusCode');
+
+    final mensaje =
+        _extraerTag(texto, 'statusMessage') ??
+            _extraerMensajeSoap(texto);
+
+    return RespuestaResumenDiario.error(
+      codigo: codigo?.trim() ?? 'RESPUESTA_NO_RECONOCIDA',
+      mensaje: mensaje?.trim() ??
+          'SUNAT no devolvi un ticket para el Resumen Diario.',
+      xmlRespuesta: texto,
+    );
+  }
+
+  // ==========================================================
   // PROCESAR RESPUESTA SUNAT
   // ==========================================================
 
@@ -313,7 +774,7 @@ class SunatService {
         codigo: 'HTTP-${respuestaHttp.statusCode}',
         mensaje:
             _extraerMensajeSoap(texto) ??
-            'SUNAT respondiÃ³ HTTP '
+            'SUNAT respondio HTTP '
                 '${respuestaHttp.statusCode}.',
         xmlRespuesta: texto,
       );
@@ -344,7 +805,7 @@ class SunatService {
 
         return _procesarCdrZip(cdrZip, xmlRespuesta: texto);
       } catch (_) {
-        // ContinÃºa con el procesamiento como XML.
+        // Continua con el procesamiento como XML.
       }
     }
 
@@ -401,7 +862,7 @@ class SunatService {
         return RespuestaSunat.rechazada(
           codigo: 'CDR_SIN_XML',
           mensaje:
-              'SUNAT respondiÃ³ un ZIP, '
+              'SUNAT respondio un ZIP, '
               'pero no contiene un XML de CDR.',
           xmlRespuesta: xmlRespuesta,
         );
@@ -434,7 +895,7 @@ class SunatService {
 
     final mensaje = description?.trim();
 
-    // SUNAT utiliza 0 como cÃ³digo de aceptaciÃ³n.
+    // SUNAT utiliza 0 como codigo de aceptacion.
     final aceptado = codigo == '0';
 
     if (aceptado) {

@@ -17,6 +17,8 @@ import 'dao/cajas_dao.dart';
 import 'dao/usuarios_dao.dart';
 import 'dao/permisos_usuario_dao.dart';
 import 'dao/comprobantes_electronicos_dao.dart';
+import 'dao/resumenes_diarios_dao.dart';
+import 'dao/resumenes_diarios_detalles_dao.dart';
 
 import 'tables/productos_table.dart';
 import 'tables/categorias_table.dart';
@@ -36,6 +38,8 @@ import 'tables/comprobantes_electronicos_table.dart';
 import 'tables/correlativos_table.dart';
 import 'tables/pedidos_table.dart';
 import 'tables/pedido_detalles_table.dart';
+import 'tables/resumenes_diarios_table.dart';
+import 'tables/resumenes_diarios_detalles_table.dart';
 
 part 'app_database.g.dart';
 
@@ -59,6 +63,8 @@ part 'app_database.g.dart';
     Correlativos,
     Pedidos,
     PedidoDetalles,
+    ResumenesDiarios,
+    ResumenesDiariosDetalles,
   ],
   daos: [
     ProductosDao,
@@ -73,13 +79,15 @@ part 'app_database.g.dart';
     UsuariosDao,
     PermisosUsuarioDao,
     ComprobantesElectronicosDao,
+    ResumenesDiariosDao,
+    ResumenesDiariosDetallesDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -112,6 +120,14 @@ class AppDatabase extends _$AppDatabase {
       if (from < 16) {
         await m.createTable(pedidos);
         await m.createTable(pedidoDetalles);
+      }
+
+      if (from < 17) {
+        await m.createTable(resumenesDiarios);
+      }
+
+      if (from < 18) {
+        await m.createTable(resumenesDiariosDetalles);
       }
     },
   );

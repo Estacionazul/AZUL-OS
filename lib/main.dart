@@ -44,6 +44,8 @@ import 'repositories/permisos_usuario_repository.dart';
 import 'services/empresa_service.dart';
 import 'facturacion/services/facturacion_service.dart';
 import 'facturacion/repositories/comprobantes_electronicos_repository.dart';
+import 'facturacion/services/resumen_diario_service.dart';
+import 'facturacion/repositories/resumenes_diarios_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -112,6 +114,10 @@ class AzulOSApp extends StatelessWidget {
           create: (_) => ComprobantesElectronicosRepository(database),
         ),
 
+        Provider<ResumenesDiariosRepository>(
+          create: (_) => ResumenesDiariosRepository(database),
+        ),
+
         Provider<FirmaDigitalService>(
   create: (context) => FirmaDigitalService(
     rutaCertificado: CertificadoService.rutaCertificado,
@@ -130,6 +136,19 @@ Provider<FacturacionService>(
           create: (context) => FacturacionService(
             comprobantesElectronicosRepository: context
                 .read<ComprobantesElectronicosRepository>(),
+          ),
+        ),
+
+        Provider<ResumenDiarioService>(
+          create: (context) => ResumenDiarioService(
+            comprobantesElectronicosRepository:
+            context.read<ComprobantesElectronicosRepository>(),
+            resumenesDiariosRepository:
+            context.read<ResumenesDiariosRepository>(),
+            firmaDigitalService:
+            context.read<FirmaDigitalService>(),
+            sunatService:
+            context.read<SunatService>(),
           ),
         ),
 
@@ -260,7 +279,7 @@ Provider<FacturacionService>(
                 ventasRepository,
                 inventarioAutomaticoService,
                 empresaRepository,
-                __,
+                _,
               ) => CobroService(
                 carritoService: carrito,
                 ventasService: ventas,

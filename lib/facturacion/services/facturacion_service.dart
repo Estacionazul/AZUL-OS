@@ -208,4 +208,28 @@ class FacturacionService {
 
     return xml;
   }
+
+  // ==========================================================
+  // OBTENER BOLETAS POR FECHA
+  // ==========================================================
+
+  Future<List<ComprobantesElectronico>> obtenerBoletasPorFecha(
+      DateTime fecha,
+      ) {
+    return comprobantesElectronicosRepository.obtenerBoletasPorFecha(fecha);
+  }
+
+  // ==========================================================
+  // OBTENER BOLETAS POR RANGO DE FECHA
+  // ==========================================================
+
+  Future<List<ComprobantesElectronico>> obtenerBoletasPorRangoFecha(
+      DateTime inicio,
+      DateTime fin,
+      ) {
+    return comprobantesElectronicosRepository.obtenerBoletasPorRangoFecha(
+      inicio,
+      fin,
+    );
+  }
 }

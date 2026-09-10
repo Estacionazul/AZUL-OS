@@ -151,4 +151,25 @@ class ComprobantesElectronicosRepository {
   ) {
     return _dao.obtenerPorSerieNumero(serie, numero);
   }
+
+  // ==========================================================
+  // OBTENER BOLETAS POR FECHA
+  // ==========================================================
+
+  Future<List<ComprobantesElectronico>> obtenerBoletasPorFecha(
+      DateTime fecha,
+      ) {
+    return _dao.obtenerBoletasPorFecha(fecha);
+  }
+
+  // ==========================================================
+  // OBTENER BOLETAS POR RANGO DE FECHA
+  // ==========================================================
+
+  Future<List<ComprobantesElectronico>> obtenerBoletasPorRangoFecha(
+      DateTime inicio,
+      DateTime fin,
+      ) {
+    return _dao.obtenerBoletasPorRangoFecha(inicio, fin);
+  }
 }
