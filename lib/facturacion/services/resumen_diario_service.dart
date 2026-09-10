@@ -418,6 +418,19 @@ class ResumenDiarioService {
               'el ticket del resumen ${resumen.id}.',
         );
       }
+
+      final estadoEnviado =
+          await resumenesDiariosRepository.actualizarEstado(
+        id: resumen.id,
+        estado: 'enviado',
+      );
+
+      if (!estadoEnviado) {
+        throw StateError(
+          'No se pudo actualizar el estado del resumen '
+              '${resumen.id} a enviado.',
+        );
+      }
     }
 
     return respuesta;
@@ -496,6 +509,7 @@ class ResumenDiarioService {
   mensajeRespuestaSunat: respuesta.mensaje,
   cdr: respuesta.cdr,
   fechaRespuestaSunat: DateTime.now(),
+  estado: estado == 'aceptado' ? 'aceptado' : null,
 );
 
       if (!comprobanteActualizado) {
