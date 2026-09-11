@@ -370,6 +370,15 @@ class ResumenDiarioService {
       );
     }
 
+    final estado = resumen.estado.trim().toLowerCase();
+
+    if (estado != 'generado') {
+      throw StateError(
+        'El resumen ${resumen.id} no está listo para envío. '
+            'Estado actual: ${resumen.estado}.',
+      );
+    }
+
     final xmlFirmado = resumen.xml?.trim();
 
     if (xmlFirmado == null || xmlFirmado.isEmpty) {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'widgets/empresa_form.dart';
 import 'widgets/impresora_form.dart';
 import 'usuarios/usuarios_screen.dart';
+import 'facturacion/facturacion_screen.dart';
 
 class ConfiguracionScreen extends StatelessWidget {
   const ConfiguracionScreen({super.key});
@@ -30,6 +31,18 @@ class ConfiguracionScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
+              _FacturacionElectronicaCard(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const FacturacionScreen(),
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 20),
+
               _UsuariosPermisosCard(
                 onPressed: () {
                   Navigator.of(context).push(
@@ -45,6 +58,72 @@ class ConfiguracionScreen extends StatelessWidget {
   }
 }
 
+class _FacturacionElectronicaCard extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _FacturacionElectronicaCard({
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Row(
+            children: [
+              Container(
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  color: const Color(0xffE8F0F8),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.receipt_long_rounded,
+                  size: 30,
+                  color: Color(0xff0A2E6E),
+                ),
+              ),
+              const SizedBox(width: 18),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Facturación electrónica',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      'Boletas, facturas, resúmenes diarios y estado de SUNAT.',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 18,
+                color: Colors.grey,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 class _UsuariosPermisosCard extends StatelessWidget {
   final VoidCallback onPressed;
 
