@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'resumenes_diarios_screen.dart';
+
 class FacturacionScreen extends StatelessWidget {
   const FacturacionScreen({super.key});
 
@@ -42,7 +44,13 @@ class FacturacionScreen extends StatelessWidget {
               subtitulo:
                   'Crea, genera, envía y consulta el estado de los resúmenes.',
               color: azul,
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const ResumenesDiariosScreen(),
+                  ),
+                );
+              },
             ),
 
             const SizedBox(height: 14),
