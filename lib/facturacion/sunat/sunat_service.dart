@@ -8,6 +8,7 @@ import '../models/respuesta_sunat.dart';
 import '../models/respuesta_resumen_diario.dart';
 
 class SunatService {
+  static const Duration _timeoutRedSunat = Duration(seconds: 45);
   // ==========================================================
   // ENDPOINTS SUNAT
   // ==========================================================
@@ -312,7 +313,7 @@ class SunatService {
 
       request.add(body);
 
-      final response = await request.close();
+      final response = await request.close().timeout(_timeoutRedSunat);
 
       final responseBytes = await response.fold<List<int>>(
         <int>[],
@@ -426,7 +427,7 @@ class SunatService {
 
       request.add(body);
 
-      final response = await request.close();
+      final response = await request.close().timeout(_timeoutRedSunat);
 
       final responseBytes = await response.fold<List<int>>(
         <int>[],
@@ -571,7 +572,7 @@ class SunatService {
 
       request.add(body);
 
-      final response = await request.close();
+      final response = await request.close().timeout(_timeoutRedSunat);
 
       final responseBytes = await response.fold<List<int>>(
         <int>[],
