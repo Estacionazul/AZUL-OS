@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../facturacion/repositories/comprobantes_electronicos_repository.dart';
 import '../../../facturacion/repositories/resumenes_diarios_repository.dart';
+import '../../../facturacion/services/resumen_diario_service.dart';
+import '../../../facturacion/config/sunat_config.dart';
 
 class ResumenesDiariosScreen extends StatefulWidget {
   const ResumenesDiariosScreen({super.key});
@@ -59,6 +61,52 @@ class _ResumenesDiariosScreenState extends State<ResumenesDiariosScreen> {
     }
   }
 
+  Future<void> _crearResumen() async {
+    setState(() {
+      _cargando = true;
+      _error = null;
+    });
+
+    try {
+      final service = context.read<ResumenDiarioService>();
+
+      final resumenId = await service.crearResumenPendiente(
+        fechaReferencia: _fechaSeleccionada,
+        rucEmisor: SunatConfig.ruc,
+      );
+
+      if (!mounted) return;
+
+      await _cargarResumenes();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Resumen diario creado correctamente. ID: $resumenId',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _cargando = false;
+        _error = e.toString();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'No se pudo crear el resumen: ',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
   Future<void> _seleccionarFecha() async {
     final fecha = await showDatePicker(
       context: context,
@@ -169,6 +217,8 @@ class _ResumenesDiariosScreenState extends State<ResumenesDiariosScreen> {
               _encabezado(),
               const SizedBox(height: 20),
               _selectorFecha(),
+              const SizedBox(height: 12),
+              _botonCrearResumen(),
               const SizedBox(height: 20),
               _contenido(),
             ],
@@ -262,6 +312,31 @@ class _ResumenesDiariosScreenState extends State<ResumenesDiariosScreen> {
     );
   }
 
+  Widget _botonCrearResumen() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: _cargando ? null : _crearResumen,
+        icon: const Icon(Icons.add_circle_outline_rounded),
+        label: const Text(
+          'CREAR RESUMEN',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: azul,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 2,
+        ),
+      ),
+    );
+  }
   Widget _contenido() {
     if (_cargando) {
       return const Center(

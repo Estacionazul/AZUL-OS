@@ -175,6 +175,22 @@ class ComprobantesElectronicosDao extends DatabaseAccessor<AppDatabase>
   }
 
   // ==========================================================
+// ACTUALIZAR DNI DEL COMPROBANTE
+// ==========================================================
+
+  Future<bool> actualizarDni(int id, String dni) async {
+    final cantidad =
+    await (update(comprobantesElectronicos)..where((c) => c.id.equals(id)))
+        .write(
+      ComprobantesElectronicosCompanion(
+        dni: Value(dni),
+      ),
+    );
+
+    return cantidad > 0;
+  }
+
+  // ==========================================================
   // ACTUALIZAR RESPUESTA SUNAT
   // ==========================================================
 

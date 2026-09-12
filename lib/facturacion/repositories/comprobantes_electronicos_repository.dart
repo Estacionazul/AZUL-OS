@@ -80,6 +80,14 @@ class ComprobantesElectronicosRepository {
   }
 
   // ==========================================================
+  // ACTUALIZAR DNI
+  // ==========================================================
+
+  Future<bool> actualizarDni(int id, String dni) {
+    return _dao.actualizarDni(id, dni);
+  }
+
+  // ==========================================================
   // ACTUALIZAR RESPUESTA SUNAT
   // ==========================================================
 
