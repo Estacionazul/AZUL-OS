@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'facturacion/config/sunat_config.dart';
 import 'facturacion/firma/certificado_service.dart';
 import 'facturacion/firma/firma_digital_service.dart';
@@ -74,12 +74,12 @@ Future<void> main() async {
     await printerAdapter.selectPrinter(nombreImpresora);
 
     print('');
-    print('Ã¢Å“â€¦ IMPRESORA AUTOMÃƒÂTICAMENTE SELECCIONADA');
-    print('Ã°Å¸â€“Â¨Ã¯Â¸Â $nombreImpresora');
+    print('✅ IMPRESORA AUTOMÁTICAMENTE SELECCIONADA');
+    print('\u{1F5A8}\u{FE0F} $nombreImpresora');
   } else {
     print('');
-    print('Ã¢Å¡Â Ã¯Â¸Â NO SE ENCONTRÃƒâ€œ LA IMPRESORA:');
-    print('Ã°Å¸â€“Â¨Ã¯Â¸Â $nombreImpresora');
+    print('⚠️ NO SE ENCONTRÓ LA IMPRESORA:');
+    print('\u{1F5A8}\u{FE0F} $nombreImpresora');
   }
 
   print('==============================================');

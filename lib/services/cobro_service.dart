@@ -1,4 +1,4 @@
-﻿import 'package:drift/drift.dart';
+import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 
 import '../models/venta.dart';
@@ -60,7 +60,7 @@ class CobroService {
     final ventaActual = ventaService.venta;
 
     // ==========================================================
-    // OBTENER NÃšMERO SEGÃšN EL TIPO DE DOCUMENTO
+    // OBTENER NÚMERO SEGÚN EL TIPO DE DOCUMENTO
     // ==========================================================
 
     late final String numeroVenta;
@@ -187,11 +187,11 @@ class CobroService {
         metodoPago: metodoPago,
       );
 
-      debugPrint('========== COMPROBANTE ELECTRÃ“NICO CREADO ==========');
+      debugPrint('========== COMPROBANTE ELECTRÓNICO CREADO ==========');
       debugPrint('ID: $comprobanteId');
       debugPrint('TIPO: ${venta.tipoDocumento}');
       debugPrint('SERIE: $serie');
-      debugPrint('NÃšMERO: $numero');
+      debugPrint('N\u00DAMERO: $numero');
       debugPrint('COMPLETO: ${venta.numero}');
 
       // ==========================================================
@@ -202,7 +202,7 @@ class CobroService {
 
       if (empresa == null) {
         throw StateError(
-          'No existe la configuraciÃ³n de la empresa. '
+          'No existe la configuración de la empresa. '
               'No se puede generar el XML del comprobante.',
         );
       }

@@ -28,7 +28,7 @@ class VentasRepository {
   // ==========================================================
   // GUARDAR VENTA COMPLETA
   //
-  // MÃ©todo normal.
+  // Método normal.
   //
   // Mantiene la compatibilidad con las partes del sistema que
   // necesiten guardar una venta de forma independiente.
@@ -43,14 +43,14 @@ class VentasRepository {
   }
 
   // ==========================================================
-  // GUARDAR VENTA SIN TRANSACCIÃ“N
+  // GUARDAR VENTA SIN TRANSACCIÓN
   //
   // IMPORTANTE:
   //
-  // Este mÃ©todo NO abre una transacciÃ³n.
+  // Este método NO abre una transacción.
   //
-  // SerÃ¡ utilizado posteriormente por CobroService dentro de
-  // una Ãºnica transacciÃ³n que incluirÃ¡:
+  // Será utilizado posteriormente por CobroService dentro de
+  // una única transacción que incluirá:
   //
   // VENTA
   // +
@@ -60,7 +60,7 @@ class VentasRepository {
   // +
   // KARDEX
   //
-  // Si cualquier parte falla, todo podrÃ¡ revertirse.
+  // Si cualquier parte falla, todo podrá revertirse.
   // ==========================================================
 
   Future<int> guardarVentaSinTransaccion(model.Venta venta) async {
@@ -127,8 +127,8 @@ class VentasRepository {
 
     if (producto == null) {
       debugPrint(
-        'âš ï¸ No se encontrÃ³ el producto '
-        '${detalle.productoId} para la reimpresiÃ³n.',
+        '⚠️ No se encontró el producto '
+        '${detalle.productoId} para la reimpresión.',
       );
 
       return null;
@@ -323,7 +323,7 @@ class VentasRepository {
   }
 
   // ==========================================================
-  // SIGUIENTE NÃšMERO DE VENTA
+  // SIGUIENTE NÚMERO DE VENTA
   // ==========================================================
 
   Future<String> obtenerSiguienteNumeroVenta() async {

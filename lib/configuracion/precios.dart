@@ -1,5 +1,5 @@
 class PreciosConfig {
-  // Incremento por tamaÃ±o
+  // Incremento por tamaño
 
   static const double incrementoGrande = 2.00;
 
