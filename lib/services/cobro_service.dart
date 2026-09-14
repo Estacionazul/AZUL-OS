@@ -63,6 +63,19 @@ class CobroService {
     final ventaActual = ventaService.venta;
 
     // ==========================================================
+    // VERIFICAR CAJA ABIERTA ANTES DE REGISTRAR LA VENTA
+    // ==========================================================
+
+    final cajaAbierta = await cajasRepository.obtenerAbierta();
+
+    if (cajaAbierta == null) {
+      throw StateError(
+        'No hay una caja abierta. '
+        'Debe abrir la caja antes de registrar una venta.',
+      );
+    }
+
+    // ==========================================================
     // OBTENER NÚMERO SEGÚN EL TIPO DE DOCUMENTO
     // ==========================================================
 
@@ -81,19 +94,6 @@ class CobroService {
       default:
         numeroVenta = await ventasRepository.obtenerSiguienteNumeroVenta();
         break;
-    }
-
-    // ==========================================================
-    // VERIFICAR CAJA ABIERTA ANTES DE REGISTRAR LA VENTA
-    // ==========================================================
-
-    final cajaAbierta = await cajasRepository.obtenerAbierta();
-
-    if (cajaAbierta == null) {
-      throw StateError(
-        'No hay una caja abierta. '
-        'Debe abrir la caja antes de registrar una venta.',
-      );
     }
 
     // ==========================================================
