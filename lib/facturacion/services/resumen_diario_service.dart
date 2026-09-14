@@ -518,7 +518,7 @@ class ResumenDiarioService {
   mensajeRespuestaSunat: respuesta.mensaje,
   cdr: respuesta.cdr,
   fechaRespuestaSunat: DateTime.now(),
-  estado: estado == 'aceptado' ? 'aceptado' : null,
+      estado: estado,
 );
 
       if (!comprobanteActualizado) {

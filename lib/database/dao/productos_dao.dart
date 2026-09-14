@@ -12,7 +12,9 @@ class ProductosDao extends DatabaseAccessor<AppDatabase>
 
   /// Obtener todos
   Future<List<Producto>> obtenerTodos() {
-    return select(productos).get();
+    return (select(productos)
+      ..where((t) => t.activo.equals(true)))
+        .get();
   }
 
   /// Obtener por ID
@@ -39,6 +41,12 @@ class ProductosDao extends DatabaseAccessor<AppDatabase>
 
   /// Eliminar
   Future<int> eliminar(int id) {
-    return (delete(productos)..where((t) => t.id.equals(id))).go();
+    return (update(productos)
+      ..where((t) => t.id.equals(id)))
+        .write(
+      const ProductosCompanion(
+        activo: Value(false),
+      ),
+    );
   }
 }

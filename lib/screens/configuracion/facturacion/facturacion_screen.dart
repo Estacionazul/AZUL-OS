@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'resumenes_diarios_screen.dart';
+import '../../../core/security/autorizacion_ceo_dialog.dart';
 
 class FacturacionScreen extends StatelessWidget {
   const FacturacionScreen({super.key});
@@ -44,8 +45,15 @@ class FacturacionScreen extends StatelessWidget {
               subtitulo:
                   'Crea, genera, envía y consulta el estado de los resúmenes.',
               color: azul,
-              onTap: () {
-                Navigator.of(context).push(
+              onTap: () async {
+                final autorizado =
+                await AutorizacionCeoDialog.verificar(context);
+
+                if (!autorizado || !context.mounted) {
+                  return;
+                }
+
+                await Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => const ResumenesDiariosScreen(),
                   ),

@@ -2711,6 +2711,17 @@ class $VentasTable extends Ventas with TableInfo<$VentasTable, Venta> {
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
+  static const VerificationMeta _usuarioIdMeta = const VerificationMeta(
+    'usuarioId',
+  );
+  @override
+  late final GeneratedColumn<int> usuarioId = GeneratedColumn<int>(
+    'usuario_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _fechaMeta = const VerificationMeta('fecha');
   @override
   late final GeneratedColumn<DateTime> fecha = GeneratedColumn<DateTime>(
@@ -2855,6 +2866,7 @@ class $VentasTable extends Ventas with TableInfo<$VentasTable, Venta> {
   List<GeneratedColumn> get $columns => [
     id,
     numero,
+    usuarioId,
     fecha,
     tipoDocumento,
     dni,
@@ -2891,6 +2903,12 @@ class $VentasTable extends Ventas with TableInfo<$VentasTable, Venta> {
       );
     } else if (isInserting) {
       context.missing(_numeroMeta);
+    }
+    if (data.containsKey('usuario_id')) {
+      context.handle(
+        _usuarioIdMeta,
+        usuarioId.isAcceptableOrUnknown(data['usuario_id']!, _usuarioIdMeta),
+      );
     }
     if (data.containsKey('fecha')) {
       context.handle(
@@ -3002,6 +3020,10 @@ class $VentasTable extends Ventas with TableInfo<$VentasTable, Venta> {
         DriftSqlType.string,
         data['${effectivePrefix}numero'],
       )!,
+      usuarioId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}usuario_id'],
+      ),
       fecha: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}fecha'],
@@ -3066,6 +3088,10 @@ class $VentasTable extends Ventas with TableInfo<$VentasTable, Venta> {
 class Venta extends DataClass implements Insertable<Venta> {
   final int id;
   final String numero;
+
+  /// Usuario que realizó la venta.
+  /// Null para ventas históricas creadas antes del control por usuario.
+  final int? usuarioId;
   final DateTime fecha;
   final String tipoDocumento;
   final String? dni;
@@ -3082,6 +3108,7 @@ class Venta extends DataClass implements Insertable<Venta> {
   const Venta({
     required this.id,
     required this.numero,
+    this.usuarioId,
     required this.fecha,
     required this.tipoDocumento,
     this.dni,
@@ -3101,6 +3128,9 @@ class Venta extends DataClass implements Insertable<Venta> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['numero'] = Variable<String>(numero);
+    if (!nullToAbsent || usuarioId != null) {
+      map['usuario_id'] = Variable<int>(usuarioId);
+    }
     map['fecha'] = Variable<DateTime>(fecha);
     map['tipo_documento'] = Variable<String>(tipoDocumento);
     if (!nullToAbsent || dni != null) {
@@ -3133,6 +3163,9 @@ class Venta extends DataClass implements Insertable<Venta> {
     return VentasCompanion(
       id: Value(id),
       numero: Value(numero),
+      usuarioId: usuarioId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(usuarioId),
       fecha: Value(fecha),
       tipoDocumento: Value(tipoDocumento),
       dni: dni == null && nullToAbsent ? const Value.absent() : Value(dni),
@@ -3165,6 +3198,7 @@ class Venta extends DataClass implements Insertable<Venta> {
     return Venta(
       id: serializer.fromJson<int>(json['id']),
       numero: serializer.fromJson<String>(json['numero']),
+      usuarioId: serializer.fromJson<int?>(json['usuarioId']),
       fecha: serializer.fromJson<DateTime>(json['fecha']),
       tipoDocumento: serializer.fromJson<String>(json['tipoDocumento']),
       dni: serializer.fromJson<String?>(json['dni']),
@@ -3186,6 +3220,7 @@ class Venta extends DataClass implements Insertable<Venta> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'numero': serializer.toJson<String>(numero),
+      'usuarioId': serializer.toJson<int?>(usuarioId),
       'fecha': serializer.toJson<DateTime>(fecha),
       'tipoDocumento': serializer.toJson<String>(tipoDocumento),
       'dni': serializer.toJson<String?>(dni),
@@ -3205,6 +3240,7 @@ class Venta extends DataClass implements Insertable<Venta> {
   Venta copyWith({
     int? id,
     String? numero,
+    Value<int?> usuarioId = const Value.absent(),
     DateTime? fecha,
     String? tipoDocumento,
     Value<String?> dni = const Value.absent(),
@@ -3221,6 +3257,7 @@ class Venta extends DataClass implements Insertable<Venta> {
   }) => Venta(
     id: id ?? this.id,
     numero: numero ?? this.numero,
+    usuarioId: usuarioId.present ? usuarioId.value : this.usuarioId,
     fecha: fecha ?? this.fecha,
     tipoDocumento: tipoDocumento ?? this.tipoDocumento,
     dni: dni.present ? dni.value : this.dni,
@@ -3245,6 +3282,7 @@ class Venta extends DataClass implements Insertable<Venta> {
     return Venta(
       id: data.id.present ? data.id.value : this.id,
       numero: data.numero.present ? data.numero.value : this.numero,
+      usuarioId: data.usuarioId.present ? data.usuarioId.value : this.usuarioId,
       fecha: data.fecha.present ? data.fecha.value : this.fecha,
       tipoDocumento: data.tipoDocumento.present
           ? data.tipoDocumento.value
@@ -3278,6 +3316,7 @@ class Venta extends DataClass implements Insertable<Venta> {
     return (StringBuffer('Venta(')
           ..write('id: $id, ')
           ..write('numero: $numero, ')
+          ..write('usuarioId: $usuarioId, ')
           ..write('fecha: $fecha, ')
           ..write('tipoDocumento: $tipoDocumento, ')
           ..write('dni: $dni, ')
@@ -3299,6 +3338,7 @@ class Venta extends DataClass implements Insertable<Venta> {
   int get hashCode => Object.hash(
     id,
     numero,
+    usuarioId,
     fecha,
     tipoDocumento,
     dni,
@@ -3319,6 +3359,7 @@ class Venta extends DataClass implements Insertable<Venta> {
       (other is Venta &&
           other.id == this.id &&
           other.numero == this.numero &&
+          other.usuarioId == this.usuarioId &&
           other.fecha == this.fecha &&
           other.tipoDocumento == this.tipoDocumento &&
           other.dni == this.dni &&
@@ -3337,6 +3378,7 @@ class Venta extends DataClass implements Insertable<Venta> {
 class VentasCompanion extends UpdateCompanion<Venta> {
   final Value<int> id;
   final Value<String> numero;
+  final Value<int?> usuarioId;
   final Value<DateTime> fecha;
   final Value<String> tipoDocumento;
   final Value<String?> dni;
@@ -3353,6 +3395,7 @@ class VentasCompanion extends UpdateCompanion<Venta> {
   const VentasCompanion({
     this.id = const Value.absent(),
     this.numero = const Value.absent(),
+    this.usuarioId = const Value.absent(),
     this.fecha = const Value.absent(),
     this.tipoDocumento = const Value.absent(),
     this.dni = const Value.absent(),
@@ -3370,6 +3413,7 @@ class VentasCompanion extends UpdateCompanion<Venta> {
   VentasCompanion.insert({
     this.id = const Value.absent(),
     required String numero,
+    this.usuarioId = const Value.absent(),
     this.fecha = const Value.absent(),
     this.tipoDocumento = const Value.absent(),
     this.dni = const Value.absent(),
@@ -3387,6 +3431,7 @@ class VentasCompanion extends UpdateCompanion<Venta> {
   static Insertable<Venta> custom({
     Expression<int>? id,
     Expression<String>? numero,
+    Expression<int>? usuarioId,
     Expression<DateTime>? fecha,
     Expression<String>? tipoDocumento,
     Expression<String>? dni,
@@ -3404,6 +3449,7 @@ class VentasCompanion extends UpdateCompanion<Venta> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (numero != null) 'numero': numero,
+      if (usuarioId != null) 'usuario_id': usuarioId,
       if (fecha != null) 'fecha': fecha,
       if (tipoDocumento != null) 'tipo_documento': tipoDocumento,
       if (dni != null) 'dni': dni,
@@ -3423,6 +3469,7 @@ class VentasCompanion extends UpdateCompanion<Venta> {
   VentasCompanion copyWith({
     Value<int>? id,
     Value<String>? numero,
+    Value<int?>? usuarioId,
     Value<DateTime>? fecha,
     Value<String>? tipoDocumento,
     Value<String?>? dni,
@@ -3440,6 +3487,7 @@ class VentasCompanion extends UpdateCompanion<Venta> {
     return VentasCompanion(
       id: id ?? this.id,
       numero: numero ?? this.numero,
+      usuarioId: usuarioId ?? this.usuarioId,
       fecha: fecha ?? this.fecha,
       tipoDocumento: tipoDocumento ?? this.tipoDocumento,
       dni: dni ?? this.dni,
@@ -3464,6 +3512,9 @@ class VentasCompanion extends UpdateCompanion<Venta> {
     }
     if (numero.present) {
       map['numero'] = Variable<String>(numero.value);
+    }
+    if (usuarioId.present) {
+      map['usuario_id'] = Variable<int>(usuarioId.value);
     }
     if (fecha.present) {
       map['fecha'] = Variable<DateTime>(fecha.value);
@@ -3512,6 +3563,7 @@ class VentasCompanion extends UpdateCompanion<Venta> {
     return (StringBuffer('VentasCompanion(')
           ..write('id: $id, ')
           ..write('numero: $numero, ')
+          ..write('usuarioId: $usuarioId, ')
           ..write('fecha: $fecha, ')
           ..write('tipoDocumento: $tipoDocumento, ')
           ..write('dni: $dni, ')
@@ -14052,6 +14104,7 @@ typedef $$VentasTableCreateCompanionBuilder =
     VentasCompanion Function({
       Value<int> id,
       required String numero,
+      Value<int?> usuarioId,
       Value<DateTime> fecha,
       Value<String> tipoDocumento,
       Value<String?> dni,
@@ -14070,6 +14123,7 @@ typedef $$VentasTableUpdateCompanionBuilder =
     VentasCompanion Function({
       Value<int> id,
       Value<String> numero,
+      Value<int?> usuarioId,
       Value<DateTime> fecha,
       Value<String> tipoDocumento,
       Value<String?> dni,
@@ -14101,6 +14155,11 @@ class $$VentasTableFilterComposer
 
   ColumnFilters<String> get numero => $composableBuilder(
     column: $table.numero,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get usuarioId => $composableBuilder(
+    column: $table.usuarioId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14189,6 +14248,11 @@ class $$VentasTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get usuarioId => $composableBuilder(
+    column: $table.usuarioId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get fecha => $composableBuilder(
     column: $table.fecha,
     builder: (column) => ColumnOrderings(column),
@@ -14269,6 +14333,9 @@ class $$VentasTableAnnotationComposer
 
   GeneratedColumn<String> get numero =>
       $composableBuilder(column: $table.numero, builder: (column) => column);
+
+  GeneratedColumn<int> get usuarioId =>
+      $composableBuilder(column: $table.usuarioId, builder: (column) => column);
 
   GeneratedColumn<DateTime> get fecha =>
       $composableBuilder(column: $table.fecha, builder: (column) => column);
@@ -14352,6 +14419,7 @@ class $$VentasTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> numero = const Value.absent(),
+                Value<int?> usuarioId = const Value.absent(),
                 Value<DateTime> fecha = const Value.absent(),
                 Value<String> tipoDocumento = const Value.absent(),
                 Value<String?> dni = const Value.absent(),
@@ -14368,6 +14436,7 @@ class $$VentasTableTableManager
               }) => VentasCompanion(
                 id: id,
                 numero: numero,
+                usuarioId: usuarioId,
                 fecha: fecha,
                 tipoDocumento: tipoDocumento,
                 dni: dni,
@@ -14386,6 +14455,7 @@ class $$VentasTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String numero,
+                Value<int?> usuarioId = const Value.absent(),
                 Value<DateTime> fecha = const Value.absent(),
                 Value<String> tipoDocumento = const Value.absent(),
                 Value<String?> dni = const Value.absent(),
@@ -14402,6 +14472,7 @@ class $$VentasTableTableManager
               }) => VentasCompanion.insert(
                 id: id,
                 numero: numero,
+                usuarioId: usuarioId,
                 fecha: fecha,
                 tipoDocumento: tipoDocumento,
                 dni: dni,

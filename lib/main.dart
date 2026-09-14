@@ -294,6 +294,7 @@ Provider<FacturacionService>(
                 facturacionService: context.read<FacturacionService>(),
               firmaDigitalService: context.read<FirmaDigitalService>(),
               sunatService: context.read<SunatService>(),
+                resumenDiarioService: context.read<ResumenDiarioService>(),
 
                 ticketPrintService: context.read<TicketPrintService>(),
 
@@ -312,5 +313,3 @@ Provider<FacturacionService>(
     );
   }
 }
-
-

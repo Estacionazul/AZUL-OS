@@ -30,6 +30,22 @@ class EmpresaRepository {
   }
 
   // ==========================================================
+  // RESERVAR CORRELATIVO DE BOLETA
+  // ==========================================================
+
+  Future<String> reservarNumeroBoleta() {
+    return _dao.reservarNumeroBoleta();
+  }
+
+  // ==========================================================
+  // RESERVAR CORRELATIVO DE FACTURA
+  // ==========================================================
+
+  Future<String> reservarNumeroFactura() {
+    return _dao.reservarNumeroFactura();
+  }
+
+  // ==========================================================
   // SIGUIENTE NÚMERO DE BOLETA
   // ==========================================================
 

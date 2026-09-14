@@ -11,11 +11,16 @@ import 'widgets/resumen_pago.dart';
 class FinalizarVentaDialog extends StatefulWidget {
   final double total;
 
-  final Function(String metodoPago) onConfirmar;
+  final String numeroBoleta;
+  final String numeroFactura;
+
+  final Function(String metodoPago, String numeroDocumento) onConfirmar;
 
   const FinalizarVentaDialog({
     super.key,
     required this.total,
+    required this.numeroBoleta,
+    required this.numeroFactura,
     required this.onConfirmar,
   });
 
@@ -53,6 +58,11 @@ class _FinalizarVentaDialogState extends State<FinalizarVentaDialog> {
   @override
   Widget build(BuildContext context) {
     final totalFinal = widget.total;
+    final numeroDocumento = _tipoDocumento == "Boleta"
+        ? widget.numeroBoleta
+        : _tipoDocumento == "Factura"
+        ? widget.numeroFactura
+        : null;
     final subtotal = totalFinal / 1.18;
     final igv = totalFinal - subtotal;
 
@@ -123,6 +133,20 @@ class _FinalizarVentaDialogState extends State<FinalizarVentaDialog> {
                           });
                         },
                       ),
+
+                      if (numeroDocumento != null) ...[
+                        const SizedBox(height: 15),
+                        Center(
+                          child: Text(
+                            'N.° $numeroDocumento',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xff0A2E6E),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -224,7 +248,10 @@ class _FinalizarVentaDialogState extends State<FinalizarVentaDialog> {
 
                         Navigator.pop(context);
 
-                        widget.onConfirmar(_metodoPago);
+                        widget.onConfirmar(
+                          _metodoPago,
+                          numeroDocumento ?? '',
+                        );
                       },
                       icon: const Icon(Icons.check_circle),
                       label: const Text("Confirmar Venta"),

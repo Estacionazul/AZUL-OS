@@ -18,6 +18,7 @@ import '../models/ubicacion_pedido.dart';
 
 import '../printing/pedido_comanda_print_service.dart';
 import '../services/pedidos_service.dart';
+import '../../repositories/empresa_repository.dart';
 
 class PedidoDetalleScreen extends StatelessWidget {
   final UbicacionPedido ubicacion;
@@ -478,9 +479,19 @@ class _ResumenPedido extends StatelessWidget {
 
     final pedidosService = context.read<PedidosService>();
 
-    // --------------------------------------------------------
-    // CARGAR PEDIDO EN EL CARRITO
-    // --------------------------------------------------------
+    final empresaRepository = context.read<EmpresaRepository>();
+
+    final numeroBoleta =
+    await empresaRepository.obtenerSiguienteNumeroBoleta();
+
+    final numeroFactura =
+    await empresaRepository.obtenerSiguienteNumeroFactura();
+
+    if (!context.mounted) return;
+
+   // --------------------------------------------------------
+   // CARGAR PEDIDO EN EL CARRITO
+   // --------------------------------------------------------
 
     carrito.cargarItems(pedido.items);
 
@@ -494,7 +505,9 @@ class _ResumenPedido extends StatelessWidget {
       builder: (dialogContext) {
         return FinalizarVentaDialog(
           total: pedido.total,
-          onConfirmar: (metodoPago) async {
+          numeroBoleta: numeroBoleta,
+          numeroFactura: numeroFactura,
+          onConfirmar: (metodoPago, numeroDocumento) async {
             try {
               // ------------------------------------------------
               // COBRAR

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../services/cobro_service.dart';
 import '../dialogs/finalizar_venta_dialog.dart';
 import '../../services/carrito_service.dart';
+import '../../repositories/empresa_repository.dart';
 
 class PosCheckoutButton extends StatelessWidget {
   const PosCheckoutButton({super.key});
@@ -16,12 +17,24 @@ class PosCheckoutButton extends StatelessWidget {
       child: ElevatedButton.icon(
         icon: const Icon(Icons.point_of_sale),
         label: const Text("COBRAR"),
-        onPressed: () {
+        onPressed: () async {
+          final empresaRepository = context.read<EmpresaRepository>();
+
+          final numeroBoleta =
+          await empresaRepository.obtenerSiguienteNumeroBoleta();
+
+          final numeroFactura =
+          await empresaRepository.obtenerSiguienteNumeroFactura();
+
+          if (!context.mounted) return;
+
           showDialog(
             context: context,
             builder: (_) => FinalizarVentaDialog(
               total: context.read<CarritoService>().total,
-              onConfirmar: (metodoPago) async {
+              numeroBoleta: numeroBoleta,
+              numeroFactura: numeroFactura,
+              onConfirmar: (metodoPago, numeroDocumento) async {
                 final cobro = context.read<CobroService>();
 
                 try {

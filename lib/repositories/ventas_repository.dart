@@ -9,6 +9,7 @@ import '../models/item_carrito.dart';
 import '../models/dashboard_resumen.dart';
 
 import '../repositories/producto_repository.dart';
+import '../services/sesion_service.dart';
 
 class VentasRepository {
   final VentasDao _dao;
@@ -81,6 +82,9 @@ class VentasRepository {
   VentasCompanion _crearVentaCompanion(model.Venta venta) {
     return VentasCompanion.insert(
       numero: venta.numero,
+      usuarioId: Value(
+        venta.usuarioId ?? SesionService.instancia.idUsuario,
+      ),
       fecha: Value(venta.fecha),
       tipoDocumento: Value(venta.tipoDocumento),
       dni: Value(venta.dni),
@@ -165,6 +169,7 @@ class VentasRepository {
 
     return model.Venta(
       numero: venta.numero,
+      usuarioId: venta.usuarioId,
       fecha: venta.fecha,
       items: items,
       subtotal: venta.subtotal,
@@ -187,7 +192,13 @@ class VentasRepository {
   // ==========================================================
 
   Future<List<model.Venta>> obtenerVentas() async {
-    final ventasDb = await _dao.obtenerVentas();
+    final sesion = SesionService.instancia;
+
+    final ventasDb = sesion.esCEO
+        ? await _dao.obtenerVentas()
+        : sesion.idUsuario != null
+        ? await _dao.obtenerVentasPorUsuario(sesion.idUsuario!)
+        : <Venta>[];
 
     final ventas = <model.Venta>[];
 
@@ -208,6 +219,19 @@ class VentasRepository {
     final ventaDb = await _dao.obtenerVenta(id);
 
     if (ventaDb == null) {
+      return null;
+    }
+
+    final sesion = SesionService.instancia;
+
+    // El CEO puede consultar cualquier venta.
+    if (sesion.esCEO) {
+      return _crearVentaCompleta(ventaDb);
+    }
+
+    // Un cajero solo puede consultar una venta que le pertenece.
+    if (sesion.idUsuario == null ||
+        ventaDb.usuarioId != sesion.idUsuario) {
       return null;
     }
 

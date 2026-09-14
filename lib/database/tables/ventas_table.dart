@@ -14,6 +14,14 @@ class Ventas extends Table {
   TextColumn get numero => text().unique()();
 
   //==========================
+  // USUARIO / VENDEDOR
+  //==========================
+
+  /// Usuario que realizó la venta.
+  /// Null para ventas históricas creadas antes del control por usuario.
+  IntColumn get usuarioId => integer().nullable()();
+
+  //==========================
   // Fecha
   //==========================
 

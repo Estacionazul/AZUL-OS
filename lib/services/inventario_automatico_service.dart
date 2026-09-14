@@ -50,6 +50,21 @@ class InventarioAutomaticoService {
   }
 
   // ==========================================================
+  // DESCONTAR INVENTARIO SIN TRANSACCIÓN
+  //
+  // Utilizado por CobroService cuando una transacción superior
+  // controla venta + inventario + caja.
+  // ==========================================================
+
+  Future<void> descontarInventarioSinTransaccion(Venta venta) async {
+    final movimientos = await _construirMovimientosVenta(venta);
+
+    await _movimientoService.registrarMovimientosSinTransaccion(
+      movimientos,
+    );
+  }
+
+  // ==========================================================
   // CONSTRUIR MOVIMIENTOS
   // ==========================================================
 

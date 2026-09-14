@@ -1,10 +1,13 @@
 ﻿import 'package:flutter/material.dart';
+
+import '../../../core/security/autorizacion_ceo_dialog.dart';
 import 'package:provider/provider.dart';
 
 import '../../../facturacion/repositories/comprobantes_electronicos_repository.dart';
 import '../../../facturacion/repositories/resumenes_diarios_repository.dart';
 import '../../../facturacion/services/resumen_diario_service.dart';
 import '../../../facturacion/config/sunat_config.dart';
+import '../../../repositories/empresa_repository.dart';
 
 class ResumenesDiariosScreen extends StatefulWidget {
   const ResumenesDiariosScreen({super.key});
@@ -62,6 +65,13 @@ class _ResumenesDiariosScreenState extends State<ResumenesDiariosScreen> {
   }
 
   Future<void> _crearResumen() async {
+    final autorizado =
+    await AutorizacionCeoDialog.verificar(context);
+
+    if (!autorizado || !mounted) {
+      return;
+    }
+
     setState(() {
       _cargando = true;
       _error = null;
@@ -101,6 +111,187 @@ class _ResumenesDiariosScreenState extends State<ResumenesDiariosScreen> {
         SnackBar(
           content: Text(
             'No se pudo crear el resumen: ',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+  Future<void> _generarXml(int resumenId) async {
+    final autorizado =
+    await AutorizacionCeoDialog.verificar(context);
+
+    if (!autorizado || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _cargando = true;
+      _error = null;
+    });
+
+    try {
+      final service = context.read<ResumenDiarioService>();
+      final empresaRepository = context.read<EmpresaRepository>();
+
+      final empresa = await empresaRepository.obtener();
+
+      if (empresa == null) {
+        throw StateError(
+          'No existe la configuración de la empresa.',
+        );
+      }
+
+      await service.generarXmlPendiente(
+        resumenId: resumenId,
+        rucEmisor: SunatConfig.ruc,
+        razonSocialEmisor: empresa.nombre,
+      );
+
+      if (!mounted) return;
+
+      await _cargarResumenes();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'XML generado y firmado correctamente.',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _cargando = false;
+        _error = e.toString();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'No se pudo generar el XML: $e',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+  Future<void> _enviarResumen(int resumenId) async {
+    final autorizado =
+    await AutorizacionCeoDialog.verificar(context);
+
+    if (!autorizado || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _cargando = true;
+      _error = null;
+    });
+
+    try {
+      final service = context.read<ResumenDiarioService>();
+
+      final respuesta = await service.enviarResumenPendiente(
+        resumenId: resumenId,
+      );
+
+      if (!mounted) return;
+
+      await _cargarResumenes();
+
+      if (!mounted) return;
+
+      final ticket = respuesta.ticket?.trim();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ticket != null && ticket.isNotEmpty
+                ? 'Resumen enviado a SUNAT. Ticket: $ticket'
+                : 'SUNAT procesó la solicitud: '
+                '${respuesta.mensaje ?? 'sin mensaje'}',
+          ),
+          backgroundColor:
+          ticket != null && ticket.isNotEmpty
+              ? Colors.green
+              : Colors.orange,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _cargando = false;
+        _error = e.toString();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'No se pudo enviar el resumen: $e',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+  Future<void> _consultarEstado(int resumenId) async {
+    final autorizado =
+    await AutorizacionCeoDialog.verificar(context);
+
+    if (!autorizado || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _cargando = true;
+      _error = null;
+    });
+
+    try {
+      final service = context.read<ResumenDiarioService>();
+
+      final respuesta = await service.consultarEstadoResumen(
+        resumenId: resumenId,
+      );
+
+      if (!mounted) return;
+
+      await _cargarResumenes();
+
+      if (!mounted) return;
+
+      final codigo = respuesta.codigo?.trim();
+      final mensaje = respuesta.mensaje?.trim();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Estado SUNAT: '
+                '${codigo?.isNotEmpty == true ? codigo : 'sin código'}'
+                '${mensaje?.isNotEmpty == true ? ' - $mensaje' : ''}',
+          ),
+          backgroundColor:
+          respuesta.procesado ? Colors.green : Colors.orange,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _cargando = false;
+        _error = e.toString();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'No se pudo consultar el estado: $e',
           ),
           backgroundColor: Colors.red,
         ),
@@ -507,6 +698,80 @@ class _ResumenesDiariosScreenState extends State<ResumenesDiariosScreen> {
             ),
           const SizedBox(height: 8),
           _comprobantesIncluidos(resumen),
+          const SizedBox(height: 16),
+          if (estado.trim().toLowerCase() == 'pendiente')
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _cargando
+                    ? null
+                    : () => _generarXml(resumen.id),
+                icon: const Icon(Icons.draw_outlined),
+                label: const Text(
+                  'GENERAR XML Y FIRMAR',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: azul,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+          if (estado.trim().toLowerCase() == 'generado') ...[
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _cargando
+                    ? null
+                    : () => _enviarResumen(resumen.id),
+                icon: const Icon(Icons.cloud_upload_outlined),
+                label: const Text(
+                  'ENVIAR A SUNAT',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: azul,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+            if (estado.trim().toLowerCase() == 'enviado')
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _cargando
+                      ? null
+                      : () => _consultarEstado(resumen.id),
+                  icon: const Icon(Icons.sync_rounded),
+                  label: const Text(
+                    'CONSULTAR ESTADO SUNAT',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: azul,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ],
       ),
     );

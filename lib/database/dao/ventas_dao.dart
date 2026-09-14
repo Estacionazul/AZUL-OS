@@ -74,6 +74,20 @@ class VentasDao extends DatabaseAccessor<AppDatabase> with _$VentasDaoMixin {
   }
 
   // ==========================================================
+// OBTENER VENTAS DE UN USUARIO
+//
+// Utilizado para que un CAJERO solo pueda consultar
+// las ventas realizadas por su propia sesión.
+// ==========================================================
+
+  Future<List<Venta>> obtenerVentasPorUsuario(int usuarioId) {
+    return (select(ventas)
+      ..where((t) => t.usuarioId.equals(usuarioId))
+      ..orderBy([(t) => OrderingTerm.desc(t.fecha)]))
+        .get();
+  }
+
+  // ==========================================================
   // OBTENER UNA VENTA
   // ==========================================================
 

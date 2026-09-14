@@ -5,7 +5,6 @@ import '../models/ubicacion_pedido.dart';
 import '../services/pedidos_service.dart';
 import '../widgets/ubicacion_pedido_card.dart';
 import 'pedido_detalle_screen.dart';
-import '../../database/app_database.dart';
 
 class PedidosScreen extends StatelessWidget {
   const PedidosScreen({super.key});

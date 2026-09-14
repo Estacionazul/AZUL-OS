@@ -16,6 +16,7 @@ import 'ticket_print_service.dart';
 
 import '../ticket/esc_pos_renderer.dart';
 import '../facturacion/services/facturacion_service.dart';
+import '../facturacion/services/resumen_diario_service.dart';
 import '../facturacion/firma/firma_digital_service.dart';
 import '../facturacion/sunat/sunat_service.dart';
 import '../facturacion/models/comprobante_electronico.dart';
@@ -31,6 +32,7 @@ class CobroService {
   final FacturacionService facturacionService;
   final FirmaDigitalService firmaDigitalService;
   final SunatService sunatService;
+  final ResumenDiarioService resumenDiarioService;
 
   final TicketPrintService ticketPrintService;
   final EscPosRenderer escPosRenderer;
@@ -50,6 +52,7 @@ class CobroService {
     required this.facturacionService,
     required this.firmaDigitalService,
     required this.sunatService,
+    required this.resumenDiarioService,
   });
 
   Future<void> cobrar({required String metodoPago}) async {
@@ -67,11 +70,11 @@ class CobroService {
 
     switch (ventaActual.tipoDocumento) {
       case 'Boleta':
-        numeroVenta = await empresaRepository.obtenerSiguienteNumeroBoleta();
+        numeroVenta = await empresaRepository.reservarNumeroBoleta();
         break;
 
       case 'Factura':
-        numeroVenta = await empresaRepository.obtenerSiguienteNumeroFactura();
+        numeroVenta = await empresaRepository.reservarNumeroFactura();
         break;
 
       case 'Nota de Venta':
@@ -142,7 +145,27 @@ class CobroService {
     // GUARDAR VENTA
     // ==========================================================
 
-    final idGuardado = await ventasRepository.guardarVenta(venta);
+    final idGuardado =
+    await cajasRepository.ejecutarEnTransaccion<int>(() async {
+      final id = await ventasRepository.guardarVentaSinTransaccion(venta);
+
+      await inventarioAutomaticoService
+          .descontarInventarioSinTransaccion(venta);
+
+      await cajasRepository.registrarMovimientoSinTransaccion(
+        MovimientosCajaCompanion(
+          cajaId: Value(cajaAbierta.id),
+          tipo: const Value('VENTA'),
+          concepto: Value('Venta ${venta.numero}'),
+          monto: Value(venta.total),
+          metodoPago: Value(metodoPago.toUpperCase()),
+          referencia: Value(venta.numero),
+          observacion: Value(venta.tipoDocumento),
+        ),
+      );
+
+      return id;
+    });
 
     // ==========================================================
     // CREAR COMPROBANTE ELECTRONICO
@@ -216,7 +239,11 @@ class CobroService {
         detalles: venta.items,
       );
 
-      final xmlFirmado = await firmaDigitalService.firmarXml(xml);
+      String? xmlFirmado;
+
+      if (venta.tipoDocumento == 'Factura') {
+        xmlFirmado = await firmaDigitalService.firmarXml(xml);
+      }
 
       final tipoSunat = venta.tipoDocumento == 'Boleta' ? '03' : '01';
 
@@ -228,59 +255,81 @@ class CobroService {
 
       final numeroSunat = int.parse(partesNumero[1]);
 
-      // RESERVAR CORRELATIVO ANTES DEL ENVIO A SUNAT
+      // ==========================================================
+      // RESERVAR CORRELATIVO
+      // ==========================================================
+      //
+      // La numeración queda reservada al momento de emitir la venta.
+      // Para Boleta NO se realiza envío individual a SUNAT:
+      // queda pendiente para Resumen Diario.
+      //
+      // Factura mantiene envío individual.
+      // ==========================================================
+
       switch (venta.tipoDocumento) {
         case 'Boleta':
-          await empresaRepository.incrementarCorrelativoBoleta();
+          debugPrint('========== BOLETA PENDIENTE ==========');
+          debugPrint('COMPROBANTE: ${venta.numero}');
+          debugPrint('ESTADO: pendiente');
+          debugPrint('ENVÍO: Resumen Diario');
           break;
 
         case 'Factura':
-          await empresaRepository.incrementarCorrelativoFactura();
+          final respuestaSunat = await sunatService.enviarComprobante(
+            xmlFirmado: xmlFirmado!,
+            tipoComprobante: tipoSunat,
+            serie: partesNumero[0],
+            numero: numeroSunat,
+          );
+
+          debugPrint('========== RESPUESTA SUNAT ==========');
+          debugPrint('Respuesta SUNAT: $respuestaSunat');
+
+          await facturacionService.guardarRespuestaSunat(
+            id: comprobanteId,
+            codigoRespuestaSunat: respuestaSunat.codigo,
+            mensajeRespuestaSunat: respuestaSunat.mensaje,
+            cdr: respuestaSunat.cdr,
+            xml: respuestaSunat.xmlRespuesta,
+            fechaEnvioSunat: DateTime.now(),
+            fechaRespuestaSunat: DateTime.now(),
+            estado: respuestaSunat.aceptado
+                ? 'aceptado'
+                : 'rechazado',
+          );
+
+          // ========================================================
+          // VALIDAR RESPUESTA SUNAT
+          // ========================================================
+          //
+          // IMPORTANTE:
+          // Nunca eliminamos la venta si SUNAT rechaza.
+          // El comprobante y la venta deben conservar trazabilidad.
+          // ========================================================
+
+          if (!respuestaSunat.aceptado) {
+            debugPrint('=====================================');
+            debugPrint('COMPROBANTE RECHAZADO POR SUNAT');
+            debugPrint('Código: ${respuestaSunat.codigo}');
+            debugPrint('Mensaje: ${respuestaSunat.mensaje}');
+            debugPrint('=====================================');
+
+            throw StateError(
+              'SUNAT rechazó el comprobante ${venta.numero}. '
+                  'Código: ${respuestaSunat.codigo}. '
+                  'Mensaje: ${respuestaSunat.mensaje}',
+            );
+          }
+
+          debugPrint('=====================================');
+          debugPrint('FACTURA ACEPTADA POR SUNAT');
+          debugPrint('COMPROBANTE: ${venta.numero}');
+          debugPrint('=====================================');
           break;
 
         case 'Nota de Venta':
         default:
           break;
-      }
-
-      final respuestaSunat = await sunatService.enviarComprobante(
-        xmlFirmado: xmlFirmado,
-        tipoComprobante: tipoSunat,
-        serie: partesNumero[0],
-        numero: numeroSunat,
-      );
-
-      debugPrint('========== RESPUESTA SUNAT ==========');
-      debugPrint('Respuesta SUNAT: $respuestaSunat');
-      await facturacionService.guardarRespuestaSunat(
-        id: comprobanteId,
-        codigoRespuestaSunat: respuestaSunat.codigo,
-        mensajeRespuestaSunat: respuestaSunat.mensaje,
-        cdr: respuestaSunat.cdr,
-        xml: respuestaSunat.xmlRespuesta,
-        fechaEnvioSunat: DateTime.now(),
-        fechaRespuestaSunat: DateTime.now(),
-        estado: respuestaSunat.aceptado ? 'aceptado' : 'rechazado',
-      );
-
-      // ==========================================================
-      // VALIDAR RESPUESTA SUNAT
-      // ==========================================================
-
-      if (!respuestaSunat.aceptado) {
-        debugPrint('=====================================');
-        debugPrint('❌ COMPROBANTE RECHAZADO POR SUNAT');
-        debugPrint('Código: ${respuestaSunat.codigo}');
-        debugPrint('Mensaje: ${respuestaSunat.mensaje}');
-        debugPrint('=====================================');
-
-        await ventasRepository.eliminarVenta(idGuardado);
-
-        throw StateError(
-          'SUNAT rechazó el comprobante ${venta.numero}. '
-              'Código: ${respuestaSunat.codigo}. '
-              'Mensaje: ${respuestaSunat.mensaje}',
-        );
       }
 
       debugPrint('=====================================');
@@ -292,18 +341,6 @@ class CobroService {
     // ==========================================================
     // REGISTRAR VENTA EN CAJA
     // ==========================================================
-
-    await cajasRepository.registrarMovimiento(
-      MovimientosCajaCompanion(
-        cajaId: Value(cajaAbierta.id),
-        tipo: const Value('VENTA'),
-        concepto: Value('Venta ${venta.numero}'),
-        monto: Value(venta.total),
-        metodoPago: Value(metodoPago.toUpperCase()),
-        referencia: Value(venta.numero),
-        observacion: Value(venta.tipoDocumento),
-      ),
-    );
 
     debugPrint('========== MOVIMIENTO CAJA REGISTRADO ==========');
     debugPrint('CAJA ID: ${cajaAbierta.id}');
@@ -347,7 +384,6 @@ class CobroService {
     // DESCONTAR INVENTARIO
     // ==========================================================
 
-    await inventarioAutomaticoService.descontarInventario(venta);
 
     // ==========================================================
     // GENERAR TICKET

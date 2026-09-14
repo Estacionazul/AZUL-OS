@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/item_carrito.dart';
+import '../repositories/empresa_repository.dart';
 import '../services/carrito_service.dart';
 import '../services/cobro_service.dart';
 import 'dialogs/finalizar_venta_dialog.dart';
@@ -94,30 +95,42 @@ class CarritoPanel extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: carritoService.items.isEmpty
                     ? null
-                    : () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => FinalizarVentaDialog(
-                            total: carritoService.total,
-                            onConfirmar: (metodoPago) {
-                              context.read<CobroService>().cobrar(
-                                metodoPago: metodoPago,
-                              );
+                    : () async {
+                  final empresaRepository = context.read<EmpresaRepository>();
 
-                              onActualizar();
+                  final numeroBoleta =
+                  await empresaRepository.obtenerSiguienteNumeroBoleta();
 
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    "✅ Venta registrada correctamente",
-                                  ),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
-                            },
+                  final numeroFactura =
+                  await empresaRepository.obtenerSiguienteNumeroFactura();
+
+                  if (!context.mounted) return;
+
+                  showDialog(
+                    context: context,
+                    builder: (_) => FinalizarVentaDialog(
+                      total: carritoService.total,
+                      numeroBoleta: numeroBoleta,
+                      numeroFactura: numeroFactura,
+                      onConfirmar: (metodoPago, numeroDocumento) {
+                        context.read<CobroService>().cobrar(
+                          metodoPago: metodoPago,
+                        );
+
+                        onActualizar();
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "✅ Venta registrada correctamente",
+                            ),
+                            backgroundColor: Colors.green,
                           ),
                         );
                       },
+                    ),
+                  );
+                },
                 icon: const Icon(Icons.point_of_sale),
                 label: const Text(
                   "COBRAR",

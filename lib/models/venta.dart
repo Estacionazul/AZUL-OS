@@ -3,6 +3,10 @@ import 'item_carrito.dart';
 class Venta {
   final String numero;
 
+  /// Usuario que realizó la venta.
+  /// Null para ventas históricas creadas antes del control por usuario.
+  final int? usuarioId;
+
   final DateTime fecha;
 
   final List<ItemCarrito> items;
@@ -45,6 +49,7 @@ class Venta {
 
   Venta({
     required this.numero,
+    this.usuarioId,
     required this.fecha,
     required this.items,
     required this.subtotal,

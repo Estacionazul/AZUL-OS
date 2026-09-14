@@ -46,4 +46,40 @@ class PermisosUsuarioRepository {
   Future<int> eliminarPermisosUsuario(int usuarioId) {
     return _dao.eliminarPermisosUsuario(usuarioId);
   }
+
+  // ==========================================================
+  // APLICAR PERFIL OPERATIVO SEGÚN EL ROL
+  // ==========================================================
+
+  Future<void> aplicarPerfilPorRol(
+    int usuarioId,
+    String rol,
+  ) async {
+    final rolNormalizado = rol.trim().toUpperCase();
+
+    if (rolNormalizado == 'CAJERO') {
+      const permisosCajero = <String, bool>{
+        'CAFETERIA': true,
+        'PRODUCTOS': false,
+        'INVENTARIO': false,
+        'RECETAS': false,
+        'PRODUCCION': false,
+        'PEDIDOS': true,
+        'VENTAS': true,
+        'CLIENTES': true,
+        'CAJA': true,
+        'REPORTES': false,
+      };
+
+      for (final entry in permisosCajero.entries) {
+        await cambiarPermiso(
+          usuarioId,
+          entry.key,
+          entry.value,
+        );
+      }
+
+      return;
+    }
+  }
 }

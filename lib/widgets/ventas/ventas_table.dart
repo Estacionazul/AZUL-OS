@@ -71,67 +71,74 @@ class VentasTable extends StatelessWidget {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columns: const [
-          DataColumn(label: Text("N°")),
-          DataColumn(label: Text("Cliente")),
-          DataColumn(label: Text("Documento")),
-          DataColumn(label: Text("Pago")),
-          DataColumn(label: Text("Total")),
-          DataColumn(label: Text("Fecha")),
-        ],
-        rows: ventas.map((venta) {
-          return DataRow(
-            cells: [
-              DataCell(Text(venta.numero)),
+@override
+Widget build(BuildContext context) {
+return SingleChildScrollView(
+  child: SingleChildScrollView(
+scrollDirection: Axis.horizontal,
+child: DataTable(
+columns: const [
+DataColumn(label: Text("N°")),
+DataColumn(label: Text("Cliente")),
+DataColumn(label: Text("Documento")),
+DataColumn(label: Text("Pago")),
+DataColumn(label: Text("Total")),
+DataColumn(label: Text("Fecha")),
+],
+rows: ventas.map((venta) {
+return DataRow(
+cells: [
+DataCell(Text(venta.numero)),
 
-              DataCell(
-                Text(
-                  venta.nombreCliente?.isNotEmpty == true
-                      ? venta.nombreCliente!
-                      : "Cliente General",
-                ),
-              ),
+DataCell(
+Text(
+venta.nombreCliente?.isNotEmpty == true
+? venta.nombreCliente!
+: "Cliente General",
+),
+),
 
-              DataCell(Text(venta.tipoDocumento)),
+DataCell(Text(venta.tipoDocumento)),
 
-              DataCell(Text(venta.metodoPago)),
+DataCell(Text(venta.metodoPago)),
 
-              DataCell(Text("S/ ${venta.total.toStringAsFixed(2)}")),
+DataCell(
+Text("S/ ${venta.total.toStringAsFixed(2)}"),
+),
 
-              DataCell(
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "${venta.fecha.day.toString().padLeft(2, '0')}/"
-                      "${venta.fecha.month.toString().padLeft(2, '0')}/"
-                      "${venta.fecha.year}",
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      tooltip: "Reimprimir ticket",
-                      icon: const Icon(Icons.print_outlined, size: 20),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                        minWidth: 32,
-                        minHeight: 32,
-                      ),
-                      onPressed: () {
-                        _reimprimirTicket(context, venta);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        }).toList(),
-      ),
-    );
-  }
+DataCell(
+Row(
+mainAxisSize: MainAxisSize.min,
+children: [
+Text(
+"${venta.fecha.day.toString().padLeft(2, '0')}/"
+"${venta.fecha.month.toString().padLeft(2, '0')}/"
+"${venta.fecha.year}",
+),
+const SizedBox(width: 8),
+IconButton(
+tooltip: "Reimprimir ticket",
+icon: const Icon(
+Icons.print_outlined,
+size: 20,
+),
+padding: EdgeInsets.zero,
+constraints: const BoxConstraints(
+minWidth: 32,
+minHeight: 32,
+),
+onPressed: () {
+_reimprimirTicket(context, venta);
+},
+),
+],
+),
+),
+],
+);
+}).toList(),
+    ),
+  ),
+);
+}
 }

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../repositories/usuarios_repository.dart';
+import '../../repositories/permisos_usuario_repository.dart';
 import '../../services/sesion_service.dart';
 import '../home_screen.dart';
 
@@ -40,6 +41,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final repository = context.read<UsuariosRepository>();
+      final permisosRepository =
+          context.read<PermisosUsuarioRepository>();
 
       final usuario = await repository.validarAcceso(
         nombre: _usuarioController.text.trim(),
@@ -58,6 +61,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
         return;
       }
+
+      await permisosRepository.aplicarPerfilPorRol(
+        usuario.id,
+        usuario.rol,
+      );
+
+      if (!mounted) return;
 
       SesionService.instancia.iniciarSesion(usuario);
 

@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/producto_service.dart';
+import '../../core/security/autorizacion_ceo_dialog.dart';
 
 import '../../widgets/dialogs/nuevo_producto_dialog.dart';
 import '../../widgets/dialogs/producto_detalle_dialog.dart';
@@ -45,8 +46,15 @@ class ProductosScreen extends StatelessWidget {
       // NUEVO PRODUCTO
       // ==========================================================
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          showDialog(
+        onPressed: () async {
+          final autorizado =
+          await AutorizacionCeoDialog.verificar(context);
+
+          if (!autorizado || !context.mounted) {
+            return;
+          }
+
+          await showDialog(
             context: context,
             builder: (_) => const NuevoProductoDialog(),
           );
@@ -277,13 +285,19 @@ class ProductosScreen extends StatelessWidget {
                                 context: context,
                                 builder: (_) => ProductoDetalleDialog(
                                   producto: producto,
-                                  onEditar: () {
-                                    showDialog(
+                                  onEditar: () async {
+                                    final autorizado =
+                                    await AutorizacionCeoDialog.verificar(context);
+
+                                    if (!autorizado || !context.mounted) {
+                                      return;
+                                    }
+
+                                    await showDialog(
                                       context: context,
-                                      builder: (_) =>
-                                          NuevoProductoDialog(
-                                            producto: producto,
-                                          ),
+                                      builder: (_) => NuevoProductoDialog(
+                                        producto: producto,
+                                      ),
                                     );
                                   },
                                   onEliminar: () async {
@@ -300,6 +314,16 @@ class ProductosScreen extends StatelessWidget {
 
                                     if (confirmar == true &&
                                         producto.id != null) {
+                                      if (!context.mounted) {
+                                        return;
+                                      }
+
+                                      final autorizado =
+                                      await AutorizacionCeoDialog.verificar(context);
+
+                                      if (!autorizado || !context.mounted) {
+                                        return;
+                                      }
                                       await productoService
                                           .eliminarProducto(
                                         producto.id!,
@@ -325,8 +349,15 @@ class ProductosScreen extends StatelessWidget {
                             // ==========================================
                             // EDITAR
                             // ==========================================
-                            onEditar: () {
-                              showDialog(
+                            onEditar: () async {
+                              final autorizado =
+                              await AutorizacionCeoDialog.verificar(context);
+
+                              if (!autorizado || !context.mounted) {
+                                return;
+                              }
+
+                              await showDialog(
                                 context: context,
                                 builder: (_) => NuevoProductoDialog(
                                   producto: producto,
@@ -351,6 +382,17 @@ class ProductosScreen extends StatelessWidget {
 
                               if (confirmar == true &&
                                   producto.id != null) {
+                                if (!context.mounted) {
+                                  return;
+                                }
+
+                                final autorizado =
+                                await AutorizacionCeoDialog.verificar(context);
+
+                                if (!autorizado || !context.mounted) {
+                                  return;
+                                }
+
                                 await productoService.eliminarProducto(
                                   producto.id!,
                                 );
