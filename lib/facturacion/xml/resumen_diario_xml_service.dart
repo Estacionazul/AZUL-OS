@@ -22,10 +22,12 @@ class ResumenDiarioXmlService {
   static String generarBase({
     required String idResumen,
     required DateTime fechaEmision,
+    required DateTime fechaReferencia,
     required String rucEmisor,
     required String razonSocialEmisor,
   }) {
-    final fecha = _fecha(fechaEmision);
+    final fechaGeneracion = _fecha(fechaEmision);
+    final fechaDocumentos = _fecha(fechaReferencia);
 
     final buffer = StringBuffer();
 
@@ -49,11 +51,11 @@ class ResumenDiarioXmlService {
     buffer.writeln('  <cbc:UBLVersionID>2.0</cbc:UBLVersionID>');
     buffer.writeln('  <cbc:CustomizationID>1.1</cbc:CustomizationID>');
     buffer.writeln('  <cbc:ID>${_escape(idResumen)}</cbc:ID>');
-    buffer.writeln('  <cbc:ReferenceDate>$fecha</cbc:ReferenceDate>');
-    buffer.writeln('  <cbc:IssueDate>$fecha</cbc:IssueDate>');
+    buffer.writeln('  <cbc:ReferenceDate>$fechaDocumentos</cbc:ReferenceDate>');
+    buffer.writeln('  <cbc:IssueDate>$fechaGeneracion</cbc:IssueDate>');
 
     buffer.writeln('  <cac:Signature>');
-    buffer.writeln('    <cbc:ID>${_escape(idResumen)}</cbc:ID>');
+    buffer.writeln('    <cbc:ID>IDSignKG</cbc:ID>');
     buffer.writeln('    <cac:SignatoryParty>');
     buffer.writeln('      <cac:PartyIdentification>');
     buffer.writeln(
@@ -69,7 +71,7 @@ class ResumenDiarioXmlService {
     buffer.writeln('    <cac:DigitalSignatureAttachment>');
     buffer.writeln('      <cac:ExternalReference>');
     buffer.writeln(
-      '        <cbc:URI>#${_escape(idResumen)}</cbc:URI>',
+      '        <cbc:URI>#signatureKG</cbc:URI>',
     );
     buffer.writeln('      </cac:ExternalReference>');
     buffer.writeln('    </cac:DigitalSignatureAttachment>');
@@ -213,6 +215,7 @@ class ResumenDiarioXmlService {
   static String generarResumen({
     required String idResumen,
     required DateTime fechaEmision,
+    required DateTime fechaReferencia,
     required String rucEmisor,
     required String razonSocialEmisor,
     required List<ResumenDiarioLinea> lineas,
@@ -220,6 +223,7 @@ class ResumenDiarioXmlService {
     final base = generarBase(
       idResumen: idResumen,
       fechaEmision: fechaEmision,
+      fechaReferencia: fechaReferencia,
       rucEmisor: rucEmisor,
       razonSocialEmisor: razonSocialEmisor,
     );

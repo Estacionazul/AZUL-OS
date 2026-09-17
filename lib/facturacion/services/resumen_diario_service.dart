@@ -227,7 +227,8 @@ class ResumenDiarioService {
 
     final xml = ResumenDiarioXmlService.generarResumen(
       idResumen: idResumen,
-      fechaEmision: resumen.fechaReferencia,
+      fechaEmision: DateTime.now(),
+      fechaReferencia: resumen.fechaReferencia,
       rucEmisor: rucEmisor,
       razonSocialEmisor: razonSocialEmisor,
       lineas: lineas,
