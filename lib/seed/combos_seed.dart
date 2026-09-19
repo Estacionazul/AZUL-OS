@@ -11,49 +11,53 @@ class CombosSeed {
     }
 
     final lista = <ProductosCompanion>[
+      // ==========================================================
+      // COMBOS
+      // ==========================================================
+
       ProductosCompanion.insert(
         codigo: 'COM001',
-        nombre: 'Desayuno Azul',
-        categoriaId: categoriaId,
-        costo: 10.00,
-        precioVenta: 15.00,
-        emoji: const Value('🌅'),
-      ),
-
-      ProductosCompanion.insert(
-        codigo: 'COM002',
-        nombre: 'Combo Fresco',
-        categoriaId: categoriaId,
-        costo: 8.50,
-        precioVenta: 13.00,
-        emoji: const Value('🥤'),
-      ),
-
-      ProductosCompanion.insert(
-        codigo: 'COM003',
         nombre: 'Combo Tradición',
         categoriaId: categoriaId,
         costo: 7.00,
-        precioVenta: 11.50,
+        precioVenta: 12.00,
         emoji: const Value('☕'),
       ),
 
       ProductosCompanion.insert(
-        codigo: 'COM004',
-        nombre: 'Café Premium',
+        codigo: 'COM002',
+        nombre: 'Combo Express',
         categoriaId: categoriaId,
-        costo: 11.50,
-        precioVenta: 17.00,
-        emoji: const Value('🤎'),
+        costo: 7.00,
+        precioVenta: 13.00,
+        emoji: const Value('🍔'),
+      ),
+
+      ProductosCompanion.insert(
+        codigo: 'COM003',
+        nombre: 'Desayuno Azul',
+        categoriaId: categoriaId,
+        costo: 10.00,
+        precioVenta: 14.00,
+        emoji: const Value('🌅'),
+      ),
+
+      ProductosCompanion.insert(
+        codigo: 'COM004',
+        nombre: 'Combo Fresco',
+        categoriaId: categoriaId,
+        costo: 8.50,
+        precioVenta: 15.00,
+        emoji: const Value('🥤'),
       ),
 
       ProductosCompanion.insert(
         codigo: 'COM005',
-        nombre: 'Combo Express',
+        nombre: 'Combo Café Premium',
         categoriaId: categoriaId,
-        costo: 7.00,
-        precioVenta: 11.00,
-        emoji: const Value('🍔'),
+        costo: 11.50,
+        precioVenta: 18.00,
+        emoji: const Value('☕'),
       ),
     ];
 

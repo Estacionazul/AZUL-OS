@@ -11,21 +11,25 @@ class CafesSeed {
     }
 
     final lista = <ProductosCompanion>[
+      // ==========================================================
+      // CAFÉS - 8 OZ
+      // ==========================================================
+
       ProductosCompanion.insert(
         codigo: 'CAF001',
         nombre: 'Espresso',
         categoriaId: categoriaId,
         costo: 2.50,
-        precioVenta: 8.00,
+        precioVenta: 6.00,
         emoji: const Value('☕'),
       ),
 
       ProductosCompanion.insert(
         codigo: 'CAF002',
-        nombre: 'Doble Espresso',
+        nombre: 'Espresso doble',
         categoriaId: categoriaId,
         costo: 4.00,
-        precioVenta: 11.00,
+        precioVenta: 8.00,
         emoji: const Value('☕'),
       ),
 
@@ -34,13 +38,22 @@ class CafesSeed {
         nombre: 'Americano',
         categoriaId: categoriaId,
         costo: 3.00,
-        precioVenta: 8.00,
+        precioVenta: 7.00,
         emoji: const Value('☕'),
       ),
 
       ProductosCompanion.insert(
         codigo: 'CAF004',
-        nombre: 'Capuccino',
+        nombre: 'Café con leche',
+        categoriaId: categoriaId,
+        costo: 4.00,
+        precioVenta: 8.50,
+        emoji: const Value('☕'),
+      ),
+
+      ProductosCompanion.insert(
+        codigo: 'CAF005',
+        nombre: 'Cappuccino',
         categoriaId: categoriaId,
         costo: 4.50,
         precioVenta: 10.00,
@@ -48,7 +61,7 @@ class CafesSeed {
       ),
 
       ProductosCompanion.insert(
-        codigo: 'CAF005',
+        codigo: 'CAF006',
         nombre: 'Latte',
         categoriaId: categoriaId,
         costo: 4.80,
@@ -57,7 +70,16 @@ class CafesSeed {
       ),
 
       ProductosCompanion.insert(
-        codigo: 'CAF006',
+        codigo: 'CAF007',
+        nombre: 'Latte caramelo',
+        categoriaId: categoriaId,
+        costo: 5.20,
+        precioVenta: 11.00,
+        emoji: const Value('☕'),
+      ),
+
+      ProductosCompanion.insert(
+        codigo: 'CAF008',
         nombre: 'Mocaccino',
         categoriaId: categoriaId,
         costo: 5.20,
@@ -66,39 +88,12 @@ class CafesSeed {
       ),
 
       ProductosCompanion.insert(
-        codigo: 'CAF007',
-        nombre: 'Flat White',
-        categoriaId: categoriaId,
-        costo: 4.80,
-        precioVenta: 11.00,
-        emoji: const Value('☕'),
-      ),
-
-      ProductosCompanion.insert(
-        codigo: 'CAF008',
-        nombre: 'Cortado',
-        categoriaId: categoriaId,
-        costo: 3.80,
-        precioVenta: 9.00,
-        emoji: const Value('☕'),
-      ),
-
-      ProductosCompanion.insert(
         codigo: 'CAF009',
-        nombre: 'Chocolate Caliente',
+        nombre: 'Chocolate caliente',
         categoriaId: categoriaId,
         costo: 5.00,
-        precioVenta: 8.00,
+        precioVenta: 10.00,
         emoji: const Value('🍫'),
-      ),
-
-      ProductosCompanion.insert(
-        codigo: 'INF001',
-        nombre: 'Infusiones',
-        categoriaId: categoriaId,
-        costo: 1.40,
-        precioVenta: 4.50,
-        emoji: const Value('🍵'),
       ),
     ];
 

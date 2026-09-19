@@ -11,35 +11,79 @@ class BebidasFriasSeed {
     }
 
     final lista = <ProductosCompanion>[
+      // ==========================================================
+      // ICED & FRAPPÉ - 8 OZ
+      // ==========================================================
+
       ProductosCompanion.insert(
         codigo: 'BEB001',
-        nombre: 'Limonada Clásica',
+        nombre: 'Iced Coffee',
         categoriaId: categoriaId,
-        costo: 3.00,
-        precioVenta: 5.00,
-        emoji: const Value('🍋'),
+        costo: 4.00,
+        precioVenta: 9.00,
+        emoji: const Value('🧋'),
       ),
 
       ProductosCompanion.insert(
         codigo: 'BEB002',
-        nombre: 'Limonada Frozen',
+        nombre: 'Iced Mocca',
         categoriaId: categoriaId,
-        costo: 3.80,
-        precioVenta: 8.00,
-        emoji: const Value('🧊'),
+        costo: 4.50,
+        precioVenta: 10.00,
+        emoji: const Value('🧋'),
       ),
 
       ProductosCompanion.insert(
         codigo: 'BEB003',
-        nombre: 'Chicha Morada',
+        nombre: 'Iced Caramel',
         categoriaId: categoriaId,
-        costo: 2.80,
-        precioVenta: 5.00,
-        emoji: const Value('🟣'),
+        costo: 4.50,
+        precioVenta: 10.00,
+        emoji: const Value('🧋'),
       ),
 
       ProductosCompanion.insert(
         codigo: 'BEB004',
+        nombre: 'Frappé de café',
+        categoriaId: categoriaId,
+        costo: 4.00,
+        precioVenta: 9.00,
+        emoji: const Value('🥤'),
+      ),
+
+      ProductosCompanion.insert(
+        codigo: 'BEB005',
+        nombre: 'Frappé de chocolate',
+        categoriaId: categoriaId,
+        costo: 4.50,
+        precioVenta: 10.00,
+        emoji: const Value('🥤'),
+      ),
+
+      ProductosCompanion.insert(
+        codigo: 'BEB006',
+        nombre: 'Frappé de caramelo',
+        categoriaId: categoriaId,
+        costo: 5.00,
+        precioVenta: 11.00,
+        emoji: const Value('🥤'),
+      ),
+
+      ProductosCompanion.insert(
+        codigo: 'BEB007',
+        nombre: 'Frappé de mocaccino',
+        categoriaId: categoriaId,
+        costo: 5.00,
+        precioVenta: 11.00,
+        emoji: const Value('🥤'),
+      ),
+
+      // ==========================================================
+      // REFRESCOS NATURALES
+      // ==========================================================
+
+      ProductosCompanion.insert(
+        codigo: 'BEB008',
         nombre: 'Maracuyá',
         categoriaId: categoriaId,
         costo: 3.00,
@@ -48,8 +92,30 @@ class BebidasFriasSeed {
       ),
 
       ProductosCompanion.insert(
-        codigo: 'BEB005',
-        nombre: 'Maracuyá Frozen',
+        codigo: 'BEB009',
+        nombre: 'Limonada',
+        categoriaId: categoriaId,
+        costo: 3.00,
+        precioVenta: 5.00,
+        emoji: const Value('🍋'),
+      ),
+
+      ProductosCompanion.insert(
+        codigo: 'BEB010',
+        nombre: 'Chicha morada',
+        categoriaId: categoriaId,
+        costo: 2.80,
+        precioVenta: 5.00,
+        emoji: const Value('🟣'),
+      ),
+
+      // ==========================================================
+      // FROZEN
+      // ==========================================================
+
+      ProductosCompanion.insert(
+        codigo: 'BEB011',
+        nombre: 'Maracuyá frozen',
         categoriaId: categoriaId,
         costo: 3.80,
         precioVenta: 8.00,
@@ -57,48 +123,12 @@ class BebidasFriasSeed {
       ),
 
       ProductosCompanion.insert(
-        codigo: 'BEB006',
-        nombre: 'Agua Mineral',
+        codigo: 'BEB012',
+        nombre: 'Limonada frozen',
         categoriaId: categoriaId,
-        costo: 1.50,
-        precioVenta: 3.00,
-        emoji: const Value('💧'),
-      ),
-
-      ProductosCompanion.insert(
-        codigo: 'BEB007',
-        nombre: 'Coca-Cola',
-        categoriaId: categoriaId,
-        costo: 2.50,
-        precioVenta: 4.00,
-        emoji: const Value('🥤'),
-      ),
-
-      ProductosCompanion.insert(
-        codigo: 'BEB008',
-        nombre: 'Inca Kola',
-        categoriaId: categoriaId,
-        costo: 2.50,
-        precioVenta: 4.00,
-        emoji: const Value('🥤'),
-      ),
-
-      ProductosCompanion.insert(
-        codigo: 'BEB009',
-        nombre: 'Sprite',
-        categoriaId: categoriaId,
-        costo: 2.50,
-        precioVenta: 4.00,
-        emoji: const Value('🥤'),
-      ),
-
-      ProductosCompanion.insert(
-        codigo: 'BEB010',
-        nombre: 'Fanta',
-        categoriaId: categoriaId,
-        costo: 2.50,
-        precioVenta: 4.00,
-        emoji: const Value('🥤'),
+        costo: 3.80,
+        precioVenta: 8.00,
+        emoji: const Value('🧊'),
       ),
     ];
 

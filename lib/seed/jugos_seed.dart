@@ -6,6 +6,7 @@ class JugosSeed {
   static Future<void> cargar(AppDatabase db, int categoriaId) async {
     // ==========================================================
     // INSERTAR SOLO PRODUCTOS QUE NO EXISTAN
+    // JUGOS - 475 ML
     // ==========================================================
 
     Future<void> agregar({
@@ -23,98 +24,104 @@ class JugosSeed {
         return;
       }
 
-      await db
-          .into(db.productos)
-          .insert(
-            ProductosCompanion.insert(
-              codigo: codigo,
-              nombre: nombre,
-              categoriaId: categoriaId,
-              costo: costo,
-              precioVenta: precioVenta,
-              emoji: Value(emoji),
-            ),
-          );
+      await db.into(db.productos).insert(
+        ProductosCompanion.insert(
+          codigo: codigo,
+          nombre: nombre,
+          categoriaId: categoriaId,
+          costo: costo,
+          precioVenta: precioVenta,
+          emoji: Value(emoji),
+        ),
+      );
     }
 
     // ==========================================================
-    // JUGOS NATURALES
+    // JUGOS NATURALES - 475 ML
     // ==========================================================
 
     await agregar(
       codigo: 'JUG001',
-      nombre: 'Jugo de Naranja',
+      nombre: 'Naranja',
       costo: 3.50,
-      precioVenta: 7.00,
+      precioVenta: 8.00,
       emoji: '🍊',
     );
 
     await agregar(
       codigo: 'JUG002',
-      nombre: 'Jugo de Papaya',
+      nombre: 'Papaya',
       costo: 3.50,
-      precioVenta: 7.00,
+      precioVenta: 8.00,
       emoji: '🍈',
     );
 
     await agregar(
       codigo: 'JUG003',
-      nombre: 'Jugo de Piña',
+      nombre: 'Piña',
       costo: 3.80,
-      precioVenta: 7.00,
+      precioVenta: 8.00,
       emoji: '🍍',
     );
 
     await agregar(
       codigo: 'JUG004',
-      nombre: 'Jugo de Mango',
+      nombre: 'Mango',
       costo: 4.20,
-      precioVenta: 8.00,
+      precioVenta: 9.00,
       emoji: '🥭',
     );
 
     await agregar(
       codigo: 'JUG005',
-      nombre: 'Jugo de Fresa',
+      nombre: 'Fresa',
       costo: 4.50,
-      precioVenta: 8.00,
+      precioVenta: 10.00,
       emoji: '🍓',
     );
 
     await agregar(
       codigo: 'JUG006',
-      nombre: 'Jugo Surtido',
-      costo: 5.00,
-      precioVenta: 8.00,
-      emoji: '🍹',
+      nombre: 'Piña con Plátano',
+      costo: 4.50,
+      precioVenta: 10.00,
+      emoji: '🍍',
     );
 
     await agregar(
       codigo: 'JUG007',
-      nombre: 'Papaya con Leche',
-      costo: 4.80,
-      precioVenta: 9.00,
-      emoji: '🥛',
+      nombre: 'Surtido',
+      costo: 5.00,
+      precioVenta: 10.00,
+      emoji: '🍹',
     );
 
     await agregar(
       codigo: 'JUG008',
-      nombre: 'Fresa con Leche',
-      costo: 5.20,
-      precioVenta: 10.00,
-      emoji: '🥛',
+      nombre: 'Jugo Especial',
+      costo: 6.00,
+      precioVenta: 12.00,
+      emoji: '🍹',
     );
 
     // ==========================================================
-    // NUEVO
+    // JUGOS CON LECHE - 475 ML
     // ==========================================================
 
     await agregar(
       codigo: 'JUG009',
-      nombre: 'Piña con Plátano',
-      costo: 4.50,
-      precioVenta: 8.00,
-      emoji: '🍍',
+      nombre: 'Papaya con Leche',
+      costo: 4.80,
+      precioVenta: 10.00,
+      emoji: '🥛',
+    );
+
+    await agregar(
+      codigo: 'JUG010',
+      nombre: 'Fresa con Leche',
+      costo: 5.20,
+      precioVenta: 12.00,
+      emoji: '🥛',
     );
 
     // ==========================================================
@@ -125,17 +132,17 @@ class JugosSeed {
       db.productos,
     )..where((p) => p.categoriaId.equals(categoriaId))).get();
 
-    print("====================================");
-    print("JUGOS REGISTRADOS: ${productos.length}");
+    print('====================================');
+    print('JUGOS REGISTRADOS: ${productos.length}');
 
     for (final producto in productos) {
       print(
-        "${producto.codigo} - "
-        "${producto.nombre} - "
-        "S/. ${producto.precioVenta.toStringAsFixed(2)}",
+        '${producto.codigo} - '
+            '${producto.nombre} - '
+            'S/. ${producto.precioVenta.toStringAsFixed(2)}',
       );
     }
 
-    print("====================================");
+    print('====================================');
   }
 }

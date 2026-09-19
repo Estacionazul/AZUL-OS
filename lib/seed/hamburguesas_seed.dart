@@ -13,20 +13,20 @@ class HamburguesasSeed {
     final lista = <ProductosCompanion>[
       ProductosCompanion.insert(
         codigo: 'HAM001',
-        nombre: 'Hamburguesa Clásica',
+        nombre: 'Hamburguesa clásica',
         categoriaId: categoriaId,
         costo: 4.20,
-        precioVenta: 8.00,
+        precioVenta: 9.00,
         emoji: const Value('🍔'),
       ),
 
       ProductosCompanion.insert(
         codigo: 'HAM002',
-        nombre: 'Cheeseburger',
+        nombre: 'Hamburguesa con queso',
         categoriaId: categoriaId,
         costo: 5.50,
         precioVenta: 10.00,
-        emoji: const Value('🧀'),
+        emoji: const Value('🍔'),
       ),
 
       ProductosCompanion.insert(
@@ -36,24 +36,6 @@ class HamburguesasSeed {
         costo: 6.20,
         precioVenta: 12.00,
         emoji: const Value('👑'),
-      ),
-
-      ProductosCompanion.insert(
-        codigo: 'HAM004',
-        nombre: 'Hamburguesa Doble Carne',
-        categoriaId: categoriaId,
-        costo: 7.50,
-        precioVenta: 12.00,
-        emoji: const Value('🍔'),
-      ),
-
-      ProductosCompanion.insert(
-        codigo: 'HAM005',
-        nombre: 'Hamburguesa de Chorizo',
-        categoriaId: categoriaId,
-        costo: 3.80,
-        precioVenta: 7.00,
-        emoji: const Value('🌭'),
       ),
     ];
 
