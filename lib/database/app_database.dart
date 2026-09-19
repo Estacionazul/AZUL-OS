@@ -88,7 +88,7 @@ class AppDatabase extends _$AppDatabase {
       : super(_openConnection(databasePath));
 
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 24;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -149,6 +149,12 @@ class AppDatabase extends _$AppDatabase {
 
       if (from < 23) {
         await m.addColumn(productos, productos.tipoAfectacionIgv);
+      }
+
+      if (from < 24) {
+        await customStatement(
+          \"INSERT OR IGNORE INTO categorias (id, nombre, icono, orden, activo) VALUES (9, 'Gaseosas y Aguas', '🥤', 9, 1)\",
+        );
       }
     },
   );
