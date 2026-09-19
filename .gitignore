@@ -71,3 +71,21 @@ inspect_ventas.dart
 reset_produccion.dart
 test_certificado.dart
 
+
+# AZUL OS - respaldos y archivos locales de desarrollo
+_backup_*/
+backup_*/
+auditoria_azul_os/
+*.backup
+*.before_getstatus
+*.bak
+audit*.txt
+auditoria_*.txt
+analisis_azul_os.txt
+resultado_tests_azul_os.txt
+xml_comprobacion.txt
+test_firma.verificacion.backup.dart
+tool/
+
+auditoria_resumen_1.xml
+
