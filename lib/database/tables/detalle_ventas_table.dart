@@ -50,4 +50,7 @@ class DetalleVentas extends Table {
   BoolColumn get extraShot => boolean().withDefault(const Constant(false))();
 
   TextColumn get observaciones => text().nullable()();
+
+  // Afectación IGV SUNAT - Catálogo 07
+  TextColumn get tipoAfectacionIgv => text().withDefault(const Constant('10'))();
 }

@@ -149,6 +149,7 @@ class ProductoService extends ChangeNotifier {
       stock: producto.stock + cantidad.toInt(),
       stockMinimo: producto.stockMinimo,
       tipoInventario: producto.tipoInventario,
+      tipoAfectacionIgv: producto.tipoAfectacionIgv,
       emoji: producto.emoji,
       imagen: producto.imagen,
       activo: producto.activo,

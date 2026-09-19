@@ -56,6 +56,8 @@ class ComprobantesElectronicos extends Table {
 
   TextColumn get direccionFiscal => text().nullable()();
 
+  TextColumn get razonSocial => text().nullable()();
+
   // ==========================================================
   // IMPORTES
   // ==========================================================

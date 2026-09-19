@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -292,6 +292,7 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
       final empresaActualizada = EmpresaModel(
         id: _empresa!.id,
         nombre: _empresa!.nombre,
+        razonSocial: _empresa!.razonSocial,
         ruc: _empresa!.ruc,
         direccion: _empresa!.direccion,
         telefono: _empresa!.telefono,
@@ -517,3 +518,4 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
     );
   }
 }
+

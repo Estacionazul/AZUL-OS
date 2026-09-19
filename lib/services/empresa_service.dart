@@ -9,7 +9,7 @@ class EmpresaService {
     : _repository = EmpresaRepository(database);
 
   /// Obtiene la empresa.
-  /// Si no existe, crea automáticamente la configuración inicial.
+  /// Si no existe, crea automÃ¡ticamente la configuraciÃ³n inicial.
   Future<EmpresaModel> obtenerEmpresa() async {
     final empresa = await _repository.obtener();
     if (empresa != null) {
@@ -29,12 +29,13 @@ class EmpresaService {
       id: 1,
 
       nombre: 'CAFETERÍA ESTACIÓN AZUL',
+      razonSocial: 'DAVILA REATEGUI RICARDO JOSE',
 
       ruc: '10446152080',
 
       direccion: 'Av. Nicolás Ayllón 582, Ate',
 
-      telefono: '',
+      telefono: '972104506',
 
       instagram: '@cafeteriaestacionazul',
 
@@ -68,3 +69,4 @@ class EmpresaService {
     await _repository.actualizar(empresa);
   }
 }
+

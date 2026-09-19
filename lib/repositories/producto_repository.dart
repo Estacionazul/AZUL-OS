@@ -46,6 +46,7 @@ class ProductoRepository {
         stock: producto.stock,
         stockMinimo: producto.stockMinimo,
         tipoInventario: producto.tipoInventario,
+        tipoAfectacionIgv: producto.tipoAfectacionIgv,
         emoji: producto.emoji,
         imagen: producto.imagen,
         activo: producto.activo,

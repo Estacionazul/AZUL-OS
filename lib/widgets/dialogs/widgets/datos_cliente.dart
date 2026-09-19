@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class DatosCliente extends StatelessWidget {
+class DatosCliente extends StatefulWidget {
   final String tipoDocumento;
 
   final TextEditingController dniController;
@@ -18,6 +18,13 @@ class DatosCliente extends StatelessWidget {
     required this.razonSocialController,
     required this.direccionController,
   });
+
+  @override
+  State<DatosCliente> createState() => _DatosClienteState();
+}
+
+class _DatosClienteState extends State<DatosCliente> {
+  String _tipoClienteBoleta = "Sin documento";
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +57,9 @@ class DatosCliente extends StatelessWidget {
             // ==========================================
             // NOTA DE VENTA
             // ==========================================
-            if (tipoDocumento == "Nota de Venta") ...[
+            if (widget.tipoDocumento == "Nota de Venta") ...[
               TextField(
-                controller: nombreController,
+                controller: widget.nombreController,
                 decoration: InputDecoration(
                   labelText: "Nombre del Cliente",
                   hintText: "Opcional",
@@ -67,24 +74,96 @@ class DatosCliente extends StatelessWidget {
             // ==========================================
             // BOLETA
             // ==========================================
-            if (tipoDocumento == "Boleta") ...[
-              TextField(
-                controller: dniController,
-                keyboardType: TextInputType.number,
+            if (widget.tipoDocumento == "Boleta") ...[
+              const Text(
+                "Tipo de documento",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              DropdownButtonFormField<String>(
+                initialValue: _tipoClienteBoleta,
                 decoration: InputDecoration(
-                  labelText: "DNI",
-                  hintText: "Opcional",
+                  labelText: "Documento del cliente",
                   prefixIcon: const Icon(Icons.badge_outlined),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
+                items: const [
+                  DropdownMenuItem(
+                    value: "DNI",
+                    child: Text("DNI"),
+                  ),
+                  DropdownMenuItem(
+                    value: "RUC",
+                    child: Text("RUC"),
+                  ),
+                  DropdownMenuItem(
+                    value: "Sin documento",
+                    child: Text("Sin documento"),
+                  ),
+                ],
+                onChanged: (valor) {
+                  if (valor == null) return;
+
+                  setState(() {
+                    _tipoClienteBoleta = valor;
+
+                    if (valor == "DNI") {
+                      widget.rucController.clear();
+                    } else if (valor == "RUC") {
+                      widget.dniController.clear();
+                    } else {
+                      widget.dniController.clear();
+                      widget.rucController.clear();
+                    }
+                  });
+                },
               ),
+
+              if (_tipoClienteBoleta == "DNI") ...[
+                const SizedBox(height: 15),
+
+                TextField(
+                  controller: widget.dniController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: "DNI",
+                    hintText: "Opcional",
+                    prefixIcon: const Icon(Icons.badge_outlined),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
+
+              if (_tipoClienteBoleta == "RUC") ...[
+                const SizedBox(height: 15),
+
+                TextField(
+                  controller: widget.rucController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: "RUC",
+                    hintText: "Opcional",
+                    prefixIcon: const Icon(Icons.apartment),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
 
               const SizedBox(height: 15),
 
               TextField(
-                controller: nombreController,
+                controller: widget.nombreController,
                 decoration: InputDecoration(
                   labelText: "Nombre del Cliente",
                   hintText: "Opcional",
@@ -99,9 +178,9 @@ class DatosCliente extends StatelessWidget {
             // ==========================================
             // FACTURA
             // ==========================================
-            if (tipoDocumento == "Factura") ...[
+            if (widget.tipoDocumento == "Factura") ...[
               TextField(
-                controller: rucController,
+                controller: widget.rucController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: "RUC",
@@ -116,7 +195,7 @@ class DatosCliente extends StatelessWidget {
               const SizedBox(height: 15),
 
               TextField(
-                controller: razonSocialController,
+                controller: widget.razonSocialController,
                 decoration: InputDecoration(
                   labelText: "Razón Social",
                   hintText: "Ingrese la razón social",
@@ -130,7 +209,7 @@ class DatosCliente extends StatelessWidget {
               const SizedBox(height: 15),
 
               TextField(
-                controller: direccionController,
+                controller: widget.direccionController,
                 decoration: InputDecoration(
                   labelText: "Dirección Fiscal",
                   hintText: "Ingrese la dirección",

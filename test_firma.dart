@@ -1,4 +1,9 @@
 import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:pkcs12_parser/pkcs12_parser.dart';
+import 'package:xml_crypto/xml_crypto.dart';
 
 import 'package:azul_os/facturacion/firma/firma_digital_service.dart';
 
@@ -50,6 +55,45 @@ Future<void> main() async {
 
     final xmlFirmado = await servicio.firmarXml(xml);
 
+    final bytesCertificado = await File(rutaCertificado).readAsBytes();
+    final pkcs12 = Pkcs12.load(bytesCertificado, password);
+    final certificadoPem = pkcs12.certificatePem;
+
+    final inicioFirma = xmlFirmado.indexOf('<ds:Signature');
+    final finFirma = xmlFirmado.indexOf('</ds:Signature>');
+
+    if (inicioFirma == -1 || finFirma == -1) {
+      throw StateError('No se encontró ds:Signature para verificar.');
+    }
+
+    final firmaXml = xmlFirmado.substring(
+      inicioFirma,
+      finFirma + '</ds:Signature>'.length,
+    );
+
+    final verificador = SignedXml();
+    verificador.keyInfoProvider =
+        _CertificadoKeyInfoProvider(certificadoPem);
+    verificador.loadSignature(firmaXml);
+
+    final firmaValida = verificador.checkSignature(xmlFirmado);
+
+    print('');
+    print('==================================================');
+    print('RESULTADO DE VERIFICACIÓN CRIPTOGRÁFICA');
+    print('==================================================');
+    print(firmaValida
+        ? 'FIRMA CRIPTOGRÁFICAMENTE VÁLIDA'
+        : 'FIRMA CRIPTOGRÁFICAMENTE INVÁLIDA');
+
+    if (!firmaValida && verificador.validationErrors.isNotEmpty) {
+      print('');
+      print('Errores de validación:');
+      for (final error in verificador.validationErrors) {
+        print(error);
+      }
+    }
+
     print('');
     print('==================================================');
     print('🔎 VALIDANDO XML FIRMADO');
@@ -95,5 +139,23 @@ Future<void> main() async {
     print('');
     print(stackTrace);
     print('==================================================');
+  }
+}
+class _CertificadoKeyInfoProvider implements KeyInfoProvider {
+  final String certificadoPem;
+
+  _CertificadoKeyInfoProvider(this.certificadoPem);
+
+  @override
+  String getKeyInfo(Uint8List? signingKey, String? prefix) {
+    return '';
+  }
+
+  @override
+  Map<String, dynamic>? get attrs => {};
+
+  @override
+  Uint8List? getKey(String? keyInfo) {
+    return Uint8List.fromList(utf8.encode(certificadoPem));
   }
 }

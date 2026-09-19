@@ -45,7 +45,20 @@ class _FinalizarVentaDialogState extends State<FinalizarVentaDialog> {
   final TextEditingController _direccionController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _montoController.addListener(_actualizarEstadoPago);
+  }
+
+  void _actualizarEstadoPago() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
   void dispose() {
+    _montoController.removeListener(_actualizarEstadoPago);
     _montoController.dispose();
     _dniController.dispose();
     _nombreController.dispose();
@@ -196,7 +209,11 @@ class _FinalizarVentaDialogState extends State<FinalizarVentaDialog> {
                   const SizedBox(width: 20),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
+                      onPressed: _metodoPago == "Efectivo" &&
+                          (double.tryParse(_montoController.text.replaceAll(",", ".")) ?? 0) <
+                              totalFinal
+                          ? null
+                          : () {
                         final ventaService = context.read<VentaService>();
 
                         ventaService.cambiarDocumento(_tipoDocumento);
@@ -271,3 +288,5 @@ class _FinalizarVentaDialogState extends State<FinalizarVentaDialog> {
     );
   }
 }
+
+

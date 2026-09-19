@@ -23,6 +23,7 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
 
   String _categoria = "Cafés";
   String _tipoInventario = "receta";
+  String _tipoAfectacionIgv = '10';
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
       _stockMinimoController.text = producto.stockMinimo.toString();
 
       _tipoInventario = producto.tipoInventario;
+      _tipoAfectacionIgv = producto.tipoAfectacionIgv;
 
       // ==============================
       // CATEGORÍA
@@ -199,6 +201,7 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
       stockMinimo: stockMinimo,
 
       tipoInventario: _tipoInventario,
+      tipoAfectacionIgv: _tipoAfectacionIgv,
 
       // Si estamos editando conservamos la imagen.
       imagen: widget.producto?.imagen ?? '',
@@ -405,7 +408,43 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
               const SizedBox(height: 10),
 
               // ==================================================
-              // INFORMACIÓN DEL STOCK
+              // ============================================================
+    // AFECTACION IGV
+    // ============================================================
+    DropdownButtonFormField<String>(
+      initialValue: _tipoAfectacionIgv,
+      decoration: InputDecoration(
+        labelText: "Afectacion IGV",
+        prefixIcon: const Icon(Icons.receipt_long_outlined),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+      items: const [
+        DropdownMenuItem(
+          value: "10",
+          child: Text("10 - Gravado - Operacion Onerosa"),
+        ),
+        DropdownMenuItem(
+          value: "20",
+          child: Text("20 - Exonerado - Operacion Onerosa"),
+        ),
+        DropdownMenuItem(
+          value: "30",
+          child: Text("30 - Inafecto - Operacion Onerosa"),
+        ),
+      ],
+      onChanged: (valor) {
+        if (valor != null) {
+          setState(() {
+            _tipoAfectacionIgv = valor;
+          });
+        }
+      },
+    ),
+
+    const SizedBox(height: 10),
+    // INFORMACIÓN DEL STOCK
               // ==================================================
               if (esEdicion)
                 Container(

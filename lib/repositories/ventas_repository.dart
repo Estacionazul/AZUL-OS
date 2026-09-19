@@ -119,6 +119,7 @@ class VentasRepository {
       infusion: Value(item.infusion),
       extraShot: Value(item.extraShot),
       observaciones: Value(item.observaciones),
+      tipoAfectacionIgv: Value(item.producto.tipoAfectacionIgv),
     );
   }
 

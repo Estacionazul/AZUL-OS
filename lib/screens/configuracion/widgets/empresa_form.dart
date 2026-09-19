@@ -66,6 +66,7 @@ class _EmpresaFormState extends State<EmpresaForm> {
     final empresaActualizada = EmpresaModel(
       id: _empresa!.id,
       nombre: _nombreController.text.trim(),
+      razonSocial: _empresa!.razonSocial,
       ruc: _rucController.text.trim(),
       direccion: _direccionController.text.trim(),
       telefono: _telefonoController.text.trim(),
@@ -167,3 +168,4 @@ class _EmpresaFormState extends State<EmpresaForm> {
     );
   }
 }
+

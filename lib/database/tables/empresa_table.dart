@@ -5,6 +5,8 @@ class Empresa extends Table {
 
   TextColumn get nombre => text()();
 
+  TextColumn get razonSocial => text().withDefault(const Constant('DAVILA REATEGUI RICARDO JOSE'))();
+
   TextColumn get ruc => text()();
   TextColumn get tipoContribuyente =>
       text().withDefault(const Constant('RUC10'))();
@@ -32,3 +34,4 @@ class Empresa extends Table {
 
   TextColumn get impresora => text().nullable()();
 }
+

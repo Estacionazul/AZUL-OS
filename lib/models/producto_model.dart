@@ -25,6 +25,9 @@ class ProductoModel {
   /// producto = descuenta stock del producto
   final String tipoInventario;
 
+  // Afectación IGV SUNAT - Catálogo 07
+  final String tipoAfectacionIgv;
+
   // POS
   final String emoji;
   final String imagen;
@@ -44,6 +47,7 @@ class ProductoModel {
     this.stock = 0,
     this.stockMinimo = 0,
     this.tipoInventario = 'receta',
+    this.tipoAfectacionIgv = '10',
     this.emoji = '📦',
     this.imagen = '',
     this.activo = true,

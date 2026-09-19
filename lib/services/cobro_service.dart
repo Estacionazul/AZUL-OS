@@ -76,6 +76,27 @@ class CobroService {
     }
 
     // ==========================================================
+    // VALIDAR DATOS FISCALES
+    // ==========================================================
+
+    if (ventaActual.tipoDocumento == 'Factura') {
+      final ruc = ventaActual.ruc?.trim() ?? '';
+      final razonSocial = ventaActual.razonSocial?.trim() ?? '';
+
+      if (!RegExp(r'^\d{11}$').hasMatch(ruc)) {
+        throw StateError(
+          'Para emitir una Factura debe ingresar un RUC válido de 11 dígitos.',
+        );
+      }
+
+      if (razonSocial.isEmpty) {
+        throw StateError(
+          'Para emitir una Factura debe ingresar la Razón Social.',
+        );
+      }
+    }
+
+    // ==========================================================
     // OBTENER NÚMERO SEGÚN EL TIPO DE DOCUMENTO
     // ==========================================================
 
@@ -203,6 +224,7 @@ class CobroService {
         dni: venta.dni,
         ruc: venta.ruc,
         nombreCliente: venta.nombreCliente,
+        razonSocial: venta.razonSocial,
         direccionFiscal: venta.direccionFiscal,
         subtotal: venta.subtotal,
         igv: venta.igv,
@@ -233,7 +255,7 @@ class CobroService {
       final xml = await facturacionService.generarXmlComprobante(
         comprobanteId: comprobanteId,
         rucEmisor: empresa.ruc,
-        razonSocialEmisor: empresa.nombre,
+        razonSocialEmisor: empresa.razonSocial,
         direccionEmisor: empresa.direccion,
         moneda: empresa.moneda,
         detalles: venta.items,
@@ -411,7 +433,3 @@ class CobroService {
     carritoService.vaciarCarrito();
   }
 }
-
-
-
-

@@ -9,6 +9,7 @@ class EmpresaMapper {
     return EmpresaModel(
       id: empresa.id,
       nombre: empresa.nombre,
+      razonSocial: empresa.razonSocial,
       ruc: empresa.ruc,
       tipoContribuyente: empresa.tipoContribuyente,
       direccion: empresa.direccion ?? '',
@@ -30,6 +31,7 @@ class EmpresaMapper {
     return EmpresaCompanion(
       id: model.id == null ? const Value.absent() : Value(model.id!),
       nombre: Value(model.nombre),
+      razonSocial: Value(model.razonSocial),
       ruc: Value(model.ruc),
       tipoContribuyente: Value(model.tipoContribuyente),
       direccion: model.direccion.isEmpty
@@ -54,3 +56,4 @@ class EmpresaMapper {
     );
   }
 }
+

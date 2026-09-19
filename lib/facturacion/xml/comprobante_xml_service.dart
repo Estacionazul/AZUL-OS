@@ -107,6 +107,37 @@ class ComprobanteXmlService {
     );
 
     // ==========================================================
+// FIRMA UBL
+// ==========================================================
+
+    buffer.writeln('<cac:Signature>');
+    buffer.writeln('<cbc:ID>IDSignKG</cbc:ID>');
+
+    buffer.writeln('<cac:SignatoryParty>');
+
+    buffer.writeln('<cac:PartyIdentification>');
+    buffer.writeln(
+      '<cbc:ID>${_escape(rucEmisor)}</cbc:ID>',
+    );
+    buffer.writeln('</cac:PartyIdentification>');
+
+    buffer.writeln('<cac:PartyName>');
+    buffer.writeln(
+      '<cbc:Name>${_escape(razonSocialEmisor)}</cbc:Name>',
+    );
+    buffer.writeln('</cac:PartyName>');
+
+    buffer.writeln('</cac:SignatoryParty>');
+
+    buffer.writeln('<cac:DigitalSignatureAttachment>');
+    buffer.writeln('<cac:ExternalReference>');
+    buffer.writeln('<cbc:URI>#signatureKG</cbc:URI>');
+    buffer.writeln('</cac:ExternalReference>');
+    buffer.writeln('</cac:DigitalSignatureAttachment>');
+
+    buffer.writeln('</cac:Signature>');
+
+    // ==========================================================
     // EMISOR
     // ==========================================================
 
@@ -122,6 +153,43 @@ class ComprobanteXmlService {
     );
 
     buffer.writeln('</cac:PartyIdentification>');
+
+    buffer.writeln('<cac:PartyTaxScheme>');
+
+    buffer.writeln(
+      '<cbc:RegistrationName>'
+      '${_escape(razonSocialEmisor)}'
+      '</cbc:RegistrationName>',
+    );
+
+    buffer.writeln(
+      '<cbc:CompanyID schemeID="6">'
+      '${_escape(rucEmisor)}'
+      '</cbc:CompanyID>',
+    );
+
+    if (direccionEmisor != null && direccionEmisor.trim().isNotEmpty) {
+      buffer.writeln('<cac:RegistrationAddress>');
+      buffer.writeln('<cbc:AddressTypeCode>0000</cbc:AddressTypeCode>');
+      buffer.writeln('<cac:AddressLine>');
+
+      buffer.writeln(
+        '<cbc:Line>'
+        '${_escape(direccionEmisor)}'
+        '</cbc:Line>',
+      );
+
+      buffer.writeln('</cac:AddressLine>');
+      buffer.writeln('</cac:RegistrationAddress>');
+    }
+
+    buffer.writeln('<cac:TaxScheme>');
+    buffer.writeln('<cbc:ID>1000</cbc:ID>');
+    buffer.writeln('<cbc:Name>IGV</cbc:Name>');
+    buffer.writeln('<cbc:TaxTypeCode>VAT</cbc:TaxTypeCode>');
+    buffer.writeln('</cac:TaxScheme>');
+
+    buffer.writeln('</cac:PartyTaxScheme>');
 
     if (nombreComercial != null && nombreComercial.trim().isNotEmpty) {
       buffer.writeln('<cac:PartyName>');
@@ -143,20 +211,6 @@ class ComprobanteXmlService {
       '</cbc:RegistrationName>',
     );
 
-    if (direccionEmisor != null && direccionEmisor.trim().isNotEmpty) {
-      buffer.writeln('<cac:RegistrationAddress>');
-      buffer.writeln('<cac:AddressLine>');
-
-      buffer.writeln(
-        '<cbc:Line>'
-        '${_escape(direccionEmisor)}'
-        '</cbc:Line>',
-      );
-
-      buffer.writeln('</cac:AddressLine>');
-      buffer.writeln('</cac:RegistrationAddress>');
-    }
-
     buffer.writeln('</cac:PartyLegalEntity>');
     buffer.writeln('</cac:Party>');
     buffer.writeln('</cac:AccountingSupplierParty>');
@@ -168,29 +222,53 @@ class ComprobanteXmlService {
     buffer.writeln('<cac:AccountingCustomerParty>');
     buffer.writeln('<cac:Party>');
 
-    final numeroDocumento = esFactura ? comprobante.ruc : comprobante.dni;
+    String? numeroDocumento;
+    String tipoDocumentoCliente = '1';
 
-    final tipoDocumentoCliente = esFactura ? '6' : '1';
-
-    if (numeroDocumento != null && numeroDocumento.trim().isNotEmpty) {
-      buffer.writeln('<cac:PartyIdentification>');
-
-      buffer.writeln(
-        '<cbc:ID schemeID="$tipoDocumentoCliente">'
-        '${_escape(numeroDocumento)}'
-        '</cbc:ID>',
-      );
-
-      buffer.writeln('</cac:PartyIdentification>');
+    if (esFactura) {
+      numeroDocumento = comprobante.ruc;
+      tipoDocumentoCliente = '6';
+    } else if (comprobante.ruc != null &&
+        comprobante.ruc!.trim().isNotEmpty) {
+      numeroDocumento = comprobante.ruc;
+      tipoDocumentoCliente = '6';
+    } else if (comprobante.dni != null &&
+        comprobante.dni!.trim().isNotEmpty) {
+      numeroDocumento = comprobante.dni;
+      tipoDocumentoCliente = '1';
     }
 
-    buffer.writeln('<cac:PartyLegalEntity>');
+    final nombreCliente =
+    (esFactura
+        ? comprobante.razonSocial
+        : comprobante.nombreCliente)
+        ?.trim();
+
+    final nombreClienteFinal =
+    nombreCliente == null || nombreCliente.isEmpty
+        ? 'CLIENTE GENERAL'
+        : nombreCliente;
+
+    buffer.writeln('<cac:PartyTaxScheme>');
 
     buffer.writeln(
       '<cbc:RegistrationName>'
-      '${_escape((comprobante.nombreCliente ?? '').trim().isEmpty ? 'CLIENTE GENERAL' : comprobante.nombreCliente!.trim())}'
-      '</cbc:RegistrationName>',
+          '${_escape(nombreClienteFinal)}'
+          '</cbc:RegistrationName>',
     );
+
+    if (numeroDocumento != null &&
+        numeroDocumento.trim().isNotEmpty) {
+      buffer.writeln(
+        '<cbc:CompanyID '
+            'schemeID="$tipoDocumentoCliente" '
+            'schemeName="SUNAT:Identificador de Documento de Identidad" '
+            'schemeAgencyName="PE:SUNAT" '
+            'schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">'
+            '${_escape(numeroDocumento)}'
+            '</cbc:CompanyID>',
+      );
+    }
 
     if (comprobante.direccionFiscal != null &&
         comprobante.direccionFiscal!.trim().isNotEmpty) {
@@ -199,15 +277,20 @@ class ComprobanteXmlService {
 
       buffer.writeln(
         '<cbc:Line>'
-        '${_escape(comprobante.direccionFiscal!)}'
-        '</cbc:Line>',
+            '${_escape(comprobante.direccionFiscal!)}'
+            '</cbc:Line>',
       );
 
       buffer.writeln('</cac:AddressLine>');
       buffer.writeln('</cac:RegistrationAddress>');
     }
 
-    buffer.writeln('</cac:PartyLegalEntity>');
+    buffer.writeln('<cac:TaxScheme>');
+    buffer.writeln('<cbc:ID></cbc:ID>');
+    buffer.writeln('</cac:TaxScheme>');
+
+    buffer.writeln('</cac:PartyTaxScheme>');
+
     buffer.writeln('</cac:Party>');
     buffer.writeln('</cac:AccountingCustomerParty>');
 

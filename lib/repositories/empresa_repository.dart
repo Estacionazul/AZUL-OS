@@ -46,7 +46,7 @@ class EmpresaRepository {
   }
 
   // ==========================================================
-  // SIGUIENTE NÚMERO DE BOLETA
+  // SIGUIENTE NÃšMERO DE BOLETA
   // ==========================================================
 
   Future<String> obtenerSiguienteNumeroBoleta() async {
@@ -62,7 +62,7 @@ class EmpresaRepository {
   }
 
   // ==========================================================
-  // SIGUIENTE NÚMERO DE FACTURA
+  // SIGUIENTE NÃšMERO DE FACTURA
   // ==========================================================
 
   Future<String> obtenerSiguienteNumeroFactura() async {
@@ -91,6 +91,7 @@ class EmpresaRepository {
     final actualizada = EmpresaModel(
       id: empresa.id,
       nombre: empresa.nombre,
+      razonSocial: empresa.razonSocial,
       ruc: empresa.ruc,
       direccion: empresa.direccion,
       telefono: empresa.telefono,
@@ -127,6 +128,7 @@ class EmpresaRepository {
     final actualizada = EmpresaModel(
       id: empresa.id,
       nombre: empresa.nombre,
+      razonSocial: empresa.razonSocial,
       ruc: empresa.ruc,
       direccion: empresa.direccion,
       telefono: empresa.telefono,

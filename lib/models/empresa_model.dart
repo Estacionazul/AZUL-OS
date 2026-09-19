@@ -3,6 +3,7 @@ class EmpresaModel {
 
   // Información fiscal
   final String nombre;
+  final String razonSocial;
   final String ruc;
   final String direccion;
   final String telefono;
@@ -28,6 +29,7 @@ class EmpresaModel {
   const EmpresaModel({
     this.id,
     required this.nombre,
+    this.razonSocial = 'DAVILA REATEGUI RICARDO JOSE',
     required this.ruc,
     this.direccion = '',
     this.telefono = '',
@@ -43,3 +45,5 @@ class EmpresaModel {
     this.impresora = '',
   });
 }
+
+

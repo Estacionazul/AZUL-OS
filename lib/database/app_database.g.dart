@@ -129,6 +129,19 @@ class $ProductosTable extends Productos
     requiredDuringInsert: false,
     defaultValue: const Constant('receta'),
   );
+  static const VerificationMeta _tipoAfectacionIgvMeta = const VerificationMeta(
+    'tipoAfectacionIgv',
+  );
+  @override
+  late final GeneratedColumn<String> tipoAfectacionIgv =
+      GeneratedColumn<String>(
+        'tipo_afectacion_igv',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('10'),
+      );
   static const VerificationMeta _emojiMeta = const VerificationMeta('emoji');
   @override
   late final GeneratedColumn<String> emoji = GeneratedColumn<String>(
@@ -188,6 +201,7 @@ class $ProductosTable extends Productos
     stock,
     stockMinimo,
     tipoInventario,
+    tipoAfectacionIgv,
     emoji,
     imagen,
     activo,
@@ -296,6 +310,15 @@ class $ProductosTable extends Productos
         ),
       );
     }
+    if (data.containsKey('tipo_afectacion_igv')) {
+      context.handle(
+        _tipoAfectacionIgvMeta,
+        tipoAfectacionIgv.isAcceptableOrUnknown(
+          data['tipo_afectacion_igv']!,
+          _tipoAfectacionIgvMeta,
+        ),
+      );
+    }
     if (data.containsKey('emoji')) {
       context.handle(
         _emojiMeta,
@@ -376,6 +399,10 @@ class $ProductosTable extends Productos
         DriftSqlType.string,
         data['${effectivePrefix}tipo_inventario'],
       )!,
+      tipoAfectacionIgv: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tipo_afectacion_igv'],
+      )!,
       emoji: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}emoji'],
@@ -413,6 +440,7 @@ class Producto extends DataClass implements Insertable<Producto> {
   final int stock;
   final int stockMinimo;
   final String tipoInventario;
+  final String tipoAfectacionIgv;
   final String emoji;
   final String imagen;
   final bool activo;
@@ -429,6 +457,7 @@ class Producto extends DataClass implements Insertable<Producto> {
     required this.stock,
     required this.stockMinimo,
     required this.tipoInventario,
+    required this.tipoAfectacionIgv,
     required this.emoji,
     required this.imagen,
     required this.activo,
@@ -450,6 +479,7 @@ class Producto extends DataClass implements Insertable<Producto> {
     map['stock'] = Variable<int>(stock);
     map['stock_minimo'] = Variable<int>(stockMinimo);
     map['tipo_inventario'] = Variable<String>(tipoInventario);
+    map['tipo_afectacion_igv'] = Variable<String>(tipoAfectacionIgv);
     map['emoji'] = Variable<String>(emoji);
     map['imagen'] = Variable<String>(imagen);
     map['activo'] = Variable<bool>(activo);
@@ -472,6 +502,7 @@ class Producto extends DataClass implements Insertable<Producto> {
       stock: Value(stock),
       stockMinimo: Value(stockMinimo),
       tipoInventario: Value(tipoInventario),
+      tipoAfectacionIgv: Value(tipoAfectacionIgv),
       emoji: Value(emoji),
       imagen: Value(imagen),
       activo: Value(activo),
@@ -496,6 +527,7 @@ class Producto extends DataClass implements Insertable<Producto> {
       stock: serializer.fromJson<int>(json['stock']),
       stockMinimo: serializer.fromJson<int>(json['stockMinimo']),
       tipoInventario: serializer.fromJson<String>(json['tipoInventario']),
+      tipoAfectacionIgv: serializer.fromJson<String>(json['tipoAfectacionIgv']),
       emoji: serializer.fromJson<String>(json['emoji']),
       imagen: serializer.fromJson<String>(json['imagen']),
       activo: serializer.fromJson<bool>(json['activo']),
@@ -517,6 +549,7 @@ class Producto extends DataClass implements Insertable<Producto> {
       'stock': serializer.toJson<int>(stock),
       'stockMinimo': serializer.toJson<int>(stockMinimo),
       'tipoInventario': serializer.toJson<String>(tipoInventario),
+      'tipoAfectacionIgv': serializer.toJson<String>(tipoAfectacionIgv),
       'emoji': serializer.toJson<String>(emoji),
       'imagen': serializer.toJson<String>(imagen),
       'activo': serializer.toJson<bool>(activo),
@@ -536,6 +569,7 @@ class Producto extends DataClass implements Insertable<Producto> {
     int? stock,
     int? stockMinimo,
     String? tipoInventario,
+    String? tipoAfectacionIgv,
     String? emoji,
     String? imagen,
     bool? activo,
@@ -552,6 +586,7 @@ class Producto extends DataClass implements Insertable<Producto> {
     stock: stock ?? this.stock,
     stockMinimo: stockMinimo ?? this.stockMinimo,
     tipoInventario: tipoInventario ?? this.tipoInventario,
+    tipoAfectacionIgv: tipoAfectacionIgv ?? this.tipoAfectacionIgv,
     emoji: emoji ?? this.emoji,
     imagen: imagen ?? this.imagen,
     activo: activo ?? this.activo,
@@ -582,6 +617,9 @@ class Producto extends DataClass implements Insertable<Producto> {
       tipoInventario: data.tipoInventario.present
           ? data.tipoInventario.value
           : this.tipoInventario,
+      tipoAfectacionIgv: data.tipoAfectacionIgv.present
+          ? data.tipoAfectacionIgv.value
+          : this.tipoAfectacionIgv,
       emoji: data.emoji.present ? data.emoji.value : this.emoji,
       imagen: data.imagen.present ? data.imagen.value : this.imagen,
       activo: data.activo.present ? data.activo.value : this.activo,
@@ -605,6 +643,7 @@ class Producto extends DataClass implements Insertable<Producto> {
           ..write('stock: $stock, ')
           ..write('stockMinimo: $stockMinimo, ')
           ..write('tipoInventario: $tipoInventario, ')
+          ..write('tipoAfectacionIgv: $tipoAfectacionIgv, ')
           ..write('emoji: $emoji, ')
           ..write('imagen: $imagen, ')
           ..write('activo: $activo, ')
@@ -626,6 +665,7 @@ class Producto extends DataClass implements Insertable<Producto> {
     stock,
     stockMinimo,
     tipoInventario,
+    tipoAfectacionIgv,
     emoji,
     imagen,
     activo,
@@ -646,6 +686,7 @@ class Producto extends DataClass implements Insertable<Producto> {
           other.stock == this.stock &&
           other.stockMinimo == this.stockMinimo &&
           other.tipoInventario == this.tipoInventario &&
+          other.tipoAfectacionIgv == this.tipoAfectacionIgv &&
           other.emoji == this.emoji &&
           other.imagen == this.imagen &&
           other.activo == this.activo &&
@@ -664,6 +705,7 @@ class ProductosCompanion extends UpdateCompanion<Producto> {
   final Value<int> stock;
   final Value<int> stockMinimo;
   final Value<String> tipoInventario;
+  final Value<String> tipoAfectacionIgv;
   final Value<String> emoji;
   final Value<String> imagen;
   final Value<bool> activo;
@@ -680,6 +722,7 @@ class ProductosCompanion extends UpdateCompanion<Producto> {
     this.stock = const Value.absent(),
     this.stockMinimo = const Value.absent(),
     this.tipoInventario = const Value.absent(),
+    this.tipoAfectacionIgv = const Value.absent(),
     this.emoji = const Value.absent(),
     this.imagen = const Value.absent(),
     this.activo = const Value.absent(),
@@ -697,6 +740,7 @@ class ProductosCompanion extends UpdateCompanion<Producto> {
     this.stock = const Value.absent(),
     this.stockMinimo = const Value.absent(),
     this.tipoInventario = const Value.absent(),
+    this.tipoAfectacionIgv = const Value.absent(),
     this.emoji = const Value.absent(),
     this.imagen = const Value.absent(),
     this.activo = const Value.absent(),
@@ -718,6 +762,7 @@ class ProductosCompanion extends UpdateCompanion<Producto> {
     Expression<int>? stock,
     Expression<int>? stockMinimo,
     Expression<String>? tipoInventario,
+    Expression<String>? tipoAfectacionIgv,
     Expression<String>? emoji,
     Expression<String>? imagen,
     Expression<bool>? activo,
@@ -735,6 +780,7 @@ class ProductosCompanion extends UpdateCompanion<Producto> {
       if (stock != null) 'stock': stock,
       if (stockMinimo != null) 'stock_minimo': stockMinimo,
       if (tipoInventario != null) 'tipo_inventario': tipoInventario,
+      if (tipoAfectacionIgv != null) 'tipo_afectacion_igv': tipoAfectacionIgv,
       if (emoji != null) 'emoji': emoji,
       if (imagen != null) 'imagen': imagen,
       if (activo != null) 'activo': activo,
@@ -754,6 +800,7 @@ class ProductosCompanion extends UpdateCompanion<Producto> {
     Value<int>? stock,
     Value<int>? stockMinimo,
     Value<String>? tipoInventario,
+    Value<String>? tipoAfectacionIgv,
     Value<String>? emoji,
     Value<String>? imagen,
     Value<bool>? activo,
@@ -771,6 +818,7 @@ class ProductosCompanion extends UpdateCompanion<Producto> {
       stock: stock ?? this.stock,
       stockMinimo: stockMinimo ?? this.stockMinimo,
       tipoInventario: tipoInventario ?? this.tipoInventario,
+      tipoAfectacionIgv: tipoAfectacionIgv ?? this.tipoAfectacionIgv,
       emoji: emoji ?? this.emoji,
       imagen: imagen ?? this.imagen,
       activo: activo ?? this.activo,
@@ -814,6 +862,9 @@ class ProductosCompanion extends UpdateCompanion<Producto> {
     if (tipoInventario.present) {
       map['tipo_inventario'] = Variable<String>(tipoInventario.value);
     }
+    if (tipoAfectacionIgv.present) {
+      map['tipo_afectacion_igv'] = Variable<String>(tipoAfectacionIgv.value);
+    }
     if (emoji.present) {
       map['emoji'] = Variable<String>(emoji.value);
     }
@@ -843,6 +894,7 @@ class ProductosCompanion extends UpdateCompanion<Producto> {
           ..write('stock: $stock, ')
           ..write('stockMinimo: $stockMinimo, ')
           ..write('tipoInventario: $tipoInventario, ')
+          ..write('tipoAfectacionIgv: $tipoAfectacionIgv, ')
           ..write('emoji: $emoji, ')
           ..write('imagen: $imagen, ')
           ..write('activo: $activo, ')
@@ -3738,6 +3790,19 @@ class $DetalleVentasTable extends DetalleVentas
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _tipoAfectacionIgvMeta = const VerificationMeta(
+    'tipoAfectacionIgv',
+  );
+  @override
+  late final GeneratedColumn<String> tipoAfectacionIgv =
+      GeneratedColumn<String>(
+        'tipo_afectacion_igv',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('10'),
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3753,6 +3818,7 @@ class $DetalleVentasTable extends DetalleVentas
     infusion,
     extraShot,
     observaciones,
+    tipoAfectacionIgv,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3856,6 +3922,15 @@ class $DetalleVentasTable extends DetalleVentas
         ),
       );
     }
+    if (data.containsKey('tipo_afectacion_igv')) {
+      context.handle(
+        _tipoAfectacionIgvMeta,
+        tipoAfectacionIgv.isAcceptableOrUnknown(
+          data['tipo_afectacion_igv']!,
+          _tipoAfectacionIgvMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3917,6 +3992,10 @@ class $DetalleVentasTable extends DetalleVentas
         DriftSqlType.string,
         data['${effectivePrefix}observaciones'],
       ),
+      tipoAfectacionIgv: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tipo_afectacion_igv'],
+      )!,
     );
   }
 
@@ -3940,6 +4019,7 @@ class DetalleVenta extends DataClass implements Insertable<DetalleVenta> {
   final String? infusion;
   final bool extraShot;
   final String? observaciones;
+  final String tipoAfectacionIgv;
   const DetalleVenta({
     required this.id,
     required this.ventaId,
@@ -3954,6 +4034,7 @@ class DetalleVenta extends DataClass implements Insertable<DetalleVenta> {
     this.infusion,
     required this.extraShot,
     this.observaciones,
+    required this.tipoAfectacionIgv,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3981,6 +4062,7 @@ class DetalleVenta extends DataClass implements Insertable<DetalleVenta> {
     if (!nullToAbsent || observaciones != null) {
       map['observaciones'] = Variable<String>(observaciones);
     }
+    map['tipo_afectacion_igv'] = Variable<String>(tipoAfectacionIgv);
     return map;
   }
 
@@ -4009,6 +4091,7 @@ class DetalleVenta extends DataClass implements Insertable<DetalleVenta> {
       observaciones: observaciones == null && nullToAbsent
           ? const Value.absent()
           : Value(observaciones),
+      tipoAfectacionIgv: Value(tipoAfectacionIgv),
     );
   }
 
@@ -4031,6 +4114,7 @@ class DetalleVenta extends DataClass implements Insertable<DetalleVenta> {
       infusion: serializer.fromJson<String?>(json['infusion']),
       extraShot: serializer.fromJson<bool>(json['extraShot']),
       observaciones: serializer.fromJson<String?>(json['observaciones']),
+      tipoAfectacionIgv: serializer.fromJson<String>(json['tipoAfectacionIgv']),
     );
   }
   @override
@@ -4050,6 +4134,7 @@ class DetalleVenta extends DataClass implements Insertable<DetalleVenta> {
       'infusion': serializer.toJson<String?>(infusion),
       'extraShot': serializer.toJson<bool>(extraShot),
       'observaciones': serializer.toJson<String?>(observaciones),
+      'tipoAfectacionIgv': serializer.toJson<String>(tipoAfectacionIgv),
     };
   }
 
@@ -4067,6 +4152,7 @@ class DetalleVenta extends DataClass implements Insertable<DetalleVenta> {
     Value<String?> infusion = const Value.absent(),
     bool? extraShot,
     Value<String?> observaciones = const Value.absent(),
+    String? tipoAfectacionIgv,
   }) => DetalleVenta(
     id: id ?? this.id,
     ventaId: ventaId ?? this.ventaId,
@@ -4083,6 +4169,7 @@ class DetalleVenta extends DataClass implements Insertable<DetalleVenta> {
     observaciones: observaciones.present
         ? observaciones.value
         : this.observaciones,
+    tipoAfectacionIgv: tipoAfectacionIgv ?? this.tipoAfectacionIgv,
   );
   DetalleVenta copyWithCompanion(DetalleVentasCompanion data) {
     return DetalleVenta(
@@ -4109,6 +4196,9 @@ class DetalleVenta extends DataClass implements Insertable<DetalleVenta> {
       observaciones: data.observaciones.present
           ? data.observaciones.value
           : this.observaciones,
+      tipoAfectacionIgv: data.tipoAfectacionIgv.present
+          ? data.tipoAfectacionIgv.value
+          : this.tipoAfectacionIgv,
     );
   }
 
@@ -4127,7 +4217,8 @@ class DetalleVenta extends DataClass implements Insertable<DetalleVenta> {
           ..write('endulzante: $endulzante, ')
           ..write('infusion: $infusion, ')
           ..write('extraShot: $extraShot, ')
-          ..write('observaciones: $observaciones')
+          ..write('observaciones: $observaciones, ')
+          ..write('tipoAfectacionIgv: $tipoAfectacionIgv')
           ..write(')'))
         .toString();
   }
@@ -4147,6 +4238,7 @@ class DetalleVenta extends DataClass implements Insertable<DetalleVenta> {
     infusion,
     extraShot,
     observaciones,
+    tipoAfectacionIgv,
   );
   @override
   bool operator ==(Object other) =>
@@ -4164,7 +4256,8 @@ class DetalleVenta extends DataClass implements Insertable<DetalleVenta> {
           other.endulzante == this.endulzante &&
           other.infusion == this.infusion &&
           other.extraShot == this.extraShot &&
-          other.observaciones == this.observaciones);
+          other.observaciones == this.observaciones &&
+          other.tipoAfectacionIgv == this.tipoAfectacionIgv);
 }
 
 class DetalleVentasCompanion extends UpdateCompanion<DetalleVenta> {
@@ -4181,6 +4274,7 @@ class DetalleVentasCompanion extends UpdateCompanion<DetalleVenta> {
   final Value<String?> infusion;
   final Value<bool> extraShot;
   final Value<String?> observaciones;
+  final Value<String> tipoAfectacionIgv;
   const DetalleVentasCompanion({
     this.id = const Value.absent(),
     this.ventaId = const Value.absent(),
@@ -4195,6 +4289,7 @@ class DetalleVentasCompanion extends UpdateCompanion<DetalleVenta> {
     this.infusion = const Value.absent(),
     this.extraShot = const Value.absent(),
     this.observaciones = const Value.absent(),
+    this.tipoAfectacionIgv = const Value.absent(),
   });
   DetalleVentasCompanion.insert({
     this.id = const Value.absent(),
@@ -4210,6 +4305,7 @@ class DetalleVentasCompanion extends UpdateCompanion<DetalleVenta> {
     this.infusion = const Value.absent(),
     this.extraShot = const Value.absent(),
     this.observaciones = const Value.absent(),
+    this.tipoAfectacionIgv = const Value.absent(),
   }) : ventaId = Value(ventaId),
        productoId = Value(productoId),
        nombreProducto = Value(nombreProducto);
@@ -4227,6 +4323,7 @@ class DetalleVentasCompanion extends UpdateCompanion<DetalleVenta> {
     Expression<String>? infusion,
     Expression<bool>? extraShot,
     Expression<String>? observaciones,
+    Expression<String>? tipoAfectacionIgv,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -4242,6 +4339,7 @@ class DetalleVentasCompanion extends UpdateCompanion<DetalleVenta> {
       if (infusion != null) 'infusion': infusion,
       if (extraShot != null) 'extra_shot': extraShot,
       if (observaciones != null) 'observaciones': observaciones,
+      if (tipoAfectacionIgv != null) 'tipo_afectacion_igv': tipoAfectacionIgv,
     });
   }
 
@@ -4259,6 +4357,7 @@ class DetalleVentasCompanion extends UpdateCompanion<DetalleVenta> {
     Value<String?>? infusion,
     Value<bool>? extraShot,
     Value<String?>? observaciones,
+    Value<String>? tipoAfectacionIgv,
   }) {
     return DetalleVentasCompanion(
       id: id ?? this.id,
@@ -4274,6 +4373,7 @@ class DetalleVentasCompanion extends UpdateCompanion<DetalleVenta> {
       infusion: infusion ?? this.infusion,
       extraShot: extraShot ?? this.extraShot,
       observaciones: observaciones ?? this.observaciones,
+      tipoAfectacionIgv: tipoAfectacionIgv ?? this.tipoAfectacionIgv,
     );
   }
 
@@ -4319,6 +4419,9 @@ class DetalleVentasCompanion extends UpdateCompanion<DetalleVenta> {
     if (observaciones.present) {
       map['observaciones'] = Variable<String>(observaciones.value);
     }
+    if (tipoAfectacionIgv.present) {
+      map['tipo_afectacion_igv'] = Variable<String>(tipoAfectacionIgv.value);
+    }
     return map;
   }
 
@@ -4337,7 +4440,8 @@ class DetalleVentasCompanion extends UpdateCompanion<DetalleVenta> {
           ..write('endulzante: $endulzante, ')
           ..write('infusion: $infusion, ')
           ..write('extraShot: $extraShot, ')
-          ..write('observaciones: $observaciones')
+          ..write('observaciones: $observaciones, ')
+          ..write('tipoAfectacionIgv: $tipoAfectacionIgv')
           ..write(')'))
         .toString();
   }
@@ -5781,6 +5885,18 @@ class $EmpresaTable extends Empresa with TableInfo<$EmpresaTable, EmpresaData> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _razonSocialMeta = const VerificationMeta(
+    'razonSocial',
+  );
+  @override
+  late final GeneratedColumn<String> razonSocial = GeneratedColumn<String>(
+    'razon_social',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('DAVILA REATEGUI RICARDO JOSE'),
+  );
   static const VerificationMeta _rucMeta = const VerificationMeta('ruc');
   @override
   late final GeneratedColumn<String> ruc = GeneratedColumn<String>(
@@ -5927,6 +6043,7 @@ class $EmpresaTable extends Empresa with TableInfo<$EmpresaTable, EmpresaData> {
   List<GeneratedColumn> get $columns => [
     id,
     nombre,
+    razonSocial,
     ruc,
     tipoContribuyente,
     direccion,
@@ -5963,6 +6080,15 @@ class $EmpresaTable extends Empresa with TableInfo<$EmpresaTable, EmpresaData> {
       );
     } else if (isInserting) {
       context.missing(_nombreMeta);
+    }
+    if (data.containsKey('razon_social')) {
+      context.handle(
+        _razonSocialMeta,
+        razonSocial.isAcceptableOrUnknown(
+          data['razon_social']!,
+          _razonSocialMeta,
+        ),
+      );
     }
     if (data.containsKey('ruc')) {
       context.handle(
@@ -6076,6 +6202,10 @@ class $EmpresaTable extends Empresa with TableInfo<$EmpresaTable, EmpresaData> {
         DriftSqlType.string,
         data['${effectivePrefix}nombre'],
       )!,
+      razonSocial: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}razon_social'],
+      )!,
       ruc: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}ruc'],
@@ -6140,6 +6270,7 @@ class $EmpresaTable extends Empresa with TableInfo<$EmpresaTable, EmpresaData> {
 class EmpresaData extends DataClass implements Insertable<EmpresaData> {
   final int id;
   final String nombre;
+  final String razonSocial;
   final String ruc;
   final String tipoContribuyente;
   final String? direccion;
@@ -6156,6 +6287,7 @@ class EmpresaData extends DataClass implements Insertable<EmpresaData> {
   const EmpresaData({
     required this.id,
     required this.nombre,
+    required this.razonSocial,
     required this.ruc,
     required this.tipoContribuyente,
     this.direccion,
@@ -6175,6 +6307,7 @@ class EmpresaData extends DataClass implements Insertable<EmpresaData> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['nombre'] = Variable<String>(nombre);
+    map['razon_social'] = Variable<String>(razonSocial);
     map['ruc'] = Variable<String>(ruc);
     map['tipo_contribuyente'] = Variable<String>(tipoContribuyente);
     if (!nullToAbsent || direccion != null) {
@@ -6205,6 +6338,7 @@ class EmpresaData extends DataClass implements Insertable<EmpresaData> {
     return EmpresaCompanion(
       id: Value(id),
       nombre: Value(nombre),
+      razonSocial: Value(razonSocial),
       ruc: Value(ruc),
       tipoContribuyente: Value(tipoContribuyente),
       direccion: direccion == null && nullToAbsent
@@ -6237,6 +6371,7 @@ class EmpresaData extends DataClass implements Insertable<EmpresaData> {
     return EmpresaData(
       id: serializer.fromJson<int>(json['id']),
       nombre: serializer.fromJson<String>(json['nombre']),
+      razonSocial: serializer.fromJson<String>(json['razonSocial']),
       ruc: serializer.fromJson<String>(json['ruc']),
       tipoContribuyente: serializer.fromJson<String>(json['tipoContribuyente']),
       direccion: serializer.fromJson<String?>(json['direccion']),
@@ -6258,6 +6393,7 @@ class EmpresaData extends DataClass implements Insertable<EmpresaData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'nombre': serializer.toJson<String>(nombre),
+      'razonSocial': serializer.toJson<String>(razonSocial),
       'ruc': serializer.toJson<String>(ruc),
       'tipoContribuyente': serializer.toJson<String>(tipoContribuyente),
       'direccion': serializer.toJson<String?>(direccion),
@@ -6277,6 +6413,7 @@ class EmpresaData extends DataClass implements Insertable<EmpresaData> {
   EmpresaData copyWith({
     int? id,
     String? nombre,
+    String? razonSocial,
     String? ruc,
     String? tipoContribuyente,
     Value<String?> direccion = const Value.absent(),
@@ -6293,6 +6430,7 @@ class EmpresaData extends DataClass implements Insertable<EmpresaData> {
   }) => EmpresaData(
     id: id ?? this.id,
     nombre: nombre ?? this.nombre,
+    razonSocial: razonSocial ?? this.razonSocial,
     ruc: ruc ?? this.ruc,
     tipoContribuyente: tipoContribuyente ?? this.tipoContribuyente,
     direccion: direccion.present ? direccion.value : this.direccion,
@@ -6311,6 +6449,9 @@ class EmpresaData extends DataClass implements Insertable<EmpresaData> {
     return EmpresaData(
       id: data.id.present ? data.id.value : this.id,
       nombre: data.nombre.present ? data.nombre.value : this.nombre,
+      razonSocial: data.razonSocial.present
+          ? data.razonSocial.value
+          : this.razonSocial,
       ruc: data.ruc.present ? data.ruc.value : this.ruc,
       tipoContribuyente: data.tipoContribuyente.present
           ? data.tipoContribuyente.value
@@ -6342,6 +6483,7 @@ class EmpresaData extends DataClass implements Insertable<EmpresaData> {
     return (StringBuffer('EmpresaData(')
           ..write('id: $id, ')
           ..write('nombre: $nombre, ')
+          ..write('razonSocial: $razonSocial, ')
           ..write('ruc: $ruc, ')
           ..write('tipoContribuyente: $tipoContribuyente, ')
           ..write('direccion: $direccion, ')
@@ -6363,6 +6505,7 @@ class EmpresaData extends DataClass implements Insertable<EmpresaData> {
   int get hashCode => Object.hash(
     id,
     nombre,
+    razonSocial,
     ruc,
     tipoContribuyente,
     direccion,
@@ -6383,6 +6526,7 @@ class EmpresaData extends DataClass implements Insertable<EmpresaData> {
       (other is EmpresaData &&
           other.id == this.id &&
           other.nombre == this.nombre &&
+          other.razonSocial == this.razonSocial &&
           other.ruc == this.ruc &&
           other.tipoContribuyente == this.tipoContribuyente &&
           other.direccion == this.direccion &&
@@ -6401,6 +6545,7 @@ class EmpresaData extends DataClass implements Insertable<EmpresaData> {
 class EmpresaCompanion extends UpdateCompanion<EmpresaData> {
   final Value<int> id;
   final Value<String> nombre;
+  final Value<String> razonSocial;
   final Value<String> ruc;
   final Value<String> tipoContribuyente;
   final Value<String?> direccion;
@@ -6417,6 +6562,7 @@ class EmpresaCompanion extends UpdateCompanion<EmpresaData> {
   const EmpresaCompanion({
     this.id = const Value.absent(),
     this.nombre = const Value.absent(),
+    this.razonSocial = const Value.absent(),
     this.ruc = const Value.absent(),
     this.tipoContribuyente = const Value.absent(),
     this.direccion = const Value.absent(),
@@ -6434,6 +6580,7 @@ class EmpresaCompanion extends UpdateCompanion<EmpresaData> {
   EmpresaCompanion.insert({
     this.id = const Value.absent(),
     required String nombre,
+    this.razonSocial = const Value.absent(),
     required String ruc,
     this.tipoContribuyente = const Value.absent(),
     this.direccion = const Value.absent(),
@@ -6452,6 +6599,7 @@ class EmpresaCompanion extends UpdateCompanion<EmpresaData> {
   static Insertable<EmpresaData> custom({
     Expression<int>? id,
     Expression<String>? nombre,
+    Expression<String>? razonSocial,
     Expression<String>? ruc,
     Expression<String>? tipoContribuyente,
     Expression<String>? direccion,
@@ -6469,6 +6617,7 @@ class EmpresaCompanion extends UpdateCompanion<EmpresaData> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (nombre != null) 'nombre': nombre,
+      if (razonSocial != null) 'razon_social': razonSocial,
       if (ruc != null) 'ruc': ruc,
       if (tipoContribuyente != null) 'tipo_contribuyente': tipoContribuyente,
       if (direccion != null) 'direccion': direccion,
@@ -6488,6 +6637,7 @@ class EmpresaCompanion extends UpdateCompanion<EmpresaData> {
   EmpresaCompanion copyWith({
     Value<int>? id,
     Value<String>? nombre,
+    Value<String>? razonSocial,
     Value<String>? ruc,
     Value<String>? tipoContribuyente,
     Value<String?>? direccion,
@@ -6505,6 +6655,7 @@ class EmpresaCompanion extends UpdateCompanion<EmpresaData> {
     return EmpresaCompanion(
       id: id ?? this.id,
       nombre: nombre ?? this.nombre,
+      razonSocial: razonSocial ?? this.razonSocial,
       ruc: ruc ?? this.ruc,
       tipoContribuyente: tipoContribuyente ?? this.tipoContribuyente,
       direccion: direccion ?? this.direccion,
@@ -6529,6 +6680,9 @@ class EmpresaCompanion extends UpdateCompanion<EmpresaData> {
     }
     if (nombre.present) {
       map['nombre'] = Variable<String>(nombre.value);
+    }
+    if (razonSocial.present) {
+      map['razon_social'] = Variable<String>(razonSocial.value);
     }
     if (ruc.present) {
       map['ruc'] = Variable<String>(ruc.value);
@@ -6577,6 +6731,7 @@ class EmpresaCompanion extends UpdateCompanion<EmpresaData> {
     return (StringBuffer('EmpresaCompanion(')
           ..write('id: $id, ')
           ..write('nombre: $nombre, ')
+          ..write('razonSocial: $razonSocial, ')
           ..write('ruc: $ruc, ')
           ..write('tipoContribuyente: $tipoContribuyente, ')
           ..write('direccion: $direccion, ')
@@ -8387,6 +8542,17 @@ class $ComprobantesElectronicosTable extends ComprobantesElectronicos
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _razonSocialMeta = const VerificationMeta(
+    'razonSocial',
+  );
+  @override
+  late final GeneratedColumn<String> razonSocial = GeneratedColumn<String>(
+    'razon_social',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _subtotalMeta = const VerificationMeta(
     'subtotal',
   );
@@ -8547,6 +8713,7 @@ class $ComprobantesElectronicosTable extends ComprobantesElectronicos
     ruc,
     nombreCliente,
     direccionFiscal,
+    razonSocial,
     subtotal,
     igv,
     total,
@@ -8654,6 +8821,15 @@ class $ComprobantesElectronicosTable extends ComprobantesElectronicos
         direccionFiscal.isAcceptableOrUnknown(
           data['direccion_fiscal']!,
           _direccionFiscalMeta,
+        ),
+      );
+    }
+    if (data.containsKey('razon_social')) {
+      context.handle(
+        _razonSocialMeta,
+        razonSocial.isAcceptableOrUnknown(
+          data['razon_social']!,
+          _razonSocialMeta,
         ),
       );
     }
@@ -8826,6 +9002,10 @@ class $ComprobantesElectronicosTable extends ComprobantesElectronicos
         DriftSqlType.string,
         data['${effectivePrefix}direccion_fiscal'],
       ),
+      razonSocial: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}razon_social'],
+      ),
       subtotal: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}subtotal'],
@@ -8922,6 +9102,7 @@ class ComprobantesElectronico extends DataClass
   final String? ruc;
   final String? nombreCliente;
   final String? direccionFiscal;
+  final String? razonSocial;
   final double subtotal;
   final double igv;
   final double total;
@@ -8960,6 +9141,7 @@ class ComprobantesElectronico extends DataClass
     this.ruc,
     this.nombreCliente,
     this.direccionFiscal,
+    this.razonSocial,
     required this.subtotal,
     required this.igv,
     required this.total,
@@ -9002,6 +9184,9 @@ class ComprobantesElectronico extends DataClass
     }
     if (!nullToAbsent || direccionFiscal != null) {
       map['direccion_fiscal'] = Variable<String>(direccionFiscal);
+    }
+    if (!nullToAbsent || razonSocial != null) {
+      map['razon_social'] = Variable<String>(razonSocial);
     }
     map['subtotal'] = Variable<double>(subtotal);
     map['igv'] = Variable<double>(igv);
@@ -9061,6 +9246,9 @@ class ComprobantesElectronico extends DataClass
       direccionFiscal: direccionFiscal == null && nullToAbsent
           ? const Value.absent()
           : Value(direccionFiscal),
+      razonSocial: razonSocial == null && nullToAbsent
+          ? const Value.absent()
+          : Value(razonSocial),
       subtotal: Value(subtotal),
       igv: Value(igv),
       total: Value(total),
@@ -9111,6 +9299,7 @@ class ComprobantesElectronico extends DataClass
       ruc: serializer.fromJson<String?>(json['ruc']),
       nombreCliente: serializer.fromJson<String?>(json['nombreCliente']),
       direccionFiscal: serializer.fromJson<String?>(json['direccionFiscal']),
+      razonSocial: serializer.fromJson<String?>(json['razonSocial']),
       subtotal: serializer.fromJson<double>(json['subtotal']),
       igv: serializer.fromJson<double>(json['igv']),
       total: serializer.fromJson<double>(json['total']),
@@ -9154,6 +9343,7 @@ class ComprobantesElectronico extends DataClass
       'ruc': serializer.toJson<String?>(ruc),
       'nombreCliente': serializer.toJson<String?>(nombreCliente),
       'direccionFiscal': serializer.toJson<String?>(direccionFiscal),
+      'razonSocial': serializer.toJson<String?>(razonSocial),
       'subtotal': serializer.toJson<double>(subtotal),
       'igv': serializer.toJson<double>(igv),
       'total': serializer.toJson<double>(total),
@@ -9187,6 +9377,7 @@ class ComprobantesElectronico extends DataClass
     Value<String?> ruc = const Value.absent(),
     Value<String?> nombreCliente = const Value.absent(),
     Value<String?> direccionFiscal = const Value.absent(),
+    Value<String?> razonSocial = const Value.absent(),
     double? subtotal,
     double? igv,
     double? total,
@@ -9219,6 +9410,7 @@ class ComprobantesElectronico extends DataClass
     direccionFiscal: direccionFiscal.present
         ? direccionFiscal.value
         : this.direccionFiscal,
+    razonSocial: razonSocial.present ? razonSocial.value : this.razonSocial,
     subtotal: subtotal ?? this.subtotal,
     igv: igv ?? this.igv,
     total: total ?? this.total,
@@ -9271,6 +9463,9 @@ class ComprobantesElectronico extends DataClass
       direccionFiscal: data.direccionFiscal.present
           ? data.direccionFiscal.value
           : this.direccionFiscal,
+      razonSocial: data.razonSocial.present
+          ? data.razonSocial.value
+          : this.razonSocial,
       subtotal: data.subtotal.present ? data.subtotal.value : this.subtotal,
       igv: data.igv.present ? data.igv.value : this.igv,
       total: data.total.present ? data.total.value : this.total,
@@ -9318,6 +9513,7 @@ class ComprobantesElectronico extends DataClass
           ..write('ruc: $ruc, ')
           ..write('nombreCliente: $nombreCliente, ')
           ..write('direccionFiscal: $direccionFiscal, ')
+          ..write('razonSocial: $razonSocial, ')
           ..write('subtotal: $subtotal, ')
           ..write('igv: $igv, ')
           ..write('total: $total, ')
@@ -9349,6 +9545,7 @@ class ComprobantesElectronico extends DataClass
     ruc,
     nombreCliente,
     direccionFiscal,
+    razonSocial,
     subtotal,
     igv,
     total,
@@ -9379,6 +9576,7 @@ class ComprobantesElectronico extends DataClass
           other.ruc == this.ruc &&
           other.nombreCliente == this.nombreCliente &&
           other.direccionFiscal == this.direccionFiscal &&
+          other.razonSocial == this.razonSocial &&
           other.subtotal == this.subtotal &&
           other.igv == this.igv &&
           other.total == this.total &&
@@ -9408,6 +9606,7 @@ class ComprobantesElectronicosCompanion
   final Value<String?> ruc;
   final Value<String?> nombreCliente;
   final Value<String?> direccionFiscal;
+  final Value<String?> razonSocial;
   final Value<double> subtotal;
   final Value<double> igv;
   final Value<double> total;
@@ -9434,6 +9633,7 @@ class ComprobantesElectronicosCompanion
     this.ruc = const Value.absent(),
     this.nombreCliente = const Value.absent(),
     this.direccionFiscal = const Value.absent(),
+    this.razonSocial = const Value.absent(),
     this.subtotal = const Value.absent(),
     this.igv = const Value.absent(),
     this.total = const Value.absent(),
@@ -9461,6 +9661,7 @@ class ComprobantesElectronicosCompanion
     this.ruc = const Value.absent(),
     this.nombreCliente = const Value.absent(),
     this.direccionFiscal = const Value.absent(),
+    this.razonSocial = const Value.absent(),
     required double subtotal,
     required double igv,
     required double total,
@@ -9495,6 +9696,7 @@ class ComprobantesElectronicosCompanion
     Expression<String>? ruc,
     Expression<String>? nombreCliente,
     Expression<String>? direccionFiscal,
+    Expression<String>? razonSocial,
     Expression<double>? subtotal,
     Expression<double>? igv,
     Expression<double>? total,
@@ -9523,6 +9725,7 @@ class ComprobantesElectronicosCompanion
       if (ruc != null) 'ruc': ruc,
       if (nombreCliente != null) 'nombre_cliente': nombreCliente,
       if (direccionFiscal != null) 'direccion_fiscal': direccionFiscal,
+      if (razonSocial != null) 'razon_social': razonSocial,
       if (subtotal != null) 'subtotal': subtotal,
       if (igv != null) 'igv': igv,
       if (total != null) 'total': total,
@@ -9556,6 +9759,7 @@ class ComprobantesElectronicosCompanion
     Value<String?>? ruc,
     Value<String?>? nombreCliente,
     Value<String?>? direccionFiscal,
+    Value<String?>? razonSocial,
     Value<double>? subtotal,
     Value<double>? igv,
     Value<double>? total,
@@ -9584,6 +9788,7 @@ class ComprobantesElectronicosCompanion
       ruc: ruc ?? this.ruc,
       nombreCliente: nombreCliente ?? this.nombreCliente,
       direccionFiscal: direccionFiscal ?? this.direccionFiscal,
+      razonSocial: razonSocial ?? this.razonSocial,
       subtotal: subtotal ?? this.subtotal,
       igv: igv ?? this.igv,
       total: total ?? this.total,
@@ -9640,6 +9845,9 @@ class ComprobantesElectronicosCompanion
     }
     if (direccionFiscal.present) {
       map['direccion_fiscal'] = Variable<String>(direccionFiscal.value);
+    }
+    if (razonSocial.present) {
+      map['razon_social'] = Variable<String>(razonSocial.value);
     }
     if (subtotal.present) {
       map['subtotal'] = Variable<double>(subtotal.value);
@@ -9708,6 +9916,7 @@ class ComprobantesElectronicosCompanion
           ..write('ruc: $ruc, ')
           ..write('nombreCliente: $nombreCliente, ')
           ..write('direccionFiscal: $direccionFiscal, ')
+          ..write('razonSocial: $razonSocial, ')
           ..write('subtotal: $subtotal, ')
           ..write('igv: $igv, ')
           ..write('total: $total, ')
@@ -12769,6 +12978,7 @@ typedef $$ProductosTableCreateCompanionBuilder =
       Value<int> stock,
       Value<int> stockMinimo,
       Value<String> tipoInventario,
+      Value<String> tipoAfectacionIgv,
       Value<String> emoji,
       Value<String> imagen,
       Value<bool> activo,
@@ -12787,6 +12997,7 @@ typedef $$ProductosTableUpdateCompanionBuilder =
       Value<int> stock,
       Value<int> stockMinimo,
       Value<String> tipoInventario,
+      Value<String> tipoAfectacionIgv,
       Value<String> emoji,
       Value<String> imagen,
       Value<bool> activo,
@@ -12854,6 +13065,11 @@ class $$ProductosTableFilterComposer
 
   ColumnFilters<String> get tipoInventario => $composableBuilder(
     column: $table.tipoInventario,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tipoAfectacionIgv => $composableBuilder(
+    column: $table.tipoAfectacionIgv,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12942,6 +13158,11 @@ class $$ProductosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get tipoAfectacionIgv => $composableBuilder(
+    column: $table.tipoAfectacionIgv,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get emoji => $composableBuilder(
     column: $table.emoji,
     builder: (column) => ColumnOrderings(column),
@@ -13017,6 +13238,11 @@ class $$ProductosTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get tipoAfectacionIgv => $composableBuilder(
+    column: $table.tipoAfectacionIgv,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get emoji =>
       $composableBuilder(column: $table.emoji, builder: (column) => column);
 
@@ -13071,6 +13297,7 @@ class $$ProductosTableTableManager
                 Value<int> stock = const Value.absent(),
                 Value<int> stockMinimo = const Value.absent(),
                 Value<String> tipoInventario = const Value.absent(),
+                Value<String> tipoAfectacionIgv = const Value.absent(),
                 Value<String> emoji = const Value.absent(),
                 Value<String> imagen = const Value.absent(),
                 Value<bool> activo = const Value.absent(),
@@ -13087,6 +13314,7 @@ class $$ProductosTableTableManager
                 stock: stock,
                 stockMinimo: stockMinimo,
                 tipoInventario: tipoInventario,
+                tipoAfectacionIgv: tipoAfectacionIgv,
                 emoji: emoji,
                 imagen: imagen,
                 activo: activo,
@@ -13105,6 +13333,7 @@ class $$ProductosTableTableManager
                 Value<int> stock = const Value.absent(),
                 Value<int> stockMinimo = const Value.absent(),
                 Value<String> tipoInventario = const Value.absent(),
+                Value<String> tipoAfectacionIgv = const Value.absent(),
                 Value<String> emoji = const Value.absent(),
                 Value<String> imagen = const Value.absent(),
                 Value<bool> activo = const Value.absent(),
@@ -13121,6 +13350,7 @@ class $$ProductosTableTableManager
                 stock: stock,
                 stockMinimo: stockMinimo,
                 tipoInventario: tipoInventario,
+                tipoAfectacionIgv: tipoAfectacionIgv,
                 emoji: emoji,
                 imagen: imagen,
                 activo: activo,
@@ -14524,6 +14754,7 @@ typedef $$DetalleVentasTableCreateCompanionBuilder =
       Value<String?> infusion,
       Value<bool> extraShot,
       Value<String?> observaciones,
+      Value<String> tipoAfectacionIgv,
     });
 typedef $$DetalleVentasTableUpdateCompanionBuilder =
     DetalleVentasCompanion Function({
@@ -14540,6 +14771,7 @@ typedef $$DetalleVentasTableUpdateCompanionBuilder =
       Value<String?> infusion,
       Value<bool> extraShot,
       Value<String?> observaciones,
+      Value<String> tipoAfectacionIgv,
     });
 
 class $$DetalleVentasTableFilterComposer
@@ -14613,6 +14845,11 @@ class $$DetalleVentasTableFilterComposer
 
   ColumnFilters<String> get observaciones => $composableBuilder(
     column: $table.observaciones,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tipoAfectacionIgv => $composableBuilder(
+    column: $table.tipoAfectacionIgv,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -14690,6 +14927,11 @@ class $$DetalleVentasTableOrderingComposer
     column: $table.observaciones,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get tipoAfectacionIgv => $composableBuilder(
+    column: $table.tipoAfectacionIgv,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$DetalleVentasTableAnnotationComposer
@@ -14749,6 +14991,11 @@ class $$DetalleVentasTableAnnotationComposer
     column: $table.observaciones,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get tipoAfectacionIgv => $composableBuilder(
+    column: $table.tipoAfectacionIgv,
+    builder: (column) => column,
+  );
 }
 
 class $$DetalleVentasTableTableManager
@@ -14795,6 +15042,7 @@ class $$DetalleVentasTableTableManager
                 Value<String?> infusion = const Value.absent(),
                 Value<bool> extraShot = const Value.absent(),
                 Value<String?> observaciones = const Value.absent(),
+                Value<String> tipoAfectacionIgv = const Value.absent(),
               }) => DetalleVentasCompanion(
                 id: id,
                 ventaId: ventaId,
@@ -14809,6 +15057,7 @@ class $$DetalleVentasTableTableManager
                 infusion: infusion,
                 extraShot: extraShot,
                 observaciones: observaciones,
+                tipoAfectacionIgv: tipoAfectacionIgv,
               ),
           createCompanionCallback:
               ({
@@ -14825,6 +15074,7 @@ class $$DetalleVentasTableTableManager
                 Value<String?> infusion = const Value.absent(),
                 Value<bool> extraShot = const Value.absent(),
                 Value<String?> observaciones = const Value.absent(),
+                Value<String> tipoAfectacionIgv = const Value.absent(),
               }) => DetalleVentasCompanion.insert(
                 id: id,
                 ventaId: ventaId,
@@ -14839,6 +15089,7 @@ class $$DetalleVentasTableTableManager
                 infusion: infusion,
                 extraShot: extraShot,
                 observaciones: observaciones,
+                tipoAfectacionIgv: tipoAfectacionIgv,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -15554,6 +15805,7 @@ typedef $$EmpresaTableCreateCompanionBuilder =
     EmpresaCompanion Function({
       Value<int> id,
       required String nombre,
+      Value<String> razonSocial,
       required String ruc,
       Value<String> tipoContribuyente,
       Value<String?> direccion,
@@ -15572,6 +15824,7 @@ typedef $$EmpresaTableUpdateCompanionBuilder =
     EmpresaCompanion Function({
       Value<int> id,
       Value<String> nombre,
+      Value<String> razonSocial,
       Value<String> ruc,
       Value<String> tipoContribuyente,
       Value<String?> direccion,
@@ -15603,6 +15856,11 @@ class $$EmpresaTableFilterComposer
 
   ColumnFilters<String> get nombre => $composableBuilder(
     column: $table.nombre,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get razonSocial => $composableBuilder(
+    column: $table.razonSocial,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15691,6 +15949,11 @@ class $$EmpresaTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get razonSocial => $composableBuilder(
+    column: $table.razonSocial,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get ruc => $composableBuilder(
     column: $table.ruc,
     builder: (column) => ColumnOrderings(column),
@@ -15771,6 +16034,11 @@ class $$EmpresaTableAnnotationComposer
 
   GeneratedColumn<String> get nombre =>
       $composableBuilder(column: $table.nombre, builder: (column) => column);
+
+  GeneratedColumn<String> get razonSocial => $composableBuilder(
+    column: $table.razonSocial,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get ruc =>
       $composableBuilder(column: $table.ruc, builder: (column) => column);
@@ -15855,6 +16123,7 @@ class $$EmpresaTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> nombre = const Value.absent(),
+                Value<String> razonSocial = const Value.absent(),
                 Value<String> ruc = const Value.absent(),
                 Value<String> tipoContribuyente = const Value.absent(),
                 Value<String?> direccion = const Value.absent(),
@@ -15871,6 +16140,7 @@ class $$EmpresaTableTableManager
               }) => EmpresaCompanion(
                 id: id,
                 nombre: nombre,
+                razonSocial: razonSocial,
                 ruc: ruc,
                 tipoContribuyente: tipoContribuyente,
                 direccion: direccion,
@@ -15889,6 +16159,7 @@ class $$EmpresaTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String nombre,
+                Value<String> razonSocial = const Value.absent(),
                 required String ruc,
                 Value<String> tipoContribuyente = const Value.absent(),
                 Value<String?> direccion = const Value.absent(),
@@ -15905,6 +16176,7 @@ class $$EmpresaTableTableManager
               }) => EmpresaCompanion.insert(
                 id: id,
                 nombre: nombre,
+                razonSocial: razonSocial,
                 ruc: ruc,
                 tipoContribuyente: tipoContribuyente,
                 direccion: direccion,
@@ -17078,6 +17350,7 @@ typedef $$ComprobantesElectronicosTableCreateCompanionBuilder =
       Value<String?> ruc,
       Value<String?> nombreCliente,
       Value<String?> direccionFiscal,
+      Value<String?> razonSocial,
       required double subtotal,
       required double igv,
       required double total,
@@ -17106,6 +17379,7 @@ typedef $$ComprobantesElectronicosTableUpdateCompanionBuilder =
       Value<String?> ruc,
       Value<String?> nombreCliente,
       Value<String?> direccionFiscal,
+      Value<String?> razonSocial,
       Value<double> subtotal,
       Value<double> igv,
       Value<double> total,
@@ -17183,6 +17457,11 @@ class $$ComprobantesElectronicosTableFilterComposer
 
   ColumnFilters<String> get direccionFiscal => $composableBuilder(
     column: $table.direccionFiscal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get razonSocial => $composableBuilder(
+    column: $table.razonSocial,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -17321,6 +17600,11 @@ class $$ComprobantesElectronicosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get razonSocial => $composableBuilder(
+    column: $table.razonSocial,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get subtotal => $composableBuilder(
     column: $table.subtotal,
     builder: (column) => ColumnOrderings(column),
@@ -17442,6 +17726,11 @@ class $$ComprobantesElectronicosTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get razonSocial => $composableBuilder(
+    column: $table.razonSocial,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<double> get subtotal =>
       $composableBuilder(column: $table.subtotal, builder: (column) => column);
 
@@ -17558,6 +17847,7 @@ class $$ComprobantesElectronicosTableTableManager
                 Value<String?> ruc = const Value.absent(),
                 Value<String?> nombreCliente = const Value.absent(),
                 Value<String?> direccionFiscal = const Value.absent(),
+                Value<String?> razonSocial = const Value.absent(),
                 Value<double> subtotal = const Value.absent(),
                 Value<double> igv = const Value.absent(),
                 Value<double> total = const Value.absent(),
@@ -17584,6 +17874,7 @@ class $$ComprobantesElectronicosTableTableManager
                 ruc: ruc,
                 nombreCliente: nombreCliente,
                 direccionFiscal: direccionFiscal,
+                razonSocial: razonSocial,
                 subtotal: subtotal,
                 igv: igv,
                 total: total,
@@ -17612,6 +17903,7 @@ class $$ComprobantesElectronicosTableTableManager
                 Value<String?> ruc = const Value.absent(),
                 Value<String?> nombreCliente = const Value.absent(),
                 Value<String?> direccionFiscal = const Value.absent(),
+                Value<String?> razonSocial = const Value.absent(),
                 required double subtotal,
                 required double igv,
                 required double total,
@@ -17638,6 +17930,7 @@ class $$ComprobantesElectronicosTableTableManager
                 ruc: ruc,
                 nombreCliente: nombreCliente,
                 direccionFiscal: direccionFiscal,
+                razonSocial: razonSocial,
                 subtotal: subtotal,
                 igv: igv,
                 total: total,

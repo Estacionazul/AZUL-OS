@@ -136,11 +136,10 @@ class _PedidosView extends StatelessWidget {
                   sliver: SliverToBoxAdapter(
                     child: _ParaLlevarCard(
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Módulo para llevar preparado para conectar con el carrito.',
-                            ),
+                        _abrirUbicacion(
+                          context,
+                          pedidosService.ubicaciones.firstWhere(
+                                (ubicacion) => ubicacion.tipo == TipoUbicacion.paraLlevar,
                           ),
                         );
                       },

@@ -84,10 +84,11 @@ part 'app_database.g.dart';
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase({String? databasePath})
+      : super(_openConnection(databasePath));
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 23;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -133,15 +134,33 @@ class AppDatabase extends _$AppDatabase {
       if (from < 19) {
         await m.addColumn(ventas, ventas.usuarioId);
       }
+
+      if (from < 20) {
+        await m.addColumn(empresa, empresa.razonSocial);
+      }
+
+      if (from < 21) {
+        await m.addColumn(comprobantesElectronicos, comprobantesElectronicos.razonSocial);
+      }
+
+      if (from < 22) {
+        await m.addColumn(detalleVentas, detalleVentas.tipoAfectacionIgv);
+      }
+
+      if (from < 23) {
+        await m.addColumn(productos, productos.tipoAfectacionIgv);
+      }
     },
   );
 }
 
-LazyDatabase _openConnection() {
+LazyDatabase _openConnection(String? databasePath) {
   return LazyDatabase(() async {
     final directory = await getApplicationDocumentsDirectory();
 
-    final file = File(p.join(directory.path, 'azul_os.db'));
+    final file = databasePath != null
+        ? File(databasePath)
+        : File(p.join(directory.path, 'azul_os.db'));
 
     return NativeDatabase(file);
   });

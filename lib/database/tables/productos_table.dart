@@ -36,6 +36,10 @@ class Productos extends Table {
   TextColumn get tipoInventario =>
       text().withDefault(const Constant('receta'))();
 
+  // Afectación IGV SUNAT - Catálogo 07
+  TextColumn get tipoAfectacionIgv =>
+      text().withDefault(const Constant('10'))();
+
   // Apariencia
   TextColumn get emoji => text().withDefault(const Constant('📦'))();
 

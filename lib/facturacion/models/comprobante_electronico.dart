@@ -42,6 +42,9 @@ class ComprobanteElectronico {
   /// Nombre o razón social del cliente.
   final String? nombreCliente;
 
+  /// Razón social del cliente.
+  final String? razonSocial;
+
   /// Dirección fiscal del cliente.
   final String? direccionFiscal;
 
@@ -101,6 +104,7 @@ class ComprobanteElectronico {
     this.dni,
     this.ruc,
     this.nombreCliente,
+    this.razonSocial,
     this.direccionFiscal,
     required this.subtotal,
     required this.igv,
@@ -162,6 +166,7 @@ class ComprobanteElectronico {
     String? dni,
     String? ruc,
     String? nombreCliente,
+    String? razonSocial,
     String? direccionFiscal,
     double? subtotal,
     double? igv,
@@ -189,6 +194,7 @@ class ComprobanteElectronico {
       dni: dni ?? this.dni,
       ruc: ruc ?? this.ruc,
       nombreCliente: nombreCliente ?? this.nombreCliente,
+      razonSocial: razonSocial ?? this.razonSocial,
       direccionFiscal: direccionFiscal ?? this.direccionFiscal,
       subtotal: subtotal ?? this.subtotal,
       igv: igv ?? this.igv,
