@@ -31,12 +31,86 @@ class ProductoService extends ChangeNotifier {
   }
 
   Future<void> agregarProducto(ProductoModel producto) async {
-    await _repository.insertar(producto);
+    final codigo = producto.codigo.trim();
+
+    if (codigo.isEmpty) {
+      throw Exception('El código del producto es obligatorio.');
+    }
+
+    final existe = _productos.any(
+          (item) => item.codigo.trim().toLowerCase() == codigo.toLowerCase(),
+    );
+
+    if (existe) {
+      throw Exception(
+        'El código "$codigo" ya existe. Usa un código diferente.',
+      );
+    }
+
+    final productoGuardar = ProductoModel(
+      id: null,
+      codigo: codigo,
+      codigoBarras: producto.codigoBarras,
+      nombre: producto.nombre,
+      descripcion: producto.descripcion,
+      categoriaId: producto.categoriaId,
+      costo: producto.costo,
+      precioVenta: producto.precioVenta,
+      stock: producto.stock,
+      stockMinimo: producto.stockMinimo,
+      tipoInventario: producto.tipoInventario,
+      tipoAfectacionIgv: producto.tipoAfectacionIgv,
+      emoji: producto.emoji,
+      imagen: producto.imagen,
+      activo: producto.activo,
+    );
+
+    await _repository.insertar(productoGuardar);
+
     await cargarProductos();
   }
 
   Future<void> editarProducto(ProductoModel producto) async {
-    await _repository.actualizar(producto);
+    final codigo = producto.codigo.trim();
+
+    if (codigo.isEmpty) {
+      throw Exception('El código del producto es obligatorio.');
+    }
+
+    final idActual = producto.id;
+
+    final existeOtro = _productos.any(
+          (item) =>
+      item.id != idActual &&
+          item.codigo.trim().toLowerCase() == codigo.toLowerCase(),
+    );
+
+    if (existeOtro) {
+      throw Exception(
+        'El código "$codigo" ya pertenece a otro producto.',
+      );
+    }
+
+    final productoActualizar = ProductoModel(
+      id: producto.id,
+      codigo: codigo,
+      codigoBarras: producto.codigoBarras,
+      nombre: producto.nombre,
+      descripcion: producto.descripcion,
+      categoriaId: producto.categoriaId,
+      costo: producto.costo,
+      precioVenta: producto.precioVenta,
+      stock: producto.stock,
+      stockMinimo: producto.stockMinimo,
+      tipoInventario: producto.tipoInventario,
+      tipoAfectacionIgv: producto.tipoAfectacionIgv,
+      emoji: producto.emoji,
+      imagen: producto.imagen,
+      activo: producto.activo,
+    );
+
+    await _repository.actualizar(productoActualizar);
+
     await cargarProductos();
   }
 
@@ -97,26 +171,16 @@ class ProductoService extends ChangeNotifier {
   void _aplicarFiltros() {
     Iterable<ProductoModel> resultado = _productos;
 
-    // ----------------------------------------------------------
-    // CATEGORÍA
-    // ----------------------------------------------------------
-
     if (_categoriaSeleccionadaId != null) {
       resultado = resultado.where(
-        (producto) => producto.categoriaId == _categoriaSeleccionadaId,
+            (producto) => producto.categoriaId == _categoriaSeleccionadaId,
       );
     }
-
-    // ----------------------------------------------------------
-    // BÚSQUEDA
-    // ----------------------------------------------------------
 
     if (_textoBusqueda.isNotEmpty) {
       resultado = resultado.where((producto) {
         final nombre = producto.nombre.toLowerCase();
-
         final codigo = producto.codigo.toLowerCase();
-
         final codigoBarras = producto.codigoBarras.toLowerCase();
 
         return nombre.contains(_textoBusqueda) ||
