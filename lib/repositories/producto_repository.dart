@@ -24,6 +24,15 @@ class ProductoRepository {
     return ProductoMapper.toModel(producto);
   }
 
+  /// Obtener un producto por código
+  Future<ProductoModel?> obtenerPorCodigo(String codigo) async {
+    final producto = await _dao.obtenerPorCodigo(codigo);
+
+    if (producto == null) return null;
+
+    return ProductoMapper.toModel(producto);
+  }
+
   /// Insertar producto
   Future<int> insertar(ProductoModel producto) {
     return _dao.insertar(ProductoMapper.toCompanion(producto));
