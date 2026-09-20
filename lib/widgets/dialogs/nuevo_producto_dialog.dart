@@ -34,6 +34,7 @@ class _NuevoProductoDialogState extends State<NuevoProductoDialog> {
     'Postres': 6,
     'Combos': 7,
     'Insumos': 8,
+    'Gaseosas y Aguas': 9,
   };
 
   String _categoria = 'Cafés';

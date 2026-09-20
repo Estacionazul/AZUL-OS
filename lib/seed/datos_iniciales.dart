@@ -1,4 +1,5 @@
 import '../database/app_database.dart';
+import 'package:drift/drift.dart';
 
 import 'cafes_seed.dart';
 import 'jugos_seed.dart';
@@ -7,6 +8,7 @@ import 'snacks_seed.dart';
 import 'hamburguesas_seed.dart';
 import 'postres_seed.dart';
 import 'combos_seed.dart';
+import 'gaseosas_aguas_seed.dart';
 import 'insumos_seed.dart';
 
 // NUEVOS
@@ -68,6 +70,17 @@ class DatosIniciales {
     await db
         .into(db.categorias)
         .insert(CategoriasCompanion.insert(nombre: 'Insumos'));
+
+    await db
+        .into(db.categorias)
+        .insert(
+      CategoriasCompanion.insert(
+        nombre: 'Gaseosas y Aguas',
+        icono: const Value('🥤'),
+        orden: const Value(9),
+        activo: const Value(true),
+      ),
+    );
   }
 
   //==================================================
@@ -82,6 +95,7 @@ class DatosIniciales {
     final hamburguesas = await _categoriaId('Hamburguesas');
     final postres = await _categoriaId('Postres');
     final combos = await _categoriaId('Combos');
+    final gaseosasAguas = await _categoriaId('Gaseosas y Aguas');
 
     await CafesSeed.cargar(db, cafes);
     await JugosSeed.cargar(db, jugos);
@@ -90,6 +104,7 @@ class DatosIniciales {
     await HamburguesasSeed.cargar(db, hamburguesas);
     await PostresSeed.cargar(db, postres);
     await CombosSeed.cargar(db, combos);
+    await GaseosasAguasSeed.cargar(db, gaseosasAguas);
   }
 
   Future<int> _categoriaId(String nombre) async {
