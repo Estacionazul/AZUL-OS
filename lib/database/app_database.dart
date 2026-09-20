@@ -152,8 +152,14 @@ class AppDatabase extends _$AppDatabase {
       }
 
       if (from < 24) {
-        await customStatement(
-          \"INSERT OR IGNORE INTO categorias (id, nombre, icono, orden, activo) VALUES (9, 'Gaseosas y Aguas', '🥤', 9, 1)\",
+        await into(categorias).insert(
+          CategoriasCompanion.insert(
+            nombre: 'Gaseosas y Aguas',
+            icono: const Value('🥤'),
+            orden: const Value(9),
+            activo: const Value(true),
+          ),
+          mode: InsertMode.insertOrIgnore,
         );
       }
     },
