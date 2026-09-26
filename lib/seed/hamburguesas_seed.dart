@@ -11,6 +11,10 @@ class HamburguesasSeed {
     }
 
     final lista = <ProductosCompanion>[
+      // ==========================================================
+      // HAMBURGUESAS
+      // ==========================================================
+
       ProductosCompanion.insert(
         codigo: 'HAM001',
         nombre: 'Hamburguesa clásica',

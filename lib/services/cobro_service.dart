@@ -261,10 +261,49 @@ class CobroService {
         detalles: venta.items,
       );
 
-      String? xmlFirmado;
+      final registroDireccion = RegExp(
+        r'<cac:RegistrationAddress>.*?</cac:RegistrationAddress>',
+        dotAll: true,
+      ).firstMatch(xml)?.group(0);
 
-      if (venta.tipoDocumento == 'Factura') {
-        xmlFirmado = await firmaDigitalService.firmarXml(xml);
+      debugPrint('========== LOCAL ANEXO XML ==========');
+      debugPrint(
+        registroDireccion ?? 'NO SE ENCONTRO RegistrationAddress EN EL XML',
+      );
+      debugPrint('=====================================');
+
+      final xmlFirmado = await firmaDigitalService.firmarXml(xml);
+
+      final registroDireccionFirmado = RegExp(
+        r'<cac:RegistrationAddress>.*?</cac:RegistrationAddress>',
+        dotAll: true,
+      ).firstMatch(xmlFirmado)?.group(0);
+
+      debugPrint('========== LOCAL ANEXO XML FIRMADO ==========');
+      debugPrint(
+        registroDireccionFirmado ??
+            'NO SE ENCONTRO RegistrationAddress EN EL XML FIRMADO',
+      );
+      debugPrint('=============================================');
+
+      if (!xmlFirmado.contains('<ds:Signature')) {
+        throw StateError(
+          'El comprobante ${venta.numero} fue generado, '
+              'pero no contiene una firma digital válida.',
+        );
+      }
+
+      final xmlFirmadoGuardado =
+      await facturacionService.guardarXmlFirmado(
+        id: comprobanteId,
+        xmlFirmado: xmlFirmado,
+      );
+
+      if (!xmlFirmadoGuardado) {
+        throw StateError(
+          'No se pudo guardar el XML firmado '
+              'del comprobante ${venta.numero}.',
+        );
       }
 
       final tipoSunat = venta.tipoDocumento == 'Boleta' ? '03' : '01';
@@ -298,7 +337,7 @@ class CobroService {
 
         case 'Factura':
           final respuestaSunat = await sunatService.enviarComprobante(
-            xmlFirmado: xmlFirmado!,
+            xmlFirmado: xmlFirmado,
             tipoComprobante: tipoSunat,
             serie: partesNumero[0],
             numero: numeroSunat,
@@ -312,7 +351,7 @@ class CobroService {
             codigoRespuestaSunat: respuestaSunat.codigo,
             mensajeRespuestaSunat: respuestaSunat.mensaje,
             cdr: respuestaSunat.cdr,
-            xml: respuestaSunat.xmlRespuesta,
+            xml: xmlFirmado,
             fechaEnvioSunat: DateTime.now(),
             fechaRespuestaSunat: DateTime.now(),
             estado: respuestaSunat.aceptado
@@ -336,8 +375,18 @@ class CobroService {
             debugPrint('Mensaje: ${respuestaSunat.mensaje}');
             debugPrint('=====================================');
 
+            // La venta YA fue registrada en la base de datos,
+            // inventario y caja. No se debe volver a registrar.
+            //
+            // Limpiamos el carrito para impedir que el usuario
+            // pueda cobrar nuevamente la misma venta por accidente.
+            ventaService.nuevaVenta();
+            carritoService.vaciarCarrito();
+
             throw StateError(
               'SUNAT rechazó el comprobante ${venta.numero}. '
+                  'La venta quedó registrada y el comprobante puede '
+                  'ser reprocesado sin volver a cobrar la venta. '
                   'Código: ${respuestaSunat.codigo}. '
                   'Mensaje: ${respuestaSunat.mensaje}',
             );

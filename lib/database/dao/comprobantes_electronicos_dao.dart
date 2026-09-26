@@ -212,7 +212,7 @@ class ComprobantesElectronicosDao extends DatabaseAccessor<AppDatabase>
             codigoRespuestaSunat: Value(codigoRespuestaSunat),
             mensajeRespuestaSunat: Value(mensajeRespuestaSunat),
             cdr: Value(cdr),
-            xml: Value(xml),
+            xml: xml != null ? Value(xml) : const Value.absent(),
             fechaEnvioSunat: Value(fechaEnvioSunat),
             fechaRespuestaSunat: Value(fechaRespuestaSunat),
             estado: estado != null ? Value(estado) : const Value.absent(),

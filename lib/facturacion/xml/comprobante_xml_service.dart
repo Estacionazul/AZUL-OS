@@ -44,11 +44,11 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<Invoice '
-      'xmlns="$_ubl" '
-      'xmlns:cac="$_cac" '
-      'xmlns:cbc="$_cbc" '
-      'xmlns:ext="$_ext" '
-      'xmlns:ds="http://www.w3.org/2000/09/xmldsig#">',
+          'xmlns="$_ubl" '
+          'xmlns:cac="$_cac" '
+          'xmlns:cbc="$_cbc" '
+          'xmlns:ext="$_ext" '
+          'xmlns:ds="http://www.w3.org/2000/09/xmldsig#">',
     );
 
     // ==========================================================
@@ -99,11 +99,11 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:DocumentCurrencyCode '
-      'listID="ISO 4217 Alpha" '
-      'listName="Currency" '
-      'listAgencyName="United Nations Economic Commission for Europe">'
-      '$moneda'
-      '</cbc:DocumentCurrencyCode>',
+          'listID="ISO 4217 Alpha" '
+          'listName="Currency" '
+          'listAgencyName="United Nations Economic Commission for Europe">'
+          '$moneda'
+          '</cbc:DocumentCurrencyCode>',
     );
 
     // ==========================================================
@@ -148,40 +148,25 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:ID schemeID="6">'
-      '${_escape(rucEmisor)}'
-      '</cbc:ID>',
+          '${_escape(rucEmisor)}'
+          '</cbc:ID>',
     );
 
     buffer.writeln('</cac:PartyIdentification>');
+
 
     buffer.writeln('<cac:PartyTaxScheme>');
 
     buffer.writeln(
       '<cbc:RegistrationName>'
-      '${_escape(razonSocialEmisor)}'
-      '</cbc:RegistrationName>',
+          '${_escape(razonSocialEmisor)}'
+          '</cbc:RegistrationName>',
     );
-
     buffer.writeln(
       '<cbc:CompanyID schemeID="6">'
-      '${_escape(rucEmisor)}'
-      '</cbc:CompanyID>',
+          '${_escape(rucEmisor)}'
+          '</cbc:CompanyID>',
     );
-
-    if (direccionEmisor != null && direccionEmisor.trim().isNotEmpty) {
-      buffer.writeln('<cac:RegistrationAddress>');
-      buffer.writeln('<cbc:AddressTypeCode>0000</cbc:AddressTypeCode>');
-      buffer.writeln('<cac:AddressLine>');
-
-      buffer.writeln(
-        '<cbc:Line>'
-        '${_escape(direccionEmisor)}'
-        '</cbc:Line>',
-      );
-
-      buffer.writeln('</cac:AddressLine>');
-      buffer.writeln('</cac:RegistrationAddress>');
-    }
 
     buffer.writeln('<cac:TaxScheme>');
     buffer.writeln('<cbc:ID>1000</cbc:ID>');
@@ -191,13 +176,15 @@ class ComprobanteXmlService {
 
     buffer.writeln('</cac:PartyTaxScheme>');
 
-    if (nombreComercial != null && nombreComercial.trim().isNotEmpty) {
+    if (nombreComercial != null && nombreComercial
+        .trim()
+        .isNotEmpty) {
       buffer.writeln('<cac:PartyName>');
 
       buffer.writeln(
         '<cbc:Name>'
-        '${_escape(nombreComercial)}'
-        '</cbc:Name>',
+            '${_escape(nombreComercial)}'
+            '</cbc:Name>',
       );
 
       buffer.writeln('</cac:PartyName>');
@@ -207,9 +194,28 @@ class ComprobanteXmlService {
 
     buffer.writeln(
       '<cbc:RegistrationName>'
-      '${_escape(razonSocialEmisor)}'
-      '</cbc:RegistrationName>',
+          '${_escape(razonSocialEmisor)}'
+          '</cbc:RegistrationName>',
     );
+
+    buffer.writeln('<cac:RegistrationAddress>');
+    buffer.writeln('<cbc:AddressTypeCode>0001</cbc:AddressTypeCode>');
+
+    if (direccionEmisor != null && direccionEmisor
+        .trim()
+        .isNotEmpty) {
+      buffer.writeln('<cac:AddressLine>');
+
+      buffer.writeln(
+        '<cbc:Line>'
+            '${_escape(direccionEmisor)}'
+            '</cbc:Line>',
+      );
+
+      buffer.writeln('</cac:AddressLine>');
+    }
+
+    buffer.writeln('</cac:RegistrationAddress>');
 
     buffer.writeln('</cac:PartyLegalEntity>');
     buffer.writeln('</cac:Party>');
@@ -220,7 +226,6 @@ class ComprobanteXmlService {
     // ==========================================================
 
     buffer.writeln('<cac:AccountingCustomerParty>');
-    buffer.writeln('<cac:Party>');
 
     String? numeroDocumento;
     String tipoDocumentoCliente = '1';
@@ -249,6 +254,28 @@ class ComprobanteXmlService {
         ? 'CLIENTE GENERAL'
         : nombreCliente;
 
+    print('========== RECEPTOR XML ==========');
+    print('tipoDocumentoCliente: $tipoDocumentoCliente');
+    print('numeroDocumento: $numeroDocumento');
+    print('nombreClienteFinal: $nombreClienteFinal');
+    print('==================================');
+
+    buffer.writeln('<cac:Party>');
+
+    buffer.writeln('<cac:PartyIdentification>');
+
+    buffer.writeln(
+      '<cbc:ID '
+          'schemeID="$tipoDocumentoCliente" '
+          'schemeName="SUNAT:Identificador de Documento de Identidad" '
+          'schemeAgencyName="PE:SUNAT" '
+          'schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">'
+          '${_escape(numeroDocumento ?? '')}'
+          '</cbc:ID>',
+    );
+
+    buffer.writeln('</cac:PartyIdentification>');
+
     buffer.writeln('<cac:PartyTaxScheme>');
 
     buffer.writeln(
@@ -258,7 +285,9 @@ class ComprobanteXmlService {
     );
 
     if (numeroDocumento != null &&
-        numeroDocumento.trim().isNotEmpty) {
+        numeroDocumento
+            .trim()
+            .isNotEmpty) {
       buffer.writeln(
         '<cbc:CompanyID '
             'schemeID="$tipoDocumentoCliente" '
@@ -286,13 +315,30 @@ class ComprobanteXmlService {
     }
 
     buffer.writeln('<cac:TaxScheme>');
-    buffer.writeln('<cbc:ID></cbc:ID>');
+    buffer.writeln('<cbc:ID>-</cbc:ID>');
     buffer.writeln('</cac:TaxScheme>');
 
     buffer.writeln('</cac:PartyTaxScheme>');
 
+    buffer.writeln('<cac:PartyLegalEntity>');
+
+    buffer.writeln(
+      '<cbc:RegistrationName>'
+          '${_escape(nombreClienteFinal)}'
+          '</cbc:RegistrationName>',
+    );
+
+    buffer.writeln('</cac:PartyLegalEntity>');
+
     buffer.writeln('</cac:Party>');
     buffer.writeln('</cac:AccountingCustomerParty>');
+
+    buffer.writeln('<cac:PaymentTerms>');
+
+    buffer.writeln('<cbc:ID>FormaPago</cbc:ID>');
+    buffer.writeln('<cbc:PaymentMeansID>Contado</cbc:PaymentMeansID>');
+
+    buffer.writeln('</cac:PaymentTerms>');
 
     // ==========================================================
     // IGV TOTAL

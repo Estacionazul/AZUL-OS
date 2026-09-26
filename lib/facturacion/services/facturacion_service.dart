@@ -73,6 +73,20 @@ class FacturacionService {
   }
 
   // ==========================================================
+// GUARDAR XML FIRMADO
+// ==========================================================
+
+  Future<bool> guardarXmlFirmado({
+    required int id,
+    required String xmlFirmado,
+  }) {
+    return comprobantesElectronicosRepository.actualizarXml(
+      id,
+      xmlFirmado,
+    );
+  }
+
+  // ==========================================================
   // GUARDAR RESPUESTA DE SUNAT
   // ==========================================================
 

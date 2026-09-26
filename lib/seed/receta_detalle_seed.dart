@@ -42,12 +42,13 @@ class RecetaDetalleSeed {
       final idReceta = await recetaId(receta);
       final idInsumo = await insumoId(insumo);
 
-      final existente =
-          await (db.select(db.recetaDetalle)..where(
-                (d) =>
-                    d.recetaId.equals(idReceta) & d.insumoId.equals(idInsumo),
-              ))
-              .getSingleOrNull();
+      final existente = await (db.select(
+        db.recetaDetalle,
+      )..where(
+            (d) =>
+        d.recetaId.equals(idReceta) &
+        d.insumoId.equals(idInsumo),
+      )).getSingleOrNull();
 
       if (existente != null) {
         return;
@@ -56,14 +57,14 @@ class RecetaDetalleSeed {
       await db
           .into(db.recetaDetalle)
           .insert(
-            RecetaDetalleCompanion.insert(
-              recetaId: idReceta,
-              insumoId: idInsumo,
-              cantidad: Value(cantidad),
-              unidad: Value(unidad),
-              orden: Value(orden),
-            ),
-          );
+        RecetaDetalleCompanion.insert(
+          recetaId: idReceta,
+          insumoId: idInsumo,
+          cantidad: Value(cantidad),
+          unidad: Value(unidad),
+          orden: Value(orden),
+        ),
+      );
     }
 
     // ==========================================================
@@ -79,11 +80,11 @@ class RecetaDetalleSeed {
     );
 
     // ==========================================================
-    // DOBLE ESPRESSO
+    // ESPRESSO DOBLE
     // ==========================================================
 
     await agregarDetalle(
-      receta: "Doble Espresso",
+      receta: "Espresso doble",
       insumo: "INS001",
       cantidad: 20.0,
       unidad: "g",
@@ -103,11 +104,11 @@ class RecetaDetalleSeed {
     );
 
     // ==========================================================
-    // CORTADO
+    // CAFÉ CON LECHE
     // ==========================================================
 
     await agregarDetalle(
-      receta: "Cortado",
+      receta: "Café con leche",
       insumo: "INS001",
       cantidad: 10.0,
       unidad: "g",
@@ -115,9 +116,9 @@ class RecetaDetalleSeed {
     );
 
     await agregarDetalle(
-      receta: "Cortado",
+      receta: "Café con leche",
       insumo: "INS002",
-      cantidad: 60.0,
+      cantidad: 180.0,
       unidad: "ml",
       orden: 2,
     );
@@ -127,7 +128,7 @@ class RecetaDetalleSeed {
     // ==========================================================
 
     await agregarDetalle(
-      receta: "Capuccino",
+      receta: "Cappuccino",
       insumo: "INS001",
       cantidad: 10.0,
       unidad: "g",
@@ -135,7 +136,7 @@ class RecetaDetalleSeed {
     );
 
     await agregarDetalle(
-      receta: "Capuccino",
+      receta: "Cappuccino",
       insumo: "INS002",
       cantidad: 180.0,
       unidad: "ml",
@@ -163,23 +164,31 @@ class RecetaDetalleSeed {
     );
 
     // ==========================================================
-    // FLAT WHITE
+    // LATTE VAINILLA O CARAMELO
     // ==========================================================
 
     await agregarDetalle(
-      receta: "Flat White",
+      receta: "Latte vainilla o caramelo",
       insumo: "INS001",
-      cantidad: 20.0,
+      cantidad: 10.0,
       unidad: "g",
       orden: 1,
     );
 
     await agregarDetalle(
-      receta: "Flat White",
+      receta: "Latte vainilla o caramelo",
       insumo: "INS002",
-      cantidad: 160.0,
+      cantidad: 200.0,
       unidad: "ml",
       orden: 2,
+    );
+
+    await agregarDetalle(
+      receta: "Latte vainilla o caramelo",
+      insumo: "INS019",
+      cantidad: 15.0,
+      unidad: "ml",
+      orden: 3,
     );
 
     // ==========================================================
@@ -215,7 +224,7 @@ class RecetaDetalleSeed {
     // ==========================================================
 
     await agregarDetalle(
-      receta: "Chocolate Caliente",
+      receta: "Chocolate caliente",
       insumo: "INS002",
       cantidad: 250.0,
       unidad: "ml",
@@ -223,7 +232,7 @@ class RecetaDetalleSeed {
     );
 
     await agregarDetalle(
-      receta: "Chocolate Caliente",
+      receta: "Chocolate caliente",
       insumo: "INS003",
       cantidad: 30.0,
       unidad: "g",
@@ -231,7 +240,111 @@ class RecetaDetalleSeed {
     );
 
     // ==========================================================
-    // JUGO DE NARANJA — 600 ML
+    // FRAPPÉ DE CAFÉ
+    // ==========================================================
+
+    await agregarDetalle(
+      receta: "Frappé de café",
+      insumo: "INS001",
+      cantidad: 10.0,
+      unidad: "g",
+      orden: 1,
+    );
+
+    await agregarDetalle(
+      receta: "Frappé de café",
+      insumo: "INS020",
+      cantidad: 53.0,
+      unidad: "g",
+      orden: 2,
+    );
+
+    // ==========================================================
+    // FRAPPÉ DE CHOCOLATE
+    // ==========================================================
+
+    await agregarDetalle(
+      receta: "Frappé de chocolate",
+      insumo: "INS001",
+      cantidad: 10.0,
+      unidad: "g",
+      orden: 1,
+    );
+
+    await agregarDetalle(
+      receta: "Frappé de chocolate",
+      insumo: "INS020",
+      cantidad: 53.0,
+      unidad: "g",
+      orden: 2,
+    );
+
+    await agregarDetalle(
+      receta: "Frappé de chocolate",
+      insumo: "INS003",
+      cantidad: 15.0,
+      unidad: "g",
+      orden: 3,
+    );
+
+    // ==========================================================
+    // FRAPPÉ DE CARAMELO
+    // ==========================================================
+
+    await agregarDetalle(
+      receta: "Frappé de caramelo",
+      insumo: "INS001",
+      cantidad: 10.0,
+      unidad: "g",
+      orden: 1,
+    );
+
+    await agregarDetalle(
+      receta: "Frappé de caramelo",
+      insumo: "INS020",
+      cantidad: 53.0,
+      unidad: "g",
+      orden: 2,
+    );
+
+    await agregarDetalle(
+      receta: "Frappé de caramelo",
+      insumo: "INS019",
+      cantidad: 15.0,
+      unidad: "ml",
+      orden: 3,
+    );
+
+    // ==========================================================
+    // FRAPPÉ DE MOCACCINO
+    // ==========================================================
+
+    await agregarDetalle(
+      receta: "Frappé de mocaccino",
+      insumo: "INS001",
+      cantidad: 10.0,
+      unidad: "g",
+      orden: 1,
+    );
+
+    await agregarDetalle(
+      receta: "Frappé de mocaccino",
+      insumo: "INS020",
+      cantidad: 53.0,
+      unidad: "g",
+      orden: 2,
+    );
+
+    await agregarDetalle(
+      receta: "Frappé de mocaccino",
+      insumo: "INS003",
+      cantidad: 15.0,
+      unidad: "g",
+      orden: 3,
+    );
+
+    // ==========================================================
+    // JUGO DE NARANJA
     // ==========================================================
 
     await agregarDetalle(
@@ -243,7 +356,7 @@ class RecetaDetalleSeed {
     );
 
     // ==========================================================
-    // JUGO DE PAPAYA — 600 ML
+    // JUGO DE PAPAYA
     // ==========================================================
 
     await agregarDetalle(
@@ -255,7 +368,7 @@ class RecetaDetalleSeed {
     );
 
     // ==========================================================
-    // JUGO DE PIÑA — 600 ML
+    // JUGO DE PIÑA
     // ==========================================================
 
     await agregarDetalle(
@@ -267,7 +380,7 @@ class RecetaDetalleSeed {
     );
 
     // ==========================================================
-    // JUGO DE MANGO — 600 ML
+    // JUGO DE MANGO
     // ==========================================================
 
     await agregarDetalle(
@@ -279,7 +392,7 @@ class RecetaDetalleSeed {
     );
 
     // ==========================================================
-    // JUGO DE FRESA — 600 ML
+    // JUGO DE FRESA
     // ==========================================================
 
     await agregarDetalle(
@@ -291,7 +404,59 @@ class RecetaDetalleSeed {
     );
 
     // ==========================================================
-    // JUGO SURTIDO — 600 ML
+    // JUGO ESPECIAL
+    // ==========================================================
+
+    await agregarDetalle(
+      receta: "Jugo Especial",
+      insumo: "INS002",
+      cantidad: 230.0,
+      unidad: "ml",
+      orden: 1,
+    );
+
+    await agregarDetalle(
+      receta: "Jugo Especial",
+      insumo: "INS008",
+      cantidad: 120.0,
+      unidad: "g",
+      orden: 2,
+    );
+
+    await agregarDetalle(
+      receta: "Jugo Especial",
+      insumo: "INS007",
+      cantidad: 60.0,
+      unidad: "g",
+      orden: 3,
+    );
+
+    await agregarDetalle(
+      receta: "Jugo Especial",
+      insumo: "INS017",
+      cantidad: 50.0,
+      unidad: "g",
+      orden: 4,
+    );
+
+    await agregarDetalle(
+      receta: "Jugo Especial",
+      insumo: "INS018",
+      cantidad: 15.0,
+      unidad: "g",
+      orden: 5,
+    );
+
+    await agregarDetalle(
+      receta: "Jugo Especial",
+      insumo: "INS004",
+      cantidad: 5.0,
+      unidad: "g",
+      orden: 6,
+    );
+
+    // ==========================================================
+    // JUGO SURTIDO
     // ==========================================================
 
     await agregarDetalle(
@@ -327,7 +492,7 @@ class RecetaDetalleSeed {
     );
 
     // ==========================================================
-    // PAPAYA CON LECHE — 600 ML
+    // PAPAYA CON LECHE
     // ==========================================================
 
     await agregarDetalle(
@@ -347,7 +512,7 @@ class RecetaDetalleSeed {
     );
 
     // ==========================================================
-    // FRESA CON LECHE — 600 ML
+    // FRESA CON LECHE
     // ==========================================================
 
     await agregarDetalle(
@@ -367,7 +532,7 @@ class RecetaDetalleSeed {
     );
 
     // ==========================================================
-    // PIÑA CON PLÁTANO — 600 ML
+    // PIÑA CON PLÁTANO
     // ==========================================================
 
     await agregarDetalle(
@@ -398,9 +563,9 @@ class RecetaDetalleSeed {
     for (final d in total) {
       print(
         "Receta: ${d.recetaId} | "
-        "Insumo: ${d.insumoId} | "
-        "Cantidad: ${d.cantidad} | "
-        "Unidad: ${d.unidad}",
+            "Insumo: ${d.insumoId} | "
+            "Cantidad: ${d.cantidad} | "
+            "Unidad: ${d.unidad}",
       );
     }
 

@@ -112,21 +112,39 @@ class CarritoPanel extends StatelessWidget {
                       total: carritoService.total,
                       numeroBoleta: numeroBoleta,
                       numeroFactura: numeroFactura,
-                      onConfirmar: (metodoPago, numeroDocumento) {
-                        context.read<CobroService>().cobrar(
-                          metodoPago: metodoPago,
-                        );
+                      onConfirmar: (metodoPago, numeroDocumento) async {
+                        try {
+                          await context.read<CobroService>().cobrar(
+                            metodoPago: metodoPago,
+                          );
 
-                        onActualizar();
+                          if (!context.mounted) return;
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "✅ Venta registrada correctamente",
+                          onActualizar();
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "✅ Venta registrada correctamente",
+                              ),
+                              backgroundColor: Colors.green,
                             ),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
+                          );
+                        } catch (e) {
+                          if (!context.mounted) return;
+
+                          onActualizar();
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "❌ No se pudo completar la venta.\n$e",
+                              ),
+                              backgroundColor: Colors.red,
+                              duration: const Duration(seconds: 6),
+                            ),
+                          );
+                        }
                       },
                     ),
                   );

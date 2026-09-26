@@ -77,7 +77,7 @@ class InsumosSeed {
 
     await agregar(
       codigo: "INS004",
-      nombre: "Azúcar",
+      nombre: "Azúcar rubia",
       unidad: "g",
       stock: 10000,
       minimo: 1000,
@@ -111,7 +111,7 @@ class InsumosSeed {
 
     await agregar(
       codigo: "INS007",
-      nombre: "Plátano",
+      nombre: "Plátano de seda",
       unidad: "g",
       stock: 5000,
       minimo: 1000,
@@ -212,6 +212,63 @@ class InsumosSeed {
       minimo: 500,
       costo: 0.01,
       emoji: "🍅",
+    );
+
+    await agregar(
+      codigo: "INS017",
+      nombre: "Huevo fresco entero",
+      unidad: "unid",
+      stock: 15,
+      minimo: 0,
+      costo: 0.50,
+      emoji: "🥚",
+    );
+
+    await agregar(
+      codigo: "INS018",
+      nombre: "Algarrobina",
+      unidad: "g",
+      stock: 1000,
+      minimo: 0,
+      costo: 0.048,
+      emoji: "🍯",
+    );
+
+    await agregar(
+      codigo: "INS019",
+      nombre: "Jarabe de caramelo",
+      unidad: "ml",
+      stock: 1000,
+      minimo: 100,
+      costo: 0.105,
+      emoji: "🍯",
+    );
+
+    final insumo019 = await (db.select(
+      db.insumos,
+    )..where((i) => i.codigo.equals("INS019"))).getSingleOrNull();
+
+    if (insumo019 != null && insumo019.costoCompra == 0) {
+      await (db.update(
+        db.insumos,
+      )..where((i) => i.codigo.equals("INS019"))).write(
+        const InsumosCompanion(
+          nombre: Value("Jarabe de caramelo"),
+          stock: Value(1000.0),
+          stockMinimo: Value(100.0),
+          costoCompra: Value(0.105),
+        ),
+      );
+    }
+
+    await agregar(
+      codigo: "INS020",
+      nombre: "Leche evaporada",
+      unidad: "g",
+      stock: 390,
+      minimo: 390,
+      costo: 0.01025641,
+      emoji: "🥫",
     );
 
     // ==========================================================

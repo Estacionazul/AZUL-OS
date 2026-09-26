@@ -723,55 +723,55 @@ class _ResumenesDiariosScreenState extends State<ResumenesDiariosScreen> {
                 ),
               ),
             ),
-          if (estado.trim().toLowerCase() == 'generado') ...[
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _cargando
-                    ? null
-                    : () => _enviarResumen(resumen.id),
-                icon: const Icon(Icons.cloud_upload_outlined),
-                label: const Text(
-                  'ENVIAR A SUNAT',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: azul,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-            ),
-            if (estado.trim().toLowerCase() == 'enviado')
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _cargando
-                      ? null
-                      : () => _consultarEstado(resumen.id),
-                  icon: const Icon(Icons.sync_rounded),
-                  label: const Text(
-                    'CONSULTAR ESTADO SUNAT',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: azul,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-              ),
-          ],
+if (estado.trim().toLowerCase() == 'generado')
+SizedBox(
+width: double.infinity,
+child: ElevatedButton.icon(
+onPressed: _cargando
+? null
+: () => _enviarResumen(resumen.id),
+icon: const Icon(Icons.cloud_upload_outlined),
+label: const Text(
+'ENVIAR A SUNAT',
+style: TextStyle(
+fontWeight: FontWeight.bold,
+),
+),
+style: ElevatedButton.styleFrom(
+backgroundColor: azul,
+foregroundColor: Colors.white,
+padding: const EdgeInsets.symmetric(vertical: 14),
+shape: RoundedRectangleBorder(
+borderRadius: BorderRadius.circular(10),
+),
+),
+),
+),
+
+if (estado.trim().toLowerCase() == 'enviado')
+SizedBox(
+width: double.infinity,
+child: ElevatedButton.icon(
+onPressed: _cargando
+? null
+: () => _consultarEstado(resumen.id),
+icon: const Icon(Icons.sync_rounded),
+label: const Text(
+'CONSULTAR ESTADO SUNAT',
+style: TextStyle(
+fontWeight: FontWeight.bold,
+),
+),
+style: ElevatedButton.styleFrom(
+backgroundColor: azul,
+foregroundColor: Colors.white,
+padding: const EdgeInsets.symmetric(vertical: 14),
+shape: RoundedRectangleBorder(
+borderRadius: BorderRadius.circular(10),
+),
+),
+),
+),
         ],
       ),
     );

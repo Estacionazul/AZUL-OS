@@ -214,6 +214,15 @@ class GaseosasAguasSeed {
         precioVenta: 3.00,
         emoji: const Value('🧃'),
       ),
+
+      ProductosCompanion.insert(
+        codigo: 'GA021',
+        nombre: 'Gatorade',
+        categoriaId: categoriaId,
+        costo: 1.40,
+        precioVenta: 3.00,
+        emoji: const Value('🥤'),
+      ),
     ];
 
     await db.batch((batch) {

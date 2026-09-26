@@ -12,7 +12,7 @@ class CafesSeed {
 
     final lista = <ProductosCompanion>[
       // ==========================================================
-      // CAFÉS - 8 OZ
+      // CAFÉS Y BEBIDAS CALIENTES - 8 OZ
       // ==========================================================
 
       ProductosCompanion.insert(

@@ -1,87 +1,126 @@
+import 'package:drift/drift.dart';
+
 import '../database/app_database.dart';
 
 class RecetasSeed {
   static Future<void> cargar(AppDatabase db) async {
     // ==========================================================
-    // BUSCAR PRODUCTO
+    // CATÁLOGO DEFINITIVO DE RECETAS
     // ==========================================================
 
-    Future<int> productoId(String codigo) async {
-      final producto = await (db.select(
-        db.productos,
-      )..where((p) => p.codigo.equals(codigo))).getSingle();
+    const recetasDeseadas = <String, String>{
+      // CAFÉS
+      'CAF001': 'Espresso',
+      'CAF002': 'Espresso doble',
+      'CAF003': 'Americano',
+      'CAF004': 'Café con leche',
+      'CAF005': 'Cappuccino',
+      'CAF006': 'Latte',
+      'CAF007': 'Latte vainilla o caramelo',
+      'CAF008': 'Mocaccino',
+      'CAF009': 'Chocolate caliente',
 
-      return producto.id;
-    }
+      // JUGOS
+      'JUG001': 'Jugo de Naranja',
+      'JUG002': 'Jugo de Papaya',
+      'JUG003': 'Jugo de Piña',
+      'JUG004': 'Jugo de Mango',
+      'JUG005': 'Jugo de Fresa',
+      'JUG006': 'Jugo Surtido',
+      'JUG007': 'Papaya con Leche',
+      'JUG008': 'Jugo Especial',
+      'JUG009': 'Piña con Plátano',
+      'JUG010': 'Fresa con Leche',
+      'BEB004': 'Frappé de café',
+      'BEB005': 'Frappé de chocolate',
+      'BEB006': 'Frappé de caramelo',
+      'BEB007': 'Frappé de mocaccino',
+    };
 
     // ==========================================================
-    // CREAR RECETA SOLO SI NO EXISTE
+    // SINCRONIZAR RECETAS CON LOS PRODUCTOS ACTUALES
     // ==========================================================
 
-    Future<void> agregarReceta({
-      required String codigoProducto,
-      required String nombre,
-    }) async {
-      final idProducto = await productoId(codigoProducto);
+    await db.transaction(() async {
+      // --------------------------------------------------------
+      // 1. Obtener los productos definitivos por código
+      // --------------------------------------------------------
 
-      final existente = await (db.select(
-        db.recetas,
-      )..where((r) => r.productoId.equals(idProducto))).getSingleOrNull();
+      final productos = <String, int>{};
 
-      if (existente != null) {
-        return;
+      for (final codigo in recetasDeseadas.keys) {
+        final producto = await (db.select(
+          db.productos,
+        )..where((p) => p.codigo.equals(codigo))).getSingleOrNull();
+
+        if (producto == null) {
+          throw StateError(
+            'No existe el producto $codigo en la base de datos.',
+          );
+        }
+
+        productos[codigo] = producto.id;
       }
 
-      await db
-          .into(db.recetas)
-          .insert(
-            RecetasCompanion.insert(productoId: idProducto, nombre: nombre),
+      final idsPermitidos = productos.values.toList();
+
+      // --------------------------------------------------------
+      // 2. Eliminar recetas que ya no pertenecen al catálogo
+      // --------------------------------------------------------
+
+      final recetasActuales = await db.select(db.recetas).get();
+
+      for (final receta in recetasActuales) {
+        if (!idsPermitidos.contains(receta.productoId)) {
+          await (db.delete(db.recetaDetalle)
+            ..where((d) => d.recetaId.equals(receta.id)))
+              .go();
+
+          await (db.delete(db.recetas)
+            ..where((r) => r.id.equals(receta.id)))
+              .go();
+        }
+      }
+
+      // --------------------------------------------------------
+      // 3. Crear o corregir las 19 recetas definitivas
+      // --------------------------------------------------------
+
+      for (final entrada in recetasDeseadas.entries) {
+        final codigo = entrada.key;
+        final nombreCorrecto = entrada.value;
+        final idProducto = productos[codigo]!;
+
+        final receta = await (db.select(
+          db.recetas,
+        )..where((r) => r.productoId.equals(idProducto))).getSingleOrNull();
+
+        if (receta == null) {
+          await db
+              .into(db.recetas)
+              .insert(
+            RecetasCompanion.insert(
+              productoId: idProducto,
+              nombre: nombreCorrecto,
+            ),
           );
-    }
+        } else if (receta.nombre != nombreCorrecto) {
+          // Si el nombre antiguo era incorrecto, también eliminamos
+          // sus detalles para que RecetaDetalleSeed los reconstruya.
+          await (db.delete(db.recetaDetalle)
+            ..where((d) => d.recetaId.equals(receta.id)))
+              .go();
 
-    // ==========================================================
-    // CAFÉS
-    // ==========================================================
-
-    await agregarReceta(codigoProducto: "CAF001", nombre: "Espresso");
-
-    await agregarReceta(codigoProducto: "CAF002", nombre: "Doble Espresso");
-
-    await agregarReceta(codigoProducto: "CAF003", nombre: "Americano");
-
-    await agregarReceta(codigoProducto: "CAF004", nombre: "Capuccino");
-
-    await agregarReceta(codigoProducto: "CAF005", nombre: "Latte");
-
-    await agregarReceta(codigoProducto: "CAF006", nombre: "Mocaccino");
-
-    await agregarReceta(codigoProducto: "CAF007", nombre: "Flat White");
-
-    await agregarReceta(codigoProducto: "CAF008", nombre: "Cortado");
-
-    await agregarReceta(codigoProducto: "CAF009", nombre: "Chocolate Caliente");
-
-    // ==========================================================
-    // JUGOS — 600 ML
-    // ==========================================================
-
-    await agregarReceta(codigoProducto: "JUG001", nombre: "Jugo de Naranja");
-
-    await agregarReceta(codigoProducto: "JUG002", nombre: "Jugo de Papaya");
-
-    await agregarReceta(codigoProducto: "JUG003", nombre: "Jugo de Piña");
-
-    await agregarReceta(codigoProducto: "JUG004", nombre: "Jugo de Mango");
-
-    await agregarReceta(codigoProducto: "JUG005", nombre: "Jugo de Fresa");
-
-    await agregarReceta(codigoProducto: "JUG006", nombre: "Jugo Surtido");
-
-    await agregarReceta(codigoProducto: "JUG007", nombre: "Papaya con Leche");
-
-    await agregarReceta(codigoProducto: "JUG008", nombre: "Fresa con Leche");
-
-    await agregarReceta(codigoProducto: "JUG009", nombre: "Piña con Plátano");
+          await (db.update(db.recetas)
+            ..where((r) => r.id.equals(receta.id)))
+              .write(
+            RecetasCompanion(
+              nombre: Value(nombreCorrecto),
+            ),
+          );
+        }
+      }
+    });
 
     // ==========================================================
     // VERIFICACIÓN
@@ -89,17 +128,17 @@ class RecetasSeed {
 
     final recetas = await db.select(db.recetas).get();
 
-    print("====================================");
-    print("TOTAL RECETAS: ${recetas.length}");
+    print('====================================');
+    print('TOTAL RECETAS: ${recetas.length}');
 
     for (final receta in recetas) {
       print(
-        "${receta.id} - "
-        "${receta.nombre} - "
-        "Producto ID: ${receta.productoId}",
+        '${receta.id} - '
+            '${receta.nombre} - '
+            'Producto ID: ${receta.productoId}',
       );
     }
 
-    print("====================================");
+    print('====================================');
   }
 }

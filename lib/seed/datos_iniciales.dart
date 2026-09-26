@@ -23,6 +23,7 @@ class DatosIniciales {
   Future<void> cargar() async {
     await _cargarCategorias();
     await _cargarProductos();
+    await _normalizarTiposInventario();
     await _cargarInsumos();
 
     // NUEVO
@@ -113,6 +114,64 @@ class DatosIniciales {
     )..where((c) => c.nombre.equals(nombre))).getSingle();
 
     return categoria.id;
+  }
+
+  // ==========================================================
+  // NORMALIZAR TIPO DE INVENTARIO
+  //
+  // Todos los productos parten como "producto".
+  // Solo los productos que tienen receta real se marcan
+  // como "receta".
+  // ==========================================================
+
+  Future<void> _normalizarTiposInventario() async {
+    const productosConReceta = <String>{
+      // CAFÉS
+      'CAF001',
+      'CAF002',
+      'CAF003',
+      'CAF004',
+      'CAF005',
+      'CAF006',
+      'CAF007',
+      'CAF008',
+      'CAF009',
+
+      // JUGOS
+      'JUG001',
+      'JUG002',
+      'JUG003',
+      'JUG004',
+      'JUG005',
+      'JUG006',
+      'JUG007',
+      'JUG008',
+      'JUG009',
+      'JUG010',
+      'BEB004',
+      'BEB005',
+      'BEB006',
+      'BEB007',
+    };
+
+    // Primero: todo el catálogo queda como producto.
+    await db.update(db.productos).write(
+      const ProductosCompanion(
+        tipoInventario: Value('producto'),
+      ),
+    );
+
+    // Segundo: únicamente los productos con receta real
+    // quedan como tipo receta.
+    await (db.update(db.productos)
+      ..where(
+            (p) => p.codigo.isIn(productosConReceta),
+      ))
+        .write(
+      const ProductosCompanion(
+        tipoInventario: Value('receta'),
+      ),
+    );
   }
 
   //==================================================
