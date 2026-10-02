@@ -80,22 +80,6 @@ class _RegistrarEntradaProductoDialogState
         ),
       );
 
-      await movimientoService.registrarMovimiento(
-        MovimientoInventarioModel(
-          fecha: DateTime.now(),
-          tipo: "ENTRADA",
-          nombreItem: widget.producto.nombre,
-          emoji: widget.producto.emoji,
-          unidad: "unidad",
-          referenciaId: null,
-          insumoId: null,
-          productoId: widget.producto.id,
-          cantidad: cantidad.toDouble(),
-          signo: 1,
-          observacion: "$motivo - Stock anterior: $stockAnterior",
-        ),
-      );
-
       if (!mounted) return;
 
       Navigator.pop(context, true);
