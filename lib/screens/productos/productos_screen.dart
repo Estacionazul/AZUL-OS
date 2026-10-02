@@ -7,6 +7,7 @@ import '../../core/security/autorizacion_ceo_dialog.dart';
 import '../../widgets/dialogs/nuevo_producto_dialog.dart';
 import '../../widgets/dialogs/producto_detalle_dialog.dart';
 import '../../widgets/dialogs/registrar_entrada_producto_dialog.dart';
+import '../../widgets/dialogs/ajustar_stock_producto_dialog.dart';
 
 import '../../core/widgets/app_action_menu.dart';
 import '../../core/widgets/app_confirm_dialog.dart';
@@ -270,6 +271,31 @@ class ProductosScreen extends StatelessWidget {
                                       producto: producto,
                                     ),
                               );
+                            },
+                          ),
+
+                          // ==============================================
+                          // AJUSTAR STOCK
+                          // ==============================================
+                          IconButton(
+                            tooltip: "Ajustar stock",
+                            icon: const Icon(
+                              Icons.tune,
+                              color: Color(0xff0A2E6E),
+                            ),
+                            onPressed: () async {
+                              await AutorizacionCeoDialog.verificar(context).then((autorizado) async {
+                                if (!autorizado || !context.mounted) {
+                                  return;
+                                }
+
+                                await showDialog(
+                                  context: context,
+                                  builder: (_) => AjustarStockProductoDialog(
+                                    producto: producto,
+                                  ),
+                                );
+                              });
                             },
                           ),
 
