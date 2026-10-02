@@ -835,24 +835,6 @@ class EscPosRenderer {
     bytes.addAll(generator.emptyLines(1));
 
     //==================================================
-    // FRASE
-    //==================================================
-
-    bytes.addAll(
-      generator.textEncoded(
-        _cp850(
-          'Cada taza cuenta una historia,\n'
-          'gracias por ser parte de\n'
-          'la nuestra.',
-        ),
-        styles: const PosStyles(
-          align: PosAlign.center,
-          width: PosTextSize.size1,
-          height: PosTextSize.size1,
-        ),
-      ),
-    );
-    //==================================================
     // INSTAGRAM
     //==================================================
 
