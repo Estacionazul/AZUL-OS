@@ -22,7 +22,7 @@ class _ComprobantesElectronicosScreenState
   List<ComprobanteElectronico> _filtrados = [];
   String _tipo = 'Todos';
   String _estado = 'Todos';
-  DateTime? _fecha;
+  DateTime? _fechaFiltro;
   bool _cargando = true;
   String? _error;
 
@@ -196,10 +196,10 @@ class _ComprobantesElectronicosScreenState
       final tipoOk = _tipo == 'Todos' || _tipoNombre(x.tipo) == _tipo;
       final estadoOk =
           _estado == 'Todos' || _estadoNombre(x.estado) == _estado;
-      final fechaOk = _fecha == null ||
-          (x.fechaEmision.year == _fecha!.year &&
-              x.fechaEmision.month == _fecha!.month &&
-              x.fechaEmision.day == _fecha!.day);
+      final fechaOk = _fechaFiltro == null ||
+          (x.fechaEmision.year == _fechaFiltro!.year &&
+              x.fechaEmision.month == _fechaFiltro!.month &&
+              x.fechaEmision.day == _fechaFiltro!.day);
       final cliente = (x.nombreCliente ?? '') +
           ' ' +
           (x.razonSocial ?? '') +
@@ -219,13 +219,13 @@ class _ComprobantesElectronicosScreenState
   Future<void> _elegirFecha() async {
     final x = await showDatePicker(
       context: context,
-      initialDate: _fecha ?? DateTime.now(),
+      initialDate: _fechaFiltro ?? DateTime.now(),
       firstDate: DateTime(2024),
       lastDate: DateTime.now(),
       helpText: 'Filtrar por fecha',
     );
     if (x == null) return;
-    setState(() => _fecha = x);
+    setState(() => _fechaFiltro = x);
     _filtrar();
   }
 
@@ -234,7 +234,7 @@ class _ComprobantesElectronicosScreenState
     setState(() {
       _tipo = 'Todos';
       _estado = 'Todos';
-      _fecha = null;
+      _fechaFiltro = null;
     });
     _filtrar();
   }
@@ -404,7 +404,7 @@ class _ComprobantesElectronicosScreenState
                             onPressed: _elegirFecha,
                             icon: const Icon(Icons.calendar_month_rounded),
                             label: Text(
-                                _fecha == null ? 'Fecha' : _fecha!._format()),
+                                _fechaFiltro == null ? 'Fecha' : _fecha!._format()),
                           ),
                           OutlinedButton.icon(
                             onPressed: _limpiar,
