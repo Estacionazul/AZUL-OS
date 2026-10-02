@@ -201,14 +201,43 @@ class EscPosRenderer {
     _renderTotales(generator, bytes, ticket);
 
     //==================================================
-    // PIE
-    //==================================================
+// PIE
+//==================================================
 
     _renderFooter(generator, bytes, ticket);
 
-    //==================================================
-    // CORTE
-    //==================================================
+//==================================================
+// QR SUNAT
+//==================================================
+
+    if (ticket.qr != null) {
+      bytes.addAll(generator.emptyLines(1));
+
+      bytes.addAll(
+        generator.textEncoded(
+          _cp850('ESCANEA PARA CONSULTAR'),
+          styles: const PosStyles(
+            align: PosAlign.center,
+            bold: true,
+          ),
+        ),
+      );
+
+      bytes.addAll(
+        generator.qrcode(
+          ticket.qr!.contenido,
+          align: PosAlign.center,
+          size: QRSize.size4,
+          cor: QRCorrection.Q,
+        ),
+      );
+
+      bytes.addAll(generator.emptyLines(1));
+    }
+
+//==================================================
+// CORTE
+//==================================================
 
     bytes.addAll(generator.cut());
 

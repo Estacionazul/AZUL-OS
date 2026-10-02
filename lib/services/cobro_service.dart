@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 
 import '../models/venta.dart';
+import '../models/ticket.dart';
 import '../database/app_database.dart' show MovimientosCajaCompanion;
 import '../repositories/ventas_repository.dart';
 import '../repositories/cajas_repository.dart';
@@ -201,6 +202,7 @@ class CobroService {
     //
     // Nota de Venta no genera comprobante electronico SUNAT.
     // ==========================================================
+    TicketQr? ticketQr;
 
     if (venta.tipoDocumento == 'Boleta' ||
         venta.tipoDocumento == 'Factura') {
@@ -307,7 +309,6 @@ class CobroService {
       }
 
       final tipoSunat = venta.tipoDocumento == 'Boleta' ? '03' : '01';
-
       if (partesNumero.length != 2) {
         throw StateError(
           'Numero de comprobante invalido: ${venta.numero}',
@@ -315,6 +316,38 @@ class CobroService {
       }
 
       final numeroSunat = int.parse(partesNumero[1]);
+
+      final tipoDocumentoAdquirente =
+      (venta.ruc?.trim().isNotEmpty ?? false)
+          ? '6'
+          : (venta.dni?.trim().isNotEmpty ?? false)
+          ? '1'
+          : '';
+
+      final numeroDocumentoAdquirente =
+      (venta.ruc?.trim().isNotEmpty ?? false)
+          ? venta.ruc!.trim()
+          : (venta.dni?.trim().isNotEmpty ?? false)
+          ? venta.dni!.trim()
+          : '';
+
+      final valorResumen = _extraerValorResumen(xmlFirmado);
+
+      ticketQr = TicketQr(
+        rucEmisor: empresa.ruc,
+        tipoComprobante: tipoSunat,
+        serie: partesNumero[0],
+        numero: numeroSunat.toString(),
+        montoTotalIgv: venta.igv.toStringAsFixed(2),
+        montoTotal: venta.total.toStringAsFixed(2),
+        fechaEmision:
+        '${ahora.year.toString().padLeft(4, '0')}-'
+            '${ahora.month.toString().padLeft(2, '0')}-'
+            '${ahora.day.toString().padLeft(2, '0')}',
+        tipoDocumentoAdquirente: tipoDocumentoAdquirente,
+        numeroDocumentoAdquirente: numeroDocumentoAdquirente,
+        valorResumen: valorResumen,
+      );
 
       // ==========================================================
       // RESERVAR CORRELATIVO
@@ -460,7 +493,10 @@ class CobroService {
     // GENERAR TICKET
     // ==========================================================
 
-    final ticket = ticketPrintService.generarTicket(venta);
+    final ticket = ticketPrintService.generarTicket(
+      venta,
+      qr: ticketQr,
+    );
 
     // ==========================================================
     // CONVERTIR A ESC/POS
@@ -480,5 +516,29 @@ class CobroService {
 
     ventaService.nuevaVenta();
     carritoService.vaciarCarrito();
+  }
+
+  String _extraerValorResumen(String xmlFirmado) {
+    final match = RegExp(
+      r'<ds:DigestValue>\s*([^<]+)\s*</ds:DigestValue>',
+    ).firstMatch(xmlFirmado);
+
+    if (match == null) {
+      throw StateError(
+        'No se encontró ds:DigestValue en el XML firmado. '
+            'No se puede generar el QR SUNAT.',
+      );
+    }
+
+    final valor = match.group(1)?.trim();
+
+    if (valor == null || valor.isEmpty) {
+      throw StateError(
+        'El ds:DigestValue del XML firmado está vacío. '
+            'No se puede generar el QR SUNAT.',
+      );
+    }
+
+    return valor;
   }
 }

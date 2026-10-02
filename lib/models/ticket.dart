@@ -5,6 +5,7 @@ class Ticket {
   final List<TicketItem> items;
   final TicketTotals totals;
   final TicketFooter footer;
+  final TicketQr? qr;
 
   const Ticket({
     required this.empresa,
@@ -13,7 +14,49 @@ class Ticket {
     required this.items,
     required this.totals,
     required this.footer,
+    this.qr,
   });
+}
+
+class TicketQr {
+  final String rucEmisor;
+  final String tipoComprobante;
+  final String serie;
+  final String numero;
+  final String montoTotalIgv;
+  final String montoTotal;
+  final String fechaEmision;
+  final String tipoDocumentoAdquirente;
+  final String numeroDocumentoAdquirente;
+  final String valorResumen;
+
+  const TicketQr({
+    required this.rucEmisor,
+    required this.tipoComprobante,
+    required this.serie,
+    required this.numero,
+    required this.montoTotalIgv,
+    required this.montoTotal,
+    required this.fechaEmision,
+    required this.tipoDocumentoAdquirente,
+    required this.numeroDocumentoAdquirente,
+    required this.valorResumen,
+  });
+
+  String get contenido {
+    return [
+      rucEmisor,
+      tipoComprobante,
+      serie,
+      numero,
+      montoTotalIgv,
+      montoTotal,
+      fechaEmision,
+      tipoDocumentoAdquirente,
+      numeroDocumentoAdquirente,
+      valorResumen,
+    ].join('|');
+  }
 }
 
 class TicketEmpresa {

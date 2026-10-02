@@ -17,7 +17,7 @@ class TicketPrintService {
   static const String _frase =
       'Cada taza cuenta una historia, gracias por ser parte de la nuestra.';
 
-  Ticket generarTicket(Venta venta) {
+  Ticket generarTicket(Venta venta, {TicketQr? qr}) {
     return Ticket(
       empresa: _crearEmpresa(),
       header: _crearHeader(venta),
@@ -25,6 +25,7 @@ class TicketPrintService {
       items: _crearItems(venta.items),
       totals: _crearTotales(venta),
       footer: _crearFooter(),
+      qr: qr,
     );
   }
 
