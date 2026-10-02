@@ -404,7 +404,7 @@ class _ComprobantesElectronicosScreenState
                             onPressed: _elegirFecha,
                             icon: const Icon(Icons.calendar_month_rounded),
                             label: Text(
-                                _fechaFiltro == null ? 'Fecha' : _fecha!._format()),
+                                _fechaFiltro == null ? 'Fecha' : _fechaFiltro!._format()),
                           ),
                           OutlinedButton.icon(
                             onPressed: _limpiar,
