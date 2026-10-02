@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'resumenes_diarios_screen.dart';
 import 'comprobantes_electronicos_screen.dart';
+import 'estado_envios_screen.dart';
 import '../../../core/security/autorizacion_ceo_dialog.dart';
 
 class FacturacionScreen extends StatelessWidget {
@@ -77,7 +78,11 @@ class FacturacionScreen extends StatelessWidget {
               subtitulo:
                   'Revisa comprobantes pendientes, enviados, aceptados o rechazados.',
               color: azul,
-              onTap: () {},
+              onTap: () async {
+                final autorizado = await AutorizacionCeoDialog.verificar(context);
+                if (!autorizado || !context.mounted) return;
+                await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EstadoEnviosScreen()));
+              },
             ),
             const SizedBox(height: 14),
             _ModuloCard(
