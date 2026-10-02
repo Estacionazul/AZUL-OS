@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'resumenes_diarios_screen.dart';
+import 'comprobantes_electronicos_screen.dart';
 import '../../../core/security/autorizacion_ceo_dialog.dart';
 
 class FacturacionScreen extends StatelessWidget {
@@ -26,19 +27,28 @@ class FacturacionScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _encabezado(),
-
             const SizedBox(height: 20),
-
             _ModuloCard(
               icono: Icons.receipt_long_rounded,
               titulo: 'Comprobantes electrónicos',
               subtitulo: 'Consulta y administra boletas y facturas emitidas.',
               color: azul,
-              onTap: () {},
+              onTap: () async {
+                final autorizado =
+                    await AutorizacionCeoDialog.verificar(context);
+
+                if (!autorizado || !context.mounted) {
+                  return;
+                }
+
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const ComprobantesElectronicosScreen(),
+                  ),
+                );
+              },
             ),
-
             const SizedBox(height: 14),
-
             _ModuloCard(
               icono: Icons.description_rounded,
               titulo: 'Resúmenes diarios SUNAT',
@@ -47,7 +57,7 @@ class FacturacionScreen extends StatelessWidget {
               color: azul,
               onTap: () async {
                 final autorizado =
-                await AutorizacionCeoDialog.verificar(context);
+                    await AutorizacionCeoDialog.verificar(context);
 
                 if (!autorizado || !context.mounted) {
                   return;
@@ -60,9 +70,7 @@ class FacturacionScreen extends StatelessWidget {
                 );
               },
             ),
-
             const SizedBox(height: 14),
-
             _ModuloCard(
               icono: Icons.sync_rounded,
               titulo: 'Estado de envíos',
@@ -71,9 +79,7 @@ class FacturacionScreen extends StatelessWidget {
               color: azul,
               onTap: () {},
             ),
-
             const SizedBox(height: 14),
-
             _ModuloCard(
               icono: Icons.settings_rounded,
               titulo: 'Configuración SUNAT',
@@ -82,9 +88,7 @@ class FacturacionScreen extends StatelessWidget {
               color: azul,
               onTap: () {},
             ),
-
             const SizedBox(height: 24),
-
             Card(
               elevation: 1,
               child: Padding(
