@@ -98,6 +98,47 @@ class CobroService {
     }
 
     // ==========================================================
+    // CALCULAR TOTALES
+    // ==========================================================
+
+    final total = carritoService.total;
+    final subtotal = total / 1.18;
+    final igv = total - subtotal;
+
+    // ==========================================================
+    // VALIDAR INVENTARIO ANTES DE RESERVAR CORRELATIVO
+    // ==========================================================
+    //
+    // Un error de stock no debe consumir numeración electrónica.
+    // Se usa una venta provisional solo para validar inventario.
+    // El correlativo real se reserva después de esta validación.
+    // ==========================================================
+
+    final ventaParaValidacion = Venta(
+      numero: '',
+      fecha: ahora,
+      items: List.from(carritoService.items),
+      subtotal: subtotal,
+      igv: igv,
+      total: total,
+      metodoPago: metodoPago,
+      tipoDocumento: ventaActual.tipoDocumento,
+      dni: ventaActual.dni,
+      ruc: ventaActual.ruc,
+      nombreCliente: ventaActual.tipoDocumento == 'Factura'
+          ? (ventaActual.razonSocial?.trim().isNotEmpty == true
+                ? ventaActual.razonSocial!.trim()
+                : ventaActual.clienteNombre)
+          : ventaActual.clienteNombre,
+      razonSocial: ventaActual.razonSocial,
+      direccionFiscal: ventaActual.direccionFiscal,
+      descuento: ventaActual.descuento,
+      observaciones: ventaActual.observaciones,
+    );
+
+    await inventarioAutomaticoService.validarVenta(ventaParaValidacion);
+
+    // ==========================================================
     // OBTENER NÚMERO SEGÚN EL TIPO DE DOCUMENTO
     // ==========================================================
 
@@ -117,14 +158,6 @@ class CobroService {
         numeroVenta = await ventasRepository.obtenerSiguienteNumeroVenta();
         break;
     }
-
-    // ==========================================================
-    // CALCULAR TOTALES
-    // ==========================================================
-
-    final total = carritoService.total;
-    final subtotal = total / 1.18;
-    final igv = total - subtotal;
 
     // ==========================================================
     // CREAR VENTA
@@ -157,11 +190,7 @@ class CobroService {
       observaciones: ventaActual.observaciones,
     );
 
-    // ==========================================================
-    // VALIDAR INVENTARIO ANTES DE REGISTRAR LA VENTA
-    // ==========================================================
-
-    await inventarioAutomaticoService.validarVenta(venta);
+    // El inventario ya fue validado antes de reservar el correlativo.
 
     // ==========================================================
     // GUARDAR VENTA
