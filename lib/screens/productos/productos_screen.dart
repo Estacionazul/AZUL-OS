@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/producto_service.dart';
@@ -165,7 +165,9 @@ class ProductosScreen extends StatelessWidget {
                               "Categoría: ${_nombreCategoria(producto.categoriaId)}",
                             ),
                             Text(
-                              "Stock: ${producto.stock} und",
+                              producto.tipoInventario == 'receta'
+                                  ? 'Disponibilidad: calculada por receta'
+                                  : "Stock: ${producto.stock} und",
                             ),
                             Text(
                               "Stock mínimo: ${producto.stockMinimo} und",
@@ -254,6 +256,7 @@ class ProductosScreen extends StatelessWidget {
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          if (producto.tipoInventario != 'receta') ...[
                           // ==============================================
                           // REGISTRAR ENTRADA
                           // ==============================================
@@ -299,6 +302,7 @@ class ProductosScreen extends StatelessWidget {
                             },
                           ),
 
+                          ],
                           // ==============================================
                           // MENÚ DE ACCIONES
                           // ==============================================
