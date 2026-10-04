@@ -193,34 +193,3 @@ class ProductoService extends ChangeNotifier {
   }
 
   int get cantidadProductos => _productos.length;
-
-  Future<bool> aumentarStock(int productoId, double cantidad) async {
-    final producto = obtenerProducto(productoId);
-
-    if (producto == null) {
-      return false;
-    }
-
-    final actualizado = ProductoModel(
-      id: producto.id,
-      codigo: producto.codigo,
-      codigoBarras: producto.codigoBarras,
-      nombre: producto.nombre,
-      descripcion: producto.descripcion,
-      categoriaId: producto.categoriaId,
-      costo: producto.costo,
-      precioVenta: producto.precioVenta,
-      stock: producto.stock + cantidad.toInt(),
-      stockMinimo: producto.stockMinimo,
-      tipoInventario: producto.tipoInventario,
-      tipoAfectacionIgv: producto.tipoAfectacionIgv,
-      emoji: producto.emoji,
-      imagen: producto.imagen,
-      activo: producto.activo,
-    );
-
-    await editarProducto(actualizado);
-
-    return true;
-  }
-}
