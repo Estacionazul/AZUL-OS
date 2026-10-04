@@ -48,6 +48,18 @@ class _RegistrarEntradaProductoDialogState
       return;
     }
 
+    if (widget.producto.tipoInventario == 'receta') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Este producto usa inventario por receta. '
+            'Las entradas se registran en sus insumos.',
+          ),
+        ),
+      );
+      return;
+    }
+
     if (widget.producto.id == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("El producto no tiene un ID válido.")),
