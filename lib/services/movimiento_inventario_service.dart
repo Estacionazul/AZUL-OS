@@ -175,6 +175,15 @@ class MovimientoInventarioService extends ChangeNotifier {
           throw StateError('No existe el producto ID $productoId.');
         }
 
+        if (producto.tipoInventario == 'receta' &&
+            movimiento.tipo != 'PRODUCCION') {
+          throw StateError(
+            'El producto \${producto.nombre} usa inventario por receta. '
+            'Su stock no se modifica manualmente; use producción para '
+            'generar producto terminado.',
+          );
+        }
+
         final stockActual = nuevosProductos[productoId] ?? producto.stock;
 
         final delta = movimiento.cantidad.round() * movimiento.signo;
