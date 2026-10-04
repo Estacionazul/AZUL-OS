@@ -342,7 +342,6 @@ class _InventarioScreenState extends State<InventarioScreen> {
                           ),
                         ),
                       );
-                    });
                     }),
                   ],
 
