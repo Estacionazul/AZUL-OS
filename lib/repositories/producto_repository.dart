@@ -64,11 +64,6 @@ class ProductoRepository {
     );
   }
 
-  /// Actualizar solamente el stock
-  Future<bool> actualizarStock(int id, int stock) {
-    return _dao.actualizarStock(id, stock);
-  }
-
   /// Eliminar
   Future<int> eliminar(int id) {
     return _dao.eliminar(id);
