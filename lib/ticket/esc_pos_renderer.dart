@@ -334,6 +334,29 @@ class EscPosRenderer {
         bytes.addAll(
           generator.image(logo, align: PosAlign.center, isDoubleDensity: true),
         );
+
+        bytes.addAll(generator.emptyLines(1));
+
+        bytes.addAll(
+          generator.textEncoded(
+            _cp850("RUC: 10446152080"),
+            styles: const PosStyles(
+              align: PosAlign.center,
+              bold: true,
+            ),
+          ),
+        );
+
+        bytes.addAll(
+          generator.textEncoded(
+            _cp850("Av. Nicolás Ayllón 582 - Ate"),
+            styles: const PosStyles(
+              align: PosAlign.center,
+            ),
+          ),
+        );
+
+        bytes.addAll(generator.emptyLines(1));
       }
     } catch (e, stackTrace) {
       debugPrint('ERROR IMPRIMIENDO LOGO: $e');

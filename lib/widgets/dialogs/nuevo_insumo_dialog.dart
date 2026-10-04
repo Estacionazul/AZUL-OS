@@ -18,7 +18,6 @@ class _NuevoInsumoDialogState extends State<NuevoInsumoDialog> {
 
   final _codigoController = TextEditingController();
   final _nombreController = TextEditingController();
-  final _stockController = TextEditingController(text: "0");
   final _stockMinimoController = TextEditingController(text: "0");
   final _costoController = TextEditingController(text: "0");
 
@@ -36,7 +35,6 @@ class _NuevoInsumoDialogState extends State<NuevoInsumoDialog> {
 
       _codigoController.text = insumo.codigo;
       _nombreController.text = insumo.nombre;
-      _stockController.text = insumo.stock.toString();
       _stockMinimoController.text = insumo.stockMinimo.toString();
       _costoController.text = insumo.costoCompra.toString();
 
@@ -61,7 +59,7 @@ class _NuevoInsumoDialogState extends State<NuevoInsumoDialog> {
       descripcion: widget.insumo?.descripcion ?? '',
       categoriaId: widget.insumo?.categoriaId ?? 1,
       unidadMedida: _unidad,
-      stock: double.tryParse(_stockController.text) ?? 0,
+      stock: 0,
       stockMinimo: double.tryParse(_stockMinimoController.text) ?? 0,
       costoCompra: double.tryParse(_costoController.text) ?? 0,
       proveedorId: widget.insumo?.proveedorId,
@@ -70,15 +68,29 @@ class _NuevoInsumoDialogState extends State<NuevoInsumoDialog> {
       activo: widget.insumo?.activo ?? true,
     );
 
-    if (widget.insumo == null) {
-      await context.read<InsumoService>().agregar(insumo);
-    } else {
-      await context.read<InsumoService>().actualizar(insumo);
+    try {
+      if (widget.insumo == null) {
+        await context.read<InsumoService>().agregar(insumo);
+      } else {
+        await context.read<InsumoService>().actualizar(insumo);
+      }
+
+      if (!mounted) return;
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _guardando = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No se pudo guardar el insumo: $e'),
+        ),
+      );
     }
-
-    if (!mounted) return;
-
-    Navigator.pop(context, true);
   }
 
   @override
@@ -134,14 +146,6 @@ class _NuevoInsumoDialogState extends State<NuevoInsumoDialog> {
                       _unidad = value!;
                     });
                   },
-                ),
-
-                const SizedBox(height: 16),
-
-                TextFormField(
-                  controller: _stockController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: "Stock"),
                 ),
 
                 const SizedBox(height: 16),
@@ -214,7 +218,6 @@ class _NuevoInsumoDialogState extends State<NuevoInsumoDialog> {
   void dispose() {
     _codigoController.dispose();
     _nombreController.dispose();
-    _stockController.dispose();
     _stockMinimoController.dispose();
     _costoController.dispose();
     super.dispose();

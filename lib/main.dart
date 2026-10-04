@@ -23,7 +23,6 @@ import 'pedidos/services/pedidos_service.dart';
 import 'services/carrito_service.dart';
 import 'services/cobro_service.dart';
 import 'services/insumo_service.dart';
-import 'services/inventario_service.dart';
 import 'services/producto_service.dart';
 import 'services/recetas_service.dart';
 import 'services/receta_detalle_service.dart';
@@ -211,8 +210,6 @@ Provider<FacturacionService>(
         ChangeNotifierProvider(
           create: (_) => InsumoService(database)..obtenerTodos(),
         ),
-
-        Provider(create: (_) => InventarioService()),
 
         Provider(create: (_) => MovimientoInventarioRepository(database)),
 

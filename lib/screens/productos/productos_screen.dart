@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/producto_service.dart';
@@ -165,7 +165,9 @@ class ProductosScreen extends StatelessWidget {
                               "Categoría: ${_nombreCategoria(producto.categoriaId)}",
                             ),
                             Text(
-                              "Stock: ${producto.stock} und",
+                              producto.tipoInventario == 'receta'
+                                  ? 'Disponibilidad: calculada por receta'
+                                  : "Stock: ${producto.stock} und",
                             ),
                             Text(
                               "Stock mínimo: ${producto.stockMinimo} und",
@@ -181,6 +183,26 @@ class ProductosScreen extends StatelessWidget {
                             // ==========================================
                             Builder(
                               builder: (_) {
+                                if (producto.tipoInventario == 'receta') {
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xffEAF1FF),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Text(
+                                      "📋 Inventario por receta",
+                                      style: TextStyle(
+                                        color: Color(0xff0A2E6E),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  );
+                                }
+
                                 if (producto.stock <= 0) {
                                   return Container(
                                     padding: const EdgeInsets.symmetric(
@@ -254,6 +276,7 @@ class ProductosScreen extends StatelessWidget {
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          if (producto.tipoInventario != 'receta') ...[
                           // ==============================================
                           // REGISTRAR ENTRADA
                           // ==============================================
@@ -299,6 +322,7 @@ class ProductosScreen extends StatelessWidget {
                             },
                           ),
 
+                          ],
                           // ==============================================
                           // MENÚ DE ACCIONES
                           // ==============================================

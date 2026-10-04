@@ -63,6 +63,18 @@ class _AjustarStockProductoDialogState
       return;
     }
 
+    if (widget.producto.tipoInventario == 'receta') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Este producto usa inventario por receta. '
+            'El ajuste se realiza sobre sus insumos.',
+          ),
+        ),
+      );
+      return;
+    }
+
     if (widget.producto.id == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
