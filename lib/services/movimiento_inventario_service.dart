@@ -178,7 +178,7 @@ class MovimientoInventarioService extends ChangeNotifier {
         if (producto.tipoInventario == 'receta' &&
             movimiento.tipo != 'PRODUCCION') {
           throw StateError(
-            'El producto \${producto.nombre} usa inventario por receta. '
+            'El producto ${producto.nombre} usa inventario por receta. '
             'Su stock no se modifica manualmente; use producción para '
             'generar producto terminado.',
           );
