@@ -7,7 +7,10 @@ import '../../core/widgets/dashboard_stat_card.dart';
 import '../../services/insumo_service.dart';
 import '../../services/producto_service.dart';
 import '../../services/disponibilidad_producto_service.dart';
+import '../../core/security/autorizacion_ceo_dialog.dart';
 import '../../widgets/dialogs/nuevo_insumo_dialog.dart';
+import '../../widgets/dialogs/registrar_entrada_insumo_dialog.dart';
+import '../../widgets/dialogs/ajustar_stock_insumo_dialog.dart';
 import '../../widgets/module_header.dart';
 import 'kardex_screen.dart';
 
@@ -287,8 +290,59 @@ class _InventarioScreenState extends State<InventarioScreen> {
                               ],
                             ),
                           ),
+
+                          // ==============================================
+                          // ACCIONES DE STOCK DEL INSUMO
+                          // ==============================================
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                tooltip: 'Registrar entrada',
+                                icon: const Icon(
+                                  Icons.move_to_inbox,
+                                  color: Color(0xff0A2E6E),
+                                ),
+                                onPressed: () async {
+                                  await showDialog(
+                                    context: context,
+                                    builder: (_) =>
+                                        RegistrarEntradaInsumoDialog(
+                                      insumo: insumo,
+                                    ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                tooltip: 'Ajustar stock',
+                                icon: const Icon(
+                                  Icons.tune,
+                                  color: Color(0xff0A2E6E),
+                                ),
+                                onPressed: () async {
+                                  final autorizado =
+                                      await AutorizacionCeoDialog.verificar(
+                                    context,
+                                  );
+
+                                  if (!autorizado || !context.mounted) {
+                                    return;
+                                  }
+
+                                  await showDialog(
+                                    context: context,
+                                    builder: (_) =>
+                                        AjustarStockInsumoDialog(
+                                      insumo: insumo,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       );
+                    });
                     }),
                   ],
 
