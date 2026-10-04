@@ -183,6 +183,26 @@ class ProductosScreen extends StatelessWidget {
                             // ==========================================
                             Builder(
                               builder: (_) {
+                                if (producto.tipoInventario == 'receta') {
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xffEAF1FF),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Text(
+                                      "📋 Inventario por receta",
+                                      style: TextStyle(
+                                        color: Color(0xff0A2E6E),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  );
+                                }
+
                                 if (producto.stock <= 0) {
                                   return Container(
                                     padding: const EdgeInsets.symmetric(
