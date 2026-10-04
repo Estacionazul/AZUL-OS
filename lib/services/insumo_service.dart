@@ -86,56 +86,6 @@ class InsumoService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Aumentar stock
-  Future<bool> aumentarStock(InsumoModel insumo, double cantidad) {
-    final actualizado = InsumoModel(
-      id: insumo.id,
-      codigo: insumo.codigo,
-      nombre: insumo.nombre,
-      descripcion: insumo.descripcion,
-      categoriaId: insumo.categoriaId,
-      unidadMedida: insumo.unidadMedida,
-      stock: insumo.stock + cantidad,
-      stockMinimo: insumo.stockMinimo,
-      costoCompra: insumo.costoCompra,
-      proveedorId: insumo.proveedorId,
-      emoji: insumo.emoji,
-      imagen: insumo.imagen,
-      activo: insumo.activo,
-    );
-
-    return _repository.actualizar(actualizado);
-  }
-
-  /// Disminuir stock
-  Future<bool> disminuirStock(InsumoModel insumo, double cantidad) async {
-    if (insumo.stock < cantidad) {
-      return false;
-    }
-
-    final actualizado = InsumoModel(
-      id: insumo.id,
-      codigo: insumo.codigo,
-      nombre: insumo.nombre,
-      descripcion: insumo.descripcion,
-      categoriaId: insumo.categoriaId,
-      unidadMedida: insumo.unidadMedida,
-      stock: insumo.stock - cantidad,
-      stockMinimo: insumo.stockMinimo,
-      costoCompra: insumo.costoCompra,
-      proveedorId: insumo.proveedorId,
-      emoji: insumo.emoji,
-      imagen: insumo.imagen,
-      activo: insumo.activo,
-    );
-
-    final ok = await _repository.actualizar(actualizado);
-
-    await obtenerTodos();
-
-    return ok;
-  }
-
   /// Obtener un insumo por ID
   Future<InsumoModel?> obtenerPorId(int id) {
     return _repository.obtenerPorId(id);
