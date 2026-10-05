@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/movimiento_inventario_model.dart';
 import '../../models/producto_model.dart';
 import '../../services/movimiento_inventario_service.dart';
 
@@ -20,7 +19,7 @@ class AjustarStockProductoDialog extends StatefulWidget {
 
 class _AjustarStockProductoDialogState
     extends State<AjustarStockProductoDialog> {
-  final _cantidadController = TextEditingController();
+  final _nuevoStockController = TextEditingController();
   final _motivoController = TextEditingController(text: 'Ajuste de inventario');
 
   bool _guardando = false;
@@ -32,23 +31,15 @@ class _AjustarStockProductoDialogState
     super.dispose();
   }
 
-  Future<void> _registrarSalida() async {
-    final cantidad = int.tryParse(_cantidadController.text.trim()) ?? 0;
+  Future<void> _ajustarStock() async {
+    final nuevoStock =
+        int.tryParse(_nuevoStockController.text.trim());
     final motivo = _motivoController.text.trim();
 
-    if (cantidad <= 0) {
+    if (nuevoStock == null || nuevoStock < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Ingresa una cantidad válida mayor a 0.'),
-        ),
-      );
-      return;
-    }
-
-    if (cantidad > widget.producto.stock) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('La cantidad no puede superar el stock actual.'),
+          content: Text('Ingresa un stock final válido de 0 o más.'),
         ),
       );
       return;
@@ -89,24 +80,13 @@ class _AjustarStockProductoDialogState
     });
 
     try {
-      final movimientoService = context.read<MovimientoInventarioService>();
-      final stockAnterior = widget.producto.stock;
+      final movimientoService =
+          context.read<MovimientoInventarioService>();
 
-      await movimientoService.registrarMovimiento(
-        MovimientoInventarioModel(
-          fecha: DateTime.now(),
-          tipo: 'AJUSTE_SALIDA',
-          nombreItem: widget.producto.nombre,
-          emoji: widget.producto.emoji,
-          unidad: 'unidad',
-          referenciaId: null,
-          insumoId: null,
-          productoId: widget.producto.id,
-          cantidad: cantidad.toDouble(),
-          signo: -1,
-          observacion:
-              '$motivo - Stock anterior: $stockAnterior - Ajuste: -$cantidad',
-        ),
+      await movimientoService.ajustarStockProductoA(
+        producto: widget.producto,
+        nuevoStock: nuevoStock,
+        motivo: motivo,
       );
 
       if (!mounted) return;
@@ -116,7 +96,7 @@ class _AjustarStockProductoDialogState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Ajuste registrado: -$cantidad ${widget.producto.nombre}',
+            'Stock de ${widget.producto.nombre} actualizado a $nuevoStock.',
           ),
         ),
       );
@@ -129,7 +109,7 @@ class _AjustarStockProductoDialogState
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('No se pudo registrar el ajuste: $e'),
+          content: Text('No se pudo ajustar el stock: $e'),
         ),
       );
     }
@@ -202,9 +182,9 @@ class _AjustarStockProductoDialogState
               autofocus: true,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                labelText: 'Cantidad a retirar',
-                hintText: 'Ejemplo: 6',
-                prefixIcon: const Icon(Icons.remove_circle_outline),
+                labelText: 'Nuevo stock',
+                hintText: 'Ejemplo: 5',
+                prefixIcon: const Icon(Icons.inventory_2_outlined),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -226,7 +206,7 @@ class _AjustarStockProductoDialogState
             const Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Este movimiento quedará registrado en el Kardex como ajuste de salida.',
+                'Ingresa el stock físico final. AZUL OS calculará automáticamente la diferencia y la registrará en el Kardex.',
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.black54,
@@ -243,7 +223,7 @@ class _AjustarStockProductoDialogState
           label: const Text('Cancelar'),
         ),
         ElevatedButton.icon(
-          onPressed: _guardando ? null : _registrarSalida,
+          onPressed: _guardando ? null : _ajustarStock,
           icon: _guardando
               ? const SizedBox(
                   width: 18,
@@ -254,7 +234,7 @@ class _AjustarStockProductoDialogState
                   ),
                 )
               : const Icon(Icons.save),
-          label: Text(_guardando ? 'Guardando...' : 'Registrar ajuste'),
+          label: Text(_guardando ? 'Guardando...' : 'Ajustar stock'),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xff0A2E6E),
             foregroundColor: Colors.white,
