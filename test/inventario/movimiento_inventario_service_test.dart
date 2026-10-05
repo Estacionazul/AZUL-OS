@@ -194,7 +194,23 @@ void main() {
     // Simula una pantalla que tiene stock antiguo en memoria (50),
     // mientras la BD ya fue modificada a 60 por otra operación.
     await productoRepository.actualizar(
-      producto!.copyWith(stock: 60),
+      ProductoModel(
+        id: producto!.id,
+        codigo: producto.codigo,
+        codigoBarras: producto.codigoBarras,
+        nombre: producto.nombre,
+        descripcion: producto.descripcion,
+        categoriaId: producto.categoriaId,
+        costo: producto.costo,
+        precioVenta: producto.precioVenta,
+        stock: 60,
+        stockMinimo: producto.stockMinimo,
+        tipoInventario: producto.tipoInventario,
+        tipoAfectacionIgv: producto.tipoAfectacionIgv,
+        emoji: producto.emoji,
+        imagen: producto.imagen,
+        activo: producto.activo,
+      ),
     );
 
     await movimientoService.ajustarStockProductoA(
@@ -284,7 +300,21 @@ void main() {
     expect(insumo, isNotNull);
 
     await insumoRepository.actualizar(
-      insumo!.copyWith(stock: 140),
+      InsumoModel(
+        id: insumo!.id,
+        codigo: insumo.codigo,
+        nombre: insumo.nombre,
+        descripcion: insumo.descripcion,
+        categoriaId: insumo.categoriaId,
+        unidadMedida: insumo.unidadMedida,
+        stock: 140,
+        stockMinimo: insumo.stockMinimo,
+        costoCompra: insumo.costoCompra,
+        proveedorId: insumo.proveedorId,
+        emoji: insumo.emoji,
+        imagen: insumo.imagen,
+        activo: insumo.activo,
+      ),
     );
 
     await movimientoService.ajustarStockInsumoA(
