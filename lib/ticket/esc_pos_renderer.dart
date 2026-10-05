@@ -348,6 +348,10 @@ class EscPosRenderer {
           generator.image(logo, align: PosAlign.center, isDoubleDensity: true),
         );
 
+        // Separación visual mínima entre el logo y los datos fiscales.
+        // Una sola línea mantiene el encabezado compacto sin pegar el RUC al logo.
+        bytes.addAll(generator.emptyLines(1));
+
         bytes.addAll(
           generator.textEncoded(
             _cp850("RUC: 10446152080"),
