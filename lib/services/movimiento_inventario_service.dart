@@ -84,7 +84,7 @@ class MovimientoInventarioService extends ChangeNotifier {
       nuevosStocksInsumo: stocks.insumos,
     );
 
-    await _refrescarEstado();
+    await refrescarEstado();
   }
 
   // ==========================================================
@@ -112,14 +112,6 @@ class MovimientoInventarioService extends ChangeNotifier {
       nuevosStocksProducto: stocks.productos,
       nuevosStocksInsumo: stocks.insumos,
     );
-  }
-
-  // ==========================================================
-  // REFRESCAR ESTADO
-  // ==========================================================
-
-  Future<void> _refrescarEstado() async {
-    await refrescarEstado();
   }
 
   // ==========================================================
