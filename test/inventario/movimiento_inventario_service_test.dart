@@ -99,6 +99,75 @@ void main() {
     );
   });
 
+  test('movimiento sincroniza inmediatamente el stock de los servicios en memoria', () async {
+    final productoId = await productoRepository.insertar(
+      const ProductoModel(
+        codigo: 'TEST-PRO-SYNC-001',
+        codigoBarras: '',
+        nombre: 'Producto sincronizado',
+        descripcion: '',
+        categoriaId: 1,
+        costo: 1,
+        precioVenta: 2,
+        stock: 0,
+        stockMinimo: 1,
+        tipoInventario: 'producto',
+        tipoAfectacionIgv: '10',
+        emoji: '🧪',
+        imagen: '',
+        activo: true,
+      ),
+    );
+
+    final insumoId = await insumoRepository.insertar(
+      const InsumoModel(
+        codigo: 'TEST-INS-SYNC-001',
+        nombre: 'Insumo sincronizado',
+        descripcion: '',
+        categoriaId: 1,
+        unidadMedida: 'g',
+        stock: 0,
+        stockMinimo: 1,
+        costoCompra: 1,
+        proveedorId: null,
+        emoji: '🧪',
+        imagen: '',
+        activo: true,
+      ),
+    );
+
+    await productoService.cargarProductos();
+    await insumoService.obtenerTodos();
+
+    await movimientoService.registrarMovimientos([
+      MovimientoInventarioModel(
+        fecha: DateTime(2026, 10, 4),
+        tipo: 'ENTRADA',
+        nombreItem: 'Producto sincronizado',
+        emoji: '🧪',
+        unidad: 'unidad',
+        productoId: productoId,
+        cantidad: 5,
+        signo: 1,
+      ),
+      MovimientoInventarioModel(
+        fecha: DateTime(2026, 10, 4),
+        tipo: 'ENTRADA',
+        nombreItem: 'Insumo sincronizado',
+        emoji: '🧪',
+        unidad: 'g',
+        insumoId: insumoId,
+        cantidad: 250,
+        signo: 1,
+      ),
+    ]);
+
+    expect(productoService.obtenerProducto(productoId)?.stock, 5);
+    expect(insumoService.insumos.any(
+      (item) => item.id == insumoId && item.stock == 250,
+    ), isTrue);
+  });
+
   test('dos entradas independientes acumulan sin duplicar una operación', () async {
     final insumoId = await insumoRepository.insertar(
       const InsumoModel(
