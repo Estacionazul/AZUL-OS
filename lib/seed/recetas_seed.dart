@@ -20,6 +20,11 @@ class RecetasSeed {
       'CAF008': 'Mocaccino',
       'CAF009': 'Chocolate caliente',
 
+      // BEBIDAS FRÍAS CON CAFÉ
+      'BEB001': 'Iced Coffee',
+      'BEB002': 'Iced Mocca',
+      'BEB003': 'Iced Caramel',
+
       // JUGOS
       'JUG001': 'Jugo de Naranja',
       'JUG002': 'Jugo de Papaya',
