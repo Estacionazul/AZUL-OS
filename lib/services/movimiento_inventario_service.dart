@@ -119,6 +119,21 @@ class MovimientoInventarioService extends ChangeNotifier {
   // ==========================================================
 
   Future<void> _refrescarEstado() async {
+    await refrescarEstado();
+  }
+
+  // ==========================================================
+  // REFRESCAR DATOS OPERATIVOS
+  // ==========================================================
+  //
+  // Único punto público para sincronizar el estado en memoria con
+  // la base de datos después de una operación transaccional externa
+  // (por ejemplo, venta + inventario + caja).
+  //
+  // No modifica stock. Solo vuelve a leer datos persistidos.
+  // ==========================================================
+
+  Future<void> refrescarEstado() async {
     await _productoService.cargarProductos();
     await _insumoService.obtenerTodos();
     await cargarMovimientos();
