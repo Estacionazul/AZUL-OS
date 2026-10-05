@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
+import '../models/insumo_model.dart';
 import '../models/movimiento_inventario_model.dart';
+import '../models/producto_model.dart';
 import '../repositories/insumo_repository.dart';
 import '../repositories/movimiento_inventario_repository.dart';
 import '../repositories/producto_repository.dart';
