@@ -171,7 +171,7 @@ class _AjustarStockInsumoDialogState
             ),
             const SizedBox(height: 18),
             TextField(
-              controller: _cantidadController,
+              controller: _nuevoStockController,
               autofocus: true,
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
