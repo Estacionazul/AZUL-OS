@@ -191,8 +191,14 @@ void main() {
     final producto = await productoRepository.obtenerPorId(productoId);
     expect(producto, isNotNull);
 
+    // Simula una pantalla que tiene stock antiguo en memoria (50),
+    // mientras la BD ya fue modificada a 60 por otra operación.
+    await productoRepository.actualizar(
+      producto!.copyWith(stock: 60),
+    );
+
     await movimientoService.ajustarStockProductoA(
-      producto: producto!,
+      producto: producto,
       nuevoStock: 5,
       motivo: 'Regularización de stock inicial',
     );
@@ -208,7 +214,7 @@ void main() {
 
     expect(propios.length, 1);
     expect(propios.single.tipo, 'AJUSTE_SALIDA');
-    expect(propios.single.cantidad, 45);
+    expect(propios.single.cantidad, 55);
     expect(propios.single.signo, -1);
   });
 
@@ -254,6 +260,52 @@ void main() {
     expect(propios.single.tipo, 'AJUSTE_ENTRADA');
     expect(propios.single.cantidad, 2);
     expect(propios.single.signo, 1);
+  });
+
+  test('ajuste de insumo por stock objetivo calcula la diferencia desde la BD', () async {
+    final insumoId = await insumoRepository.insertar(
+      const InsumoModel(
+        codigo: 'TEST-INS-AJUSTE-001',
+        nombre: 'Insumo ajuste objetivo',
+        descripcion: '',
+        categoriaId: 1,
+        unidadMedida: 'g',
+        stock: 100,
+        stockMinimo: 10,
+        costoCompra: 1,
+        proveedorId: null,
+        emoji: '🧪',
+        imagen: '',
+        activo: true,
+      ),
+    );
+
+    final insumo = await insumoRepository.obtenerPorId(insumoId);
+    expect(insumo, isNotNull);
+
+    await insumoRepository.actualizar(
+      insumo!.copyWith(stock: 140),
+    );
+
+    await movimientoService.ajustarStockInsumoA(
+      insumo: insumo,
+      nuevoStock: 75,
+      motivo: 'Conteo físico',
+    );
+
+    final actualizado = await insumoRepository.obtenerPorId(insumoId);
+    final movimientos = await movimientoRepository.obtenerTodos();
+
+    expect(actualizado?.stock, 75);
+
+    final propios = movimientos
+        .where((item) => item.insumoId == insumoId)
+        .toList();
+
+    expect(propios.length, 1);
+    expect(propios.single.tipo, 'AJUSTE_SALIDA');
+    expect(propios.single.cantidad, 65);
+    expect(propios.single.signo, -1);
   });
 
   test('dos entradas independientes acumulan sin duplicar una operación', () async {
