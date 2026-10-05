@@ -178,7 +178,7 @@ class _AjustarStockProductoDialogState
             ),
             const SizedBox(height: 18),
             TextField(
-              controller: _cantidadController,
+              controller: _nuevoStockController,
               autofocus: true,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
