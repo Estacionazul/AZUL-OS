@@ -236,10 +236,14 @@ class EscPosRenderer {
     }
 
 //==================================================
-// CORTE
+// CORTE COMPACTO
 //==================================================
+// esc_pos_utils_plus añade 5 líneas automáticamente antes de cut().
+// Para una POS-58 eso deja demasiado papel en blanco al final.
+// Dejamos solo una línea y enviamos el comando ESC/POS de corte directo.
 
-    bytes.addAll(generator.cut());
+    bytes.addAll(generator.emptyLines(1));
+    bytes.addAll(generator.rawBytes([0x1D, 0x56, 0x00]));
 
     return bytes;
   }
@@ -266,12 +270,15 @@ class EscPosRenderer {
 
       if (logoOriginal != null) {
         //================================================
-        // RECORTAR ESPACIO BLANCO DEL PNG
+        // RECORTAR EL LIENZO BLANCO/TRANSPARENTE DEL PNG.
+        // Esto evita que el logo arrastre márgenes superiores e inferiores
+        // que terminan convirtiéndose en papel en blanco en la POS-58.
         //================================================
 
         final logoRecortado = img.trim(
           logoOriginal,
-          mode: img.TrimMode.transparent,
+          mode: img.TrimMode.topLeftColor,
+          fuzzy: 0.05,
         );
 
         //================================================
@@ -320,7 +327,7 @@ class EscPosRenderer {
 
         final logo = img.copyResize(
           contraste,
-          width: 280,
+          width: 250,
           interpolation: img.Interpolation.cubic,
         );
 
@@ -334,8 +341,6 @@ class EscPosRenderer {
         bytes.addAll(
           generator.image(logo, align: PosAlign.center, isDoubleDensity: true),
         );
-
-        bytes.addAll(generator.emptyLines(1));
 
         bytes.addAll(
           generator.textEncoded(
@@ -356,7 +361,6 @@ class EscPosRenderer {
           ),
         );
 
-        bytes.addAll(generator.emptyLines(1));
       }
     } catch (e, stackTrace) {
       debugPrint('ERROR IMPRIMIENDO LOGO: $e');
@@ -390,8 +394,6 @@ class EscPosRenderer {
         styles: const PosStyles(align: PosAlign.center, bold: true),
       ),
     );
-
-    bytes.addAll(generator.emptyLines(1));
 
     bytes.addAll(
       generator.row([
@@ -711,9 +713,13 @@ class EscPosRenderer {
 
       //================================================
       // SEPARACIÓN PEQUEÑA ENTRE PRODUCTOS
+      // Solo se deja separación cuando realmente hay otro
+      // producto; una venta de un solo producto queda compacta.
       //================================================
 
-      bytes.addAll(generator.emptyLines(1));
+      if (item != ticket.items.last) {
+        bytes.addAll(generator.emptyLines(1));
+      }
     }
 
     bytes.addAll(generator.hr());
@@ -819,8 +825,6 @@ class EscPosRenderer {
       ]),
     );
 
-    bytes.addAll(generator.emptyLines(1));
-
     //==================================================
     // MÉTODO DE PAGO
     //==================================================
@@ -854,8 +858,6 @@ class EscPosRenderer {
         styles: const PosStyles(align: PosAlign.center, bold: true),
       ),
     );
-
-    bytes.addAll(generator.emptyLines(1));
 
     //==================================================
     // INSTAGRAM
