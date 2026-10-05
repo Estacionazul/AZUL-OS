@@ -51,6 +51,15 @@ class RecetaDetalleSeed {
       )).getSingleOrNull();
 
       if (existente != null) {
+        await (db.update(db.recetaDetalle)
+          ..where((d) => d.id.equals(existente.id)))
+            .write(
+          RecetaDetalleCompanion(
+            cantidad: Value(cantidad),
+            unidad: Value(unidad),
+            orden: Value(orden),
+          ),
+        );
         return;
       }
 
