@@ -28,7 +28,7 @@ class _AjustarStockInsumoDialogState
 
   @override
   void dispose() {
-    _cantidadController.dispose();
+    _nuevoStockController.dispose();
     _motivoController.dispose();
     super.dispose();
   }
