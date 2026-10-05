@@ -168,6 +168,94 @@ void main() {
     ), isTrue);
   });
 
+  test('ajuste por stock objetivo calcula la diferencia desde la BD', () async {
+    final productoId = await productoRepository.insertar(
+      const ProductoModel(
+        codigo: 'TEST-PRO-AJUSTE-001',
+        codigoBarras: '',
+        nombre: 'Producto ajuste objetivo',
+        descripcion: '',
+        categoriaId: 1,
+        costo: 1,
+        precioVenta: 2,
+        stock: 50,
+        stockMinimo: 1,
+        tipoInventario: 'producto',
+        tipoAfectacionIgv: '10',
+        emoji: '🧪',
+        imagen: '',
+        activo: true,
+      ),
+    );
+
+    final producto = await productoRepository.obtenerPorId(productoId);
+    expect(producto, isNotNull);
+
+    await movimientoService.ajustarStockProductoA(
+      producto: producto!,
+      nuevoStock: 5,
+      motivo: 'Regularización de stock inicial',
+    );
+
+    final actualizado = await productoRepository.obtenerPorId(productoId);
+    final movimientos = await movimientoRepository.obtenerTodos();
+
+    expect(actualizado?.stock, 5);
+
+    final propios = movimientos
+        .where((item) => item.productoId == productoId)
+        .toList();
+
+    expect(propios.length, 1);
+    expect(propios.single.tipo, 'AJUSTE_SALIDA');
+    expect(propios.single.cantidad, 45);
+    expect(propios.single.signo, -1);
+  });
+
+  test('ajuste por stock objetivo también puede aumentar el saldo', () async {
+    final productoId = await productoRepository.insertar(
+      const ProductoModel(
+        codigo: 'TEST-PRO-AJUSTE-002',
+        codigoBarras: '',
+        nombre: 'Producto ajuste entrada',
+        descripcion: '',
+        categoriaId: 1,
+        costo: 1,
+        precioVenta: 2,
+        stock: 5,
+        stockMinimo: 1,
+        tipoInventario: 'producto',
+        tipoAfectacionIgv: '10',
+        emoji: '🧪',
+        imagen: '',
+        activo: true,
+      ),
+    );
+
+    final producto = await productoRepository.obtenerPorId(productoId);
+    expect(producto, isNotNull);
+
+    await movimientoService.ajustarStockProductoA(
+      producto: producto!,
+      nuevoStock: 7,
+      motivo: 'Conteo físico',
+    );
+
+    final actualizado = await productoRepository.obtenerPorId(productoId);
+    final movimientos = await movimientoRepository.obtenerTodos();
+
+    expect(actualizado?.stock, 7);
+
+    final propios = movimientos
+        .where((item) => item.productoId == productoId)
+        .toList();
+
+    expect(propios.length, 1);
+    expect(propios.single.tipo, 'AJUSTE_ENTRADA');
+    expect(propios.single.cantidad, 2);
+    expect(propios.single.signo, 1);
+  });
+
   test('dos entradas independientes acumulan sin duplicar una operación', () async {
     final insumoId = await insumoRepository.insertar(
       const InsumoModel(
