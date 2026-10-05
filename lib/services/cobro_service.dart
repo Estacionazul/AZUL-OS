@@ -218,6 +218,11 @@ class CobroService {
       return id;
     });
 
+    // La transacción venta + inventario + caja ya terminó.
+    // Ahora sincronizamos los servicios en memoria con la BD para
+    // que las pantallas reflejen inmediatamente el stock real.
+    await inventarioAutomaticoService.refrescarEstado();
+
     // ==========================================================
     // CREAR COMPROBANTE ELECTRONICO
     // ==========================================================
