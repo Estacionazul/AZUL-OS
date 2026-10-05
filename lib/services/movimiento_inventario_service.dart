@@ -117,6 +117,105 @@ class MovimientoInventarioService extends ChangeNotifier {
   }
 
   // ==========================================================
+  // AJUSTAR STOCK POR OBJETIVO
+  // ==========================================================
+  //
+  // El stock objetivo siempre se compara contra la BD actual,
+  // no contra el modelo que pueda tener la UI en memoria.
+  // Esto evita que un dato visual desactualizado genere un
+  // movimiento incorrecto en el Kardex.
+  // ==========================================================
+
+  Future<void> ajustarStockProductoA({
+    required ProductoModel producto,
+    required int nuevoStock,
+    required String motivo,
+  }) async {
+    if (producto.id == null) {
+      throw StateError('El producto no tiene un ID válido.');
+    }
+
+    if (nuevoStock < 0) {
+      throw StateError('El stock objetivo no puede ser negativo.');
+    }
+
+    final actual = await _productoRepository.obtenerPorId(producto.id!);
+
+    if (actual == null) {
+      throw StateError('No existe el producto ID ${producto.id}.');
+    }
+
+    if (actual.tipoInventario == 'receta') {
+      throw StateError(
+        'El producto ${actual.nombre} usa inventario por receta. '
+        'El stock de una receta no se ajusta manualmente.',
+      );
+    }
+
+    final diferencia = nuevoStock - actual.stock;
+
+    if (diferencia == 0) {
+      await refrescarEstado();
+      return;
+    }
+
+    await registrarMovimiento(
+      MovimientoInventarioModel(
+        fecha: DateTime.now(),
+        tipo: diferencia > 0 ? 'AJUSTE_ENTRADA' : 'AJUSTE_SALIDA',
+        nombreItem: actual.nombre,
+        emoji: actual.emoji,
+        unidad: 'unidad',
+        productoId: actual.id,
+        cantidad: diferencia.abs().toDouble(),
+        signo: diferencia > 0 ? 1 : -1,
+        observacion: motivo,
+      ),
+    );
+  }
+
+  Future<void> ajustarStockInsumoA({
+    required InsumoModel insumo,
+    required double nuevoStock,
+    required String motivo,
+  }) async {
+    if (insumo.id == null) {
+      throw StateError('El insumo no tiene un ID válido.');
+    }
+
+    if (nuevoStock < 0) {
+      throw StateError('El stock objetivo no puede ser negativo.');
+    }
+
+    final actual = await _insumoRepository.obtenerPorId(insumo.id!);
+
+    if (actual == null) {
+      throw StateError('No existe el insumo ID ${insumo.id}.');
+    }
+
+    final diferencia = nuevoStock - actual.stock;
+
+    if (diferencia.abs() < 0.000001) {
+      await refrescarEstado();
+      return;
+    }
+
+    await registrarMovimiento(
+      MovimientoInventarioModel(
+        fecha: DateTime.now(),
+        tipo: diferencia > 0 ? 'AJUSTE_ENTRADA' : 'AJUSTE_SALIDA',
+        nombreItem: actual.nombre,
+        emoji: actual.emoji,
+        unidad: actual.unidadMedida,
+        insumoId: actual.id,
+        cantidad: diferencia.abs(),
+        signo: diferencia > 0 ? 1 : -1,
+        observacion: motivo,
+      ),
+    );
+  }
+
+  // ==========================================================
   // REFRESCAR DATOS OPERATIVOS
   // ==========================================================
   //
