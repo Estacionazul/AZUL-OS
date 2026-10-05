@@ -154,7 +154,14 @@ class EscPosRenderer {
   Future<List<int>> render(Ticket ticket) async {
     final profile = await CapabilityProfile.load();
 
-    final generator = Generator(PaperSize.mm58, profile);
+    // POS-58: eliminar el espacio vertical automático entre líneas.
+    // La impresora ya agrega su avance físico; el valor por defecto de
+    // esc_pos_utils_plus (5) hace que el ticket quede innecesariamente largo.
+    final generator = Generator(
+      PaperSize.mm58,
+      profile,
+      spaceBetweenRows: 0,
+    );
 
     final bytes = <int>[];
 
@@ -321,8 +328,7 @@ class EscPosRenderer {
         //================================================
         // REDIMENSIONAR PARA POS-58
         //
-        // 280 px permite conservar buena definición
-        // sin ocupar demasiado papel.
+        // 250 px conserva buena definición y reduce la altura del logo.
         //================================================
 
         final logo = img.copyResize(
