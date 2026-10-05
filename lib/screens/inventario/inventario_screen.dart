@@ -9,6 +9,8 @@ import '../../services/producto_service.dart';
 import '../../services/disponibilidad_producto_service.dart';
 import '../../core/security/autorizacion_ceo_dialog.dart';
 import '../../widgets/dialogs/nuevo_insumo_dialog.dart';
+import '../../widgets/dialogs/registrar_entrada_producto_dialog.dart';
+import '../../widgets/dialogs/ajustar_stock_producto_dialog.dart';
 import '../../widgets/dialogs/registrar_entrada_insumo_dialog.dart';
 import '../../widgets/dialogs/ajustar_stock_insumo_dialog.dart';
 import '../../widgets/module_header.dart';
@@ -453,6 +455,62 @@ class _InventarioScreenState extends State<InventarioScreen> {
                                   ],
                                 ),
                               ),
+
+                              // ==============================================
+                              // ACCIONES DE STOCK DEL PRODUCTO FÍSICO
+                              //
+                              // Los productos por receta no modifican stock
+                              // directamente: su inventario depende de insumos.
+                              // ==============================================
+                              trailing: producto.tipoInventario == 'producto'
+                                  ? Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          tooltip: 'Registrar entrada',
+                                          icon: const Icon(
+                                            Icons.move_to_inbox,
+                                            color: Color(0xff0A2E6E),
+                                          ),
+                                          onPressed: () async {
+                                            await showDialog(
+                                              context: context,
+                                              builder: (_) =>
+                                                  RegistrarEntradaProductoDialog(
+                                                producto: producto,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          tooltip: 'Ajustar stock',
+                                          icon: const Icon(
+                                            Icons.tune,
+                                            color: Color(0xff0A2E6E),
+                                          ),
+                                          onPressed: () async {
+                                            final autorizado =
+                                                await AutorizacionCeoDialog.verificar(
+                                              context,
+                                            );
+
+                                            if (!autorizado ||
+                                                !context.mounted) {
+                                              return;
+                                            }
+
+                                            await showDialog(
+                                              context: context,
+                                              builder: (_) =>
+                                                  AjustarStockProductoDialog(
+                                                producto: producto,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    )
+                                  : null,
                             ),
                           );
                         },
