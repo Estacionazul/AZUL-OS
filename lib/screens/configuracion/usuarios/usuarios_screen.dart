@@ -482,6 +482,7 @@ class _NuevoUsuarioDialogState extends State<_NuevoUsuarioDialog> {
   bool _ocultarPin = true;
   bool _ocultarConfirmacion = true;
   bool _guardando = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -499,22 +500,22 @@ class _NuevoUsuarioDialogState extends State<_NuevoUsuarioDialog> {
     final confirmarPin = _confirmarPinController.text.trim();
 
     if (nombre.isEmpty) {
-      _mostrarMensaje('Ingresa el nombre del usuario.');
+      _mostrarError('Ingresa el nombre del usuario.');
       return;
     }
 
     if (pin.length != 4) {
-      _mostrarMensaje('El PIN debe tener 4 dígitos.');
+      _mostrarError('El PIN debe tener 4 dígitos.');
       return;
     }
 
     if (!RegExp(r'^\\d{4}$').hasMatch(pin)) {
-      _mostrarMensaje('El PIN solo puede contener números.');
+      _mostrarError('El PIN solo puede contener números.');
       return;
     }
 
     if (pin != confirmarPin) {
-      _mostrarMensaje('Los PIN no coinciden.');
+      _mostrarError('Los PIN no coinciden.');
       return;
     }
 
@@ -531,7 +532,7 @@ class _NuevoUsuarioDialogState extends State<_NuevoUsuarioDialog> {
         setState(() {
           _guardando = false;
         });
-        _mostrarMensaje('Ya existe un usuario con ese nombre.');
+        _mostrarError('Ya existe un usuario con ese nombre.');
         return;
       }
 
@@ -554,22 +555,17 @@ class _NuevoUsuarioDialogState extends State<_NuevoUsuarioDialog> {
         _guardando = false;
       });
 
-      _mostrarMensaje(
-        'No se pudo crear el usuario: $e',
-        error: true,
-      );
+      _mostrarError('No se pudo crear el usuario: $e');
     }
   }
 
-  void _mostrarMensaje(String mensaje, {bool error = false}) {
+  void _mostrarError(String mensaje) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-        backgroundColor: error ? AppColors.error : null,
-      ),
-    );
+    setState(() {
+      _error = mensaje;
+      _guardando = false;
+    });
   }
 
   @override
@@ -646,6 +642,35 @@ class _NuevoUsuarioDialogState extends State<_NuevoUsuarioDialog> {
                 ),
               ),
             ),
+            if (_error != null) ...[
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppColors.error.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      color: AppColors.error,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _error!,
+                        style: const TextStyle(color: AppColors.error),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             Container(
               width: double.infinity,
