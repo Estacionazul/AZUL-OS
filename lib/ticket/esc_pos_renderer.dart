@@ -326,13 +326,26 @@ class EscPosRenderer {
         }
 
         //================================================
+        // RECORTE FINAL DEL ÁREA BLANCA
+        //================================================
+        // Después de convertir el logo a blanco/negro volvemos a recortar.
+        // Así eliminamos cualquier margen blanco que haya sobrevivido al
+        // primer recorte del PNG y evitamos que la POS-58 avance papel antes
+        // de comenzar el logo.
+        final logoSinMargen = img.trim(
+          contraste,
+          mode: img.TrimMode.topLeftColor,
+          fuzzy: 0.0,
+        );
+
+        //================================================
         // REDIMENSIONAR PARA POS-58
-        //
+        //================================================
         // 250 px conserva buena definición y reduce la altura del logo.
         //================================================
 
         final logo = img.copyResize(
-          contraste,
+          logoSinMargen,
           width: 250,
           interpolation: img.Interpolation.cubic,
         );
