@@ -104,6 +104,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
       {'codigo': 'INVENTARIO', 'nombre': 'Inventario'},
       {'codigo': 'RECETAS', 'nombre': 'Recetas'},
       {'codigo': 'PRODUCCION', 'nombre': 'Producción'},
+      {'codigo': 'PEDIDOS', 'nombre': 'Pedidos'},
       {'codigo': 'VENTAS', 'nombre': 'Ventas'},
       {'codigo': 'CLIENTES', 'nombre': 'Clientes'},
       {'codigo': 'CAJA', 'nombre': 'Caja'},
@@ -111,7 +112,14 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
       {'codigo': 'CONFIGURACION', 'nombre': 'Configuración'},
     ];
 
-    final permisos = await repository.obtenerPorUsuario(usuario.id);
+    var permisos = await repository.obtenerPorUsuario(usuario.id);
+
+    // Compatibilidad con usuarios CAJERO creados antes de la
+    // inicialización del perfil por rol.
+    if (permisos.isEmpty) {
+      await repository.inicializarPerfilPorRol(usuario.id, usuario.rol);
+      permisos = await repository.obtenerPorUsuario(usuario.id);
+    }
 
     if (!mounted) return;
 
