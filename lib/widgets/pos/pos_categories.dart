@@ -15,6 +15,7 @@ class PosCategories extends StatelessWidget {
     {'id': 5, 'nombre': 'Hamburguesas', 'icono': Icons.lunch_dining},
     {'id': 6, 'nombre': 'Postres', 'icono': Icons.cake},
     {'id': 7, 'nombre': 'Combos', 'icono': Icons.card_giftcard},
+    {'id': 9, 'nombre': 'Gaseosas y Aguas', 'icono': Icons.local_drink},
   ];
 
   @override
