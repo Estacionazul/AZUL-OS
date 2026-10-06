@@ -117,6 +117,71 @@ class _ResumenesDiariosScreenState extends State<ResumenesDiariosScreen> {
       );
     }
   }
+  Future<void> _regenerarXmlYEnviar(int resumenId) async {
+    final autorizado =
+        await AutorizacionCeoDialog.verificar(context);
+
+    if (!autorizado || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _cargando = true;
+      _error = null;
+    });
+
+    try {
+      final service = context.read<ResumenDiarioService>();
+      final empresaRepository = context.read<EmpresaRepository>();
+
+      final empresa = await empresaRepository.obtener();
+
+      if (empresa == null) {
+        throw StateError(
+          'No existe la configuración de la empresa.',
+        );
+      }
+
+      await service.generarXmlPendiente(
+        resumenId: resumenId,
+        rucEmisor: SunatConfig.ruc,
+        razonSocialEmisor: empresa.nombre,
+      );
+
+      if (!mounted) return;
+
+      await _cargarResumenes();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'XML regenerado y firmado correctamente. '
+            'Ahora puedes enviarlo a SUNAT.',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _cargando = false;
+        _error = e.toString();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'No se pudo regenerar el XML: $e',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   Future<void> _generarXml(int resumenId) async {
     final autorizado =
     await AutorizacionCeoDialog.verificar(context);
