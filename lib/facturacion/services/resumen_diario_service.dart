@@ -99,6 +99,7 @@ class ResumenDiarioService {
     final nombreArchivo = generarNombreArchivo(
       rucEmisor: rucEmisor,
       fechaReferencia: fechaReferencia,
+      fechaGeneracion: DateTime.now(),
       correlativo: correlativo,
     );
 
@@ -149,6 +150,7 @@ class ResumenDiarioService {
   String generarNombreArchivo({
     required String rucEmisor,
     required DateTime fechaReferencia,
+    required DateTime fechaGeneracion,
     required int correlativo,
   }) {
     final idResumen = generarIdResumen(
@@ -156,7 +158,12 @@ class ResumenDiarioService {
       correlativo: correlativo,
     );
 
-    return '$rucEmisor-$idResumen.XML';
+    // SUNAT exige que la fecha del IssueDate coincida con la fecha
+    // YYYYMMDD del nombre del archivo. El ID del resumen, en cambio,
+    // conserva la fecha de referencia de las boletas informadas.
+    final fechaArchivo = _formatearFecha(fechaGeneracion);
+
+    return '$rucEmisor-RC-$fechaArchivo-$correlativo.XML';
   }
 
   String _formatearFecha(DateTime fecha) {
@@ -225,13 +232,22 @@ class ResumenDiarioService {
       correlativo: resumen.correlativo,
     );
 
+    final fechaGeneracion = DateTime.now();
+
     final xml = ResumenDiarioXmlService.generarResumen(
       idResumen: idResumen,
-      fechaEmision: DateTime.now(),
+      fechaEmision: fechaGeneracion,
       fechaReferencia: resumen.fechaReferencia,
       rucEmisor: rucEmisor,
       razonSocialEmisor: razonSocialEmisor,
       lineas: lineas,
+    );
+
+    final nombreArchivo = generarNombreArchivo(
+      rucEmisor: rucEmisor,
+      fechaReferencia: resumen.fechaReferencia,
+      fechaGeneracion: fechaGeneracion,
+      correlativo: resumen.correlativo,
     );
 
 // ==========================================================
@@ -250,7 +266,7 @@ class ResumenDiarioService {
     await resumenesDiariosRepository.actualizarXml(
       id: resumen.id,
       xml: xmlFirmado,
-      nombreArchivo: resumen.nombreArchivo,
+      nombreArchivo: nombreArchivo,
     );
 
     final estadoActualizado =
