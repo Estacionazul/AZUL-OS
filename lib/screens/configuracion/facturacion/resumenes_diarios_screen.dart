@@ -789,6 +789,32 @@ class _ResumenesDiariosScreenState extends State<ResumenesDiariosScreen> {
               ),
             ),
 if (estado.trim().toLowerCase() == 'generado')
+Column(
+children: [
+SizedBox(
+width: double.infinity,
+child: ElevatedButton.icon(
+onPressed: _cargando
+? null
+: () => _regenerarXmlYEnviar(resumen.id),
+icon: const Icon(Icons.draw_outlined),
+label: const Text(
+'REGENERAR XML Y FIRMAR',
+style: TextStyle(
+fontWeight: FontWeight.bold,
+),
+),
+style: ElevatedButton.styleFrom(
+backgroundColor: azul,
+foregroundColor: Colors.white,
+padding: const EdgeInsets.symmetric(vertical: 14),
+shape: RoundedRectangleBorder(
+borderRadius: BorderRadius.circular(10),
+),
+),
+),
+),
+const SizedBox(height: 10),
 SizedBox(
 width: double.infinity,
 child: ElevatedButton.icon(
@@ -811,6 +837,8 @@ borderRadius: BorderRadius.circular(10),
 ),
 ),
 ),
+),
+],
 ),
 
 if (estado.trim().toLowerCase() == 'enviado')
