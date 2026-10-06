@@ -91,14 +91,33 @@ class PedidoDetalleScreen extends StatelessWidget {
 // PRODUCTOS
 // ==========================================================
 
-class _ProductosPedidoPanel extends StatelessWidget {
+class _ProductosPedidoPanel extends StatefulWidget {
   final PedidoAbierto pedido;
 
   const _ProductosPedidoPanel({required this.pedido});
 
   @override
+  State<_ProductosPedidoPanel> createState() => _ProductosPedidoPanelState();
+}
+
+class _ProductosPedidoPanelState extends State<_ProductosPedidoPanel> {
+  String _busqueda = '';
+
+  @override
   Widget build(BuildContext context) {
-    final productos = context.watch<ProductoService>().todosProductos;
+    final todosLosProductos = context.watch<ProductoService>().todosProductos;
+
+    final texto = _busqueda.trim().toLowerCase();
+
+    final productos = texto.isEmpty
+        ? todosLosProductos
+        : todosLosProductos.where((producto) {
+            return producto.nombre.toLowerCase().contains(texto) ||
+                producto.codigo.toLowerCase().contains(texto) ||
+                producto.codigoBarras.toLowerCase().contains(texto);
+          }).toList();
+
+    final pedido = widget.pedido;
 
     final puedeAgregar =
         pedido.estado != EstadoPedido.esperandoCuenta &&
@@ -128,9 +147,33 @@ class _ProductosPedidoPanel extends StatelessWidget {
 
             const SizedBox(height: 20),
 
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Buscar producto...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _busqueda = value;
+                });
+              },
+            ),
+
+            const SizedBox(height: 16),
+
             Expanded(
               child: puedeAgregar
-                  ? GridView.builder(
+                  ? productos.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'No se encontraron productos.',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        )
+                      : GridView.builder(
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
@@ -138,16 +181,16 @@ class _ProductosPedidoPanel extends StatelessWidget {
                             mainAxisSpacing: 14,
                             childAspectRatio: 2.7,
                           ),
-                      itemCount: productos.length,
-                      itemBuilder: (context, index) {
+                          itemCount: productos.length,
+                          itemBuilder: (context, index) {
                         final producto = productos[index];
 
-                        return _ProductoPedidoButton(
-                          producto: producto,
-                          onTap: () => _agregarProducto(context, producto),
-                        );
-                      },
-                    )
+                            return _ProductoPedidoButton(
+                              producto: producto,
+                              onTap: () => _agregarProducto(context, producto),
+                            );
+                          },
+                        )
                   : const Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
