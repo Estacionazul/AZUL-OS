@@ -25,6 +25,7 @@ class _ProductosPanelState extends State<ProductosPanel> {
     5: {"titulo": "🍔 HAMBURGUESAS"},
     6: {"titulo": "🍰 POSTRES"},
     7: {"titulo": "⭐ COMBOS"},
+    9: {"titulo": "🥤 GASEOSAS Y AGUAS"},
   };
 
   @override
