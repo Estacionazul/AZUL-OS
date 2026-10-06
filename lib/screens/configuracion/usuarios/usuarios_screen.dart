@@ -26,6 +26,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
       barrierDismissible: false,
       builder: (dialogContext) => _NuevoUsuarioDialog(
         repository: repository,
+        permisosRepository: context.read<PermisosUsuarioRepository>(),
       ),
     );
 
@@ -473,9 +474,11 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
 class _NuevoUsuarioDialog extends StatefulWidget {
   final UsuariosRepository repository;
+  final PermisosUsuarioRepository permisosRepository;
 
   const _NuevoUsuarioDialog({
     required this.repository,
+    required this.permisosRepository,
   });
 
   @override
@@ -544,11 +547,16 @@ class _NuevoUsuarioDialogState extends State<_NuevoUsuarioDialog> {
         return;
       }
 
-      await widget.repository.crearUsuario(
+      final usuarioId = await widget.repository.crearUsuario(
         nombre: nombre,
         pin: pin,
         rol: 'CAJERO',
         activo: true,
+      );
+
+      await widget.permisosRepository.inicializarPerfilPorRol(
+        usuarioId,
+        'CAJERO',
       );
 
       if (!mounted) return;
