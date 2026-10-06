@@ -253,7 +253,7 @@ class _ProductosPedidoPanelState extends State<_ProductosPedidoPanel> {
       extraShot: resultado?['extraShot'] ?? false,
     );
 
-    pedidosService.agregarProductos(pedido.ubicacion.id, [item]);
+    pedidosService.agregarProductos(widget.pedido.ubicacion.id, [item]);
   }
 }
 
