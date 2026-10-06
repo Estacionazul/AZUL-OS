@@ -724,7 +724,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
 
                               TextButton.icon(
-                                onPressed: () => widget.onNavigate?.call(7),
+                                onPressed: () => widget.onNavigate?.call(6),
                                 icon: const Icon(Icons.arrow_forward, size: 18),
                                 label: const Text('Ver todas'),
                               ),
