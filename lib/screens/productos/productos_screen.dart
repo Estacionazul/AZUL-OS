@@ -23,13 +23,19 @@ class ProductosScreen extends StatelessWidget {
       case 1:
         return "Cafés";
       case 2:
-        return "Jugos";
+        return "Jugos Naturales";
       case 3:
-        return "Snacks";
+        return "Bebidas Frías";
       case 4:
-        return "Postres";
+        return "Snacks";
       case 5:
-        return "Bebidas";
+        return "Hamburguesas";
+      case 6:
+        return "Postres";
+      case 7:
+        return "Combos";
+      case 9:
+        return "Gaseosas y Aguas";
       default:
         return "General";
     }
