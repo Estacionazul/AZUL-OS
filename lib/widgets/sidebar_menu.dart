@@ -34,7 +34,6 @@ class SidebarMenu extends StatelessWidget {
         'PRODUCTOS': true,
         'INVENTARIO': true,
         'RECETAS': true,
-        'PRODUCCION': true,
         'PEDIDOS': true,
         'VENTAS': true,
         'CLIENTES': true,
@@ -65,7 +64,6 @@ class SidebarMenu extends StatelessWidget {
       repository.tienePermiso(usuarioId, 'PRODUCTOS'),
       repository.tienePermiso(usuarioId, 'INVENTARIO'),
       repository.tienePermiso(usuarioId, 'RECETAS'),
-      repository.tienePermiso(usuarioId, 'PRODUCCION'),
       repository.tienePermiso(usuarioId, 'PEDIDOS'),
       repository.tienePermiso(usuarioId, 'VENTAS'),
       repository.tienePermiso(usuarioId, 'CLIENTES'),
@@ -78,12 +76,11 @@ class SidebarMenu extends StatelessWidget {
       'PRODUCTOS': resultados[1],
       'INVENTARIO': resultados[2],
       'RECETAS': resultados[3],
-      'PRODUCCION': resultados[4],
-      'PEDIDOS': resultados[5],
-      'VENTAS': resultados[6],
-      'CLIENTES': resultados[7],
-      'CAJA': resultados[8],
-      'REPORTES': resultados[9],
+      'PEDIDOS': resultados[4],
+      'VENTAS': resultados[5],
+      'CLIENTES': resultados[6],
+      'CAJA': resultados[7],
+      'REPORTES': resultados[8],
       'CONFIGURACION': false,
     };
   }
@@ -184,25 +181,14 @@ class SidebarMenu extends StatelessWidget {
                           ),
 
                         // ==================================================
-                        // PRODUCCIÓN
-                        // ==================================================
-                        if (permisos['PRODUCCION'] == true)
-                          SidebarMenuItem(
-                            icon: Icons.factory_rounded,
-                            title: 'Producción',
-                            selected: selectedIndex == 5,
-                            onTap: () => onItemSelected(5),
-                          ),
-
-                        // ==================================================
                         // PEDIDOS
                         // ==================================================
                         if (permisos['PEDIDOS'] == true)
                           SidebarMenuItem(
                             icon: Icons.receipt_long_rounded,
                             title: 'Pedidos',
-                            selected: selectedIndex == 6,
-                            onTap: () => onItemSelected(6),
+                            selected: selectedIndex == 5,
+                            onTap: () => onItemSelected(5),
                           ),
 
                         // VENTAS
@@ -211,8 +197,8 @@ class SidebarMenu extends StatelessWidget {
                           SidebarMenuItem(
                             icon: Icons.receipt_long_rounded,
                             title: 'Ventas',
-                            selected: selectedIndex == 7,
-                            onTap: () => onItemSelected(7),
+                            selected: selectedIndex == 6,
+                            onTap: () => onItemSelected(6),
                           ),
 
                         // ==================================================
@@ -222,8 +208,8 @@ class SidebarMenu extends StatelessWidget {
                           SidebarMenuItem(
                             icon: Icons.people_alt_rounded,
                             title: 'Clientes',
-                            selected: selectedIndex == 8,
-                            onTap: () => onItemSelected(8),
+                            selected: selectedIndex == 7,
+                            onTap: () => onItemSelected(7),
                           ),
 
                         // ==================================================
@@ -233,8 +219,8 @@ class SidebarMenu extends StatelessWidget {
                           SidebarMenuItem(
                             icon: Icons.point_of_sale_rounded,
                             title: 'Caja',
-                            selected: selectedIndex == 9,
-                            onTap: () => onItemSelected(9),
+                            selected: selectedIndex == 8,
+                            onTap: () => onItemSelected(8),
                           ),
 
                         // ==================================================
@@ -244,8 +230,8 @@ class SidebarMenu extends StatelessWidget {
                           SidebarMenuItem(
                             icon: Icons.bar_chart_rounded,
                             title: 'Reportes',
-                            selected: selectedIndex == 10,
-                            onTap: () => onItemSelected(10),
+                            selected: selectedIndex == 9,
+                            onTap: () => onItemSelected(9),
                           ),
 
                         // ==================================================
@@ -258,8 +244,8 @@ class SidebarMenu extends StatelessWidget {
                           SidebarMenuItem(
                             icon: Icons.settings_rounded,
                             title: 'Configuración',
-                            selected: selectedIndex == 11,
-                            onTap: () => onItemSelected(11),
+                            selected: selectedIndex == 10,
+                            onTap: () => onItemSelected(10),
                           ),
                       ],
                     ),
