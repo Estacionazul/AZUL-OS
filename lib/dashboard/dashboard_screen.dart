@@ -90,7 +90,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         'PRODUCTOS': true,
         'INVENTARIO': true,
         'RECETAS': true,
-        'PRODUCCION': true,
         'PEDIDOS': true,
         'VENTAS': true,
         'CLIENTES': true,
@@ -114,7 +113,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       repository.tienePermiso(usuarioId, 'PRODUCTOS'),
       repository.tienePermiso(usuarioId, 'INVENTARIO'),
       repository.tienePermiso(usuarioId, 'RECETAS'),
-      repository.tienePermiso(usuarioId, 'PRODUCCION'),
       repository.tienePermiso(usuarioId, 'PEDIDOS'),
       repository.tienePermiso(usuarioId, 'VENTAS'),
       repository.tienePermiso(usuarioId, 'CLIENTES'),
@@ -127,12 +125,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       'PRODUCTOS': resultados[1],
       'INVENTARIO': resultados[2],
       'RECETAS': resultados[3],
-      'PRODUCCION': resultados[4],
-      'PEDIDOS': resultados[5],
-      'VENTAS': resultados[6],
-      'CLIENTES': resultados[7],
-      'CAJA': resultados[8],
-      'REPORTES': resultados[9],
+      'PEDIDOS': resultados[4],
+      'VENTAS': resultados[5],
+      'CLIENTES': resultados[6],
+      'CAJA': resultados[7],
+      'REPORTES': resultados[8],
     };
   }
 
@@ -624,17 +621,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                             ),
 
-                          if (permisos['PRODUCCION'] == true)
-                            SizedBox(
-                              width: 210,
-                              child: QuickActionCard(
-                                icon: Icons.factory,
-                                titulo: 'Producción',
-                                color: Colors.teal,
-                                onTap: () => widget.onNavigate?.call(5),
-                              ),
-                            ),
-
                           if (permisos['PEDIDOS'] == true)
                             SizedBox(
                               width: 210,
@@ -642,7 +628,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 icon: Icons.receipt_long,
                                 titulo: 'Pedidos',
                                 color: Colors.blue,
-                                onTap: () => widget.onNavigate?.call(6),
+                                onTap: () => widget.onNavigate?.call(5),
                               ),
                             ),
 
@@ -653,7 +639,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 icon: Icons.receipt_long,
                                 titulo: 'Ventas',
                                 color: Colors.green,
-                                onTap: () => widget.onNavigate?.call(7),
+                                onTap: () => widget.onNavigate?.call(6),
                               ),
                             ),
 
@@ -664,7 +650,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 icon: Icons.people,
                                 titulo: 'Clientes',
                                 color: AppColors.info,
-                                onTap: () => widget.onNavigate?.call(8),
+                                onTap: () => widget.onNavigate?.call(7),
                               ),
                             ),
 
@@ -675,7 +661,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 icon: Icons.point_of_sale,
                                 titulo: 'Caja',
                                 color: Colors.purple,
-                                onTap: () => widget.onNavigate?.call(9),
+                                onTap: () => widget.onNavigate?.call(8),
                               ),
                             ),
 
@@ -686,7 +672,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 icon: Icons.bar_chart,
                                 titulo: 'Reportes',
                                 color: AppColors.success,
-                                onTap: () => widget.onNavigate?.call(10),
+                                onTap: () => widget.onNavigate?.call(9),
                               ),
                             ),
                         ],
