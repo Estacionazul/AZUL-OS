@@ -222,8 +222,6 @@ Provider<FacturacionService>(
           ),
         ),
 
-,
-
         Provider(
           create: (context) => InventarioAutomaticoService(
             recetasRepository: context.read<RecetasRepository>(),
