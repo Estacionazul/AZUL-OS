@@ -227,12 +227,14 @@ class ResumenDiarioService {
       );
     }
 
+    final fechaGeneracion = DateTime.now();
+
+    // En el XML, cbc:ID y el nombre del archivo usan la fecha de
+    // generación del resumen. ReferenceDate conserva el día de las boletas.
     final idResumen = generarIdResumen(
-      fechaReferencia: resumen.fechaReferencia,
+      fechaReferencia: fechaGeneracion,
       correlativo: resumen.correlativo,
     );
-
-    final fechaGeneracion = DateTime.now();
 
     final xml = ResumenDiarioXmlService.generarResumen(
       idResumen: idResumen,
