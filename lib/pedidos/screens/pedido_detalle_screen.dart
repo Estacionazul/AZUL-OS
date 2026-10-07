@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -47,7 +49,7 @@ class PedidoDetalleScreen extends StatelessWidget {
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         if (pedido.estaVacio) {
-          pedidosService.cancelarPedido(ubicacion.id);
+          unawaited(pedidosService.cancelarPedido(ubicacion.id));
         }
       },
       child: Scaffold(
@@ -253,7 +255,7 @@ class _ProductosPedidoPanelState extends State<_ProductosPedidoPanel> {
       extraShot: resultado?['extraShot'] ?? false,
     );
 
-    pedidosService.agregarProductos(widget.pedido.ubicacion.id, [item]);
+    await pedidosService.agregarProductos(widget.pedido.ubicacion.id, [item]);
   }
 }
 
@@ -504,7 +506,7 @@ class _ResumenPedido extends StatelessWidget {
   // ==========================================================
 
   void _solicitarCuenta(BuildContext context, PedidosService service) {
-    service.pasarAEsperandoCuenta(pedido.ubicacion.id);
+    unawaited(service.pasarAEsperandoCuenta(pedido.ubicacion.id));
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Pedido enviado a espera de cuenta.')),
@@ -634,7 +636,7 @@ class _ResumenPedido extends StatelessWidget {
         numeroComanda: numeroComanda,
       );
 
-      service.marcarComandaEnviada(pedido.ubicacion.id);
+      await service.marcarComandaEnviada(pedido.ubicacion.id);
 
       if (!context.mounted) {
         return;
@@ -697,12 +699,12 @@ class _ItemPedidoRow extends StatelessWidget {
       detalles.add('Obs: ${item.observaciones}');
     }
 
-    void aumentar() {
-      service.aumentarCantidad(ubicacionId, item);
+      Future<void> aumentar() async {
+      await service.aumentarCantidad(ubicacionId, item);
     }
 
-    void disminuir() {
-      final pudoDisminuir = service.disminuirCantidad(ubicacionId, item);
+    Future<void> disminuir() async {
+      final pudoDisminuir = await service.disminuirCantidad(ubicacionId, item);
 
       if (!pudoDisminuir) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -715,8 +717,8 @@ class _ItemPedidoRow extends StatelessWidget {
       }
     }
 
-    void eliminar() {
-      final pudoEliminar = service.eliminarItem(ubicacionId, item);
+    Future<void> eliminar() async {
+      final pudoEliminar = await service.eliminarItem(ubicacionId, item);
 
       if (!pudoEliminar) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -744,7 +746,7 @@ class _ItemPedidoRow extends StatelessWidget {
                 children: [
                   IconButton(
                     tooltip: 'Disminuir',
-                    onPressed: disminuir,
+                    onPressed: () => unawaited(disminuir()),
                     icon: const Icon(Icons.remove_rounded, size: 18),
                     color: const Color(0xFF1565C0),
                     visualDensity: VisualDensity.compact,
@@ -760,7 +762,7 @@ class _ItemPedidoRow extends StatelessWidget {
 
                   IconButton(
                     tooltip: 'Aumentar',
-                    onPressed: aumentar,
+                    onPressed: () => unawaited(aumentar()),
                     icon: const Icon(Icons.add_rounded, size: 18),
                     color: const Color(0xFF1565C0),
                     visualDensity: VisualDensity.compact,
@@ -790,7 +792,7 @@ class _ItemPedidoRow extends StatelessWidget {
 
             IconButton(
               tooltip: 'Eliminar producto',
-              onPressed: eliminar,
+              onPressed: () => unawaited(eliminar()),
               icon: const Icon(Icons.delete_outline_rounded),
               color: Colors.red.shade600,
             ),
