@@ -143,10 +143,11 @@ class PedidoComandaPrintService {
       ),
     );
 
-    // Mantener la comanda compacta: una sola línea de separación
-    // antes del corte evita el exceso de papel al final.
+    // Una sola línea para dejar el mínimo margen físico antes del corte.
+    // Usamos el comando ESC/POS de corte directamente para evitar el
+    // avance adicional que algunos perfiles aplican al helper cut().
     bytes.addAll(generator.emptyLines(1));
-    bytes.addAll(generator.cut());
+    bytes.addAll(generator.rawBytes(const [0x1D, 0x56, 0x00]));
 
     await printerService.print(bytes);
   }
