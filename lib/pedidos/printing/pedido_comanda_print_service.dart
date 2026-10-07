@@ -143,7 +143,9 @@ class PedidoComandaPrintService {
       ),
     );
 
-    bytes.addAll(generator.emptyLines(2));
+    // Mantener la comanda compacta: una sola línea de separación
+    // antes del corte evita el exceso de papel al final.
+    bytes.addAll(generator.emptyLines(1));
     bytes.addAll(generator.cut());
 
     await printerService.print(bytes);
