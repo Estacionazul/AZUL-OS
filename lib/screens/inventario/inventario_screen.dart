@@ -25,6 +25,7 @@ class InventarioScreen extends StatefulWidget {
 
 class _InventarioScreenState extends State<InventarioScreen> {
   String _busqueda = '';
+  String _filtroStock = 'todos';
 
   @override
   Widget build(BuildContext context) {
@@ -123,33 +124,57 @@ class _InventarioScreenState extends State<InventarioScreen> {
                 return Row(
                   children: [
                     Expanded(
-                      child: DashboardStatCard(
-                        icon: Icons.inventory_2,
-                        titulo: "Total",
-                        valor: total.toString(),
-                        color: Colors.blue,
+                      child: _StatCardFiltro(
+                        seleccionado: _filtroStock == 'todos',
+                        onTap: () {
+                          setState(() {
+                            _filtroStock = 'todos';
+                          });
+                        },
+                        child: DashboardStatCard(
+                          icon: Icons.inventory_2,
+                          titulo: "Total",
+                          valor: total.toString(),
+                          color: Colors.blue,
+                        ),
                       ),
                     ),
 
                     const SizedBox(width: 12),
 
                     Expanded(
-                      child: DashboardStatCard(
-                        icon: Icons.warning_amber_rounded,
-                        titulo: "Stock Bajo",
-                        valor: stockBajo.toString(),
-                        color: Colors.orange,
+                      child: _StatCardFiltro(
+                        seleccionado: _filtroStock == 'bajo',
+                        onTap: () {
+                          setState(() {
+                            _filtroStock = 'bajo';
+                          });
+                        },
+                        child: DashboardStatCard(
+                          icon: Icons.warning_amber_rounded,
+                          titulo: "Stock Bajo",
+                          valor: stockBajo.toString(),
+                          color: Colors.orange,
+                        ),
                       ),
                     ),
 
                     const SizedBox(width: 12),
 
                     Expanded(
-                      child: DashboardStatCard(
-                        icon: Icons.cancel,
-                        titulo: "Agotados",
-                        valor: agotados.toString(),
-                        color: Colors.red,
+                      child: _StatCardFiltro(
+                        seleccionado: _filtroStock == 'agotados',
+                        onTap: () {
+                          setState(() {
+                            _filtroStock = 'agotados';
+                          });
+                        },
+                        child: DashboardStatCard(
+                          icon: Icons.cancel,
+                          titulo: "Agotados",
+                          valor: agotados.toString(),
+                          color: Colors.red,
+                        ),
                       ),
                     ),
                   ],
@@ -167,7 +192,47 @@ class _InventarioScreenState extends State<InventarioScreen> {
               onChanged: buscar,
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
+
+            Row(
+              children: [
+                Icon(
+                  _filtroStock == 'todos'
+                      ? Icons.inventory_2_outlined
+                      : _filtroStock == 'bajo'
+                          ? Icons.warning_amber_rounded
+                          : Icons.cancel_outlined,
+                  size: 18,
+                  color: const Color(0xff0A2E6E),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _filtroStock == 'todos'
+                        ? 'Mostrando todos los productos e insumos'
+                        : _filtroStock == 'bajo'
+                            ? 'Mostrando productos e insumos con stock bajo'
+                            : 'Mostrando productos e insumos agotados',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff475569),
+                    ),
+                  ),
+                ),
+                if (_filtroStock != 'todos')
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _filtroStock = 'todos';
+                      });
+                    },
+                    icon: const Icon(Icons.clear, size: 18),
+                    label: const Text('Ver todos'),
+                  ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
 
             // ========================================================
             // KARDEX
@@ -225,7 +290,16 @@ class _InventarioScreenState extends State<InventarioScreen> {
                       ),
                     ),
 
-                    ...insumosFiltrados.map((insumo) {
+                    ...insumosFiltrados.where((insumo) {
+                      if (_filtroStock == 'agotados') {
+                        return insumo.stock <= 0;
+                      }
+                      if (_filtroStock == 'bajo') {
+                        return insumo.stock > 0 &&
+                            insumo.stock <= insumo.stockMinimo;
+                      }
+                      return true;
+                    }).map((insumo) {
                       return Card(
                         elevation: 2,
                         margin: const EdgeInsets.only(bottom: 12),
@@ -371,6 +445,15 @@ class _InventarioScreenState extends State<InventarioScreen> {
                             .calcularDisponibilidad(producto),
                         builder: (context, snapshot) {
                           final stock = snapshot.data ?? 0;
+
+                          if (_filtroStock == 'agotados' && stock > 0) {
+                            return const SizedBox.shrink();
+                          }
+
+                          if (_filtroStock == 'bajo' &&
+                              (stock <= 0 || stock > producto.stockMinimo)) {
+                            return const SizedBox.shrink();
+                          }
 
                           return Card(
                             elevation: 2,
@@ -649,6 +732,42 @@ class _EstadoStock extends StatelessWidget {
         style: TextStyle(
           color: Colors.green,
           fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
+
+class _StatCardFiltro extends StatelessWidget {
+  final bool seleccionado;
+  final VoidCallback onTap;
+  final Widget child;
+
+  const _StatCardFiltro({
+    required this.seleccionado,
+    required this.onTap,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 160),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: seleccionado
+              ? const Color(0xff0A2E6E)
+              : Colors.transparent,
+          width: 2,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: child,
         ),
       ),
     );
