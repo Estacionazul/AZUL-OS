@@ -78,6 +78,20 @@ class _CajaScreenState extends State<CajaScreen> {
     });
   }
 
+  bool _cajaEsDeHoy(Caja caja) {
+    final ahora = DateTime.now();
+
+    return caja.fechaApertura.year == ahora.year &&
+        caja.fechaApertura.month == ahora.month &&
+        caja.fechaApertura.day == ahora.day;
+  }
+
+  String _fechaCaja(Caja caja) {
+    return '${caja.fechaApertura.day.toString().padLeft(2, '0')}/'
+        '${caja.fechaApertura.month.toString().padLeft(2, '0')}/'
+        '${caja.fechaApertura.year}';
+  }
+
   // ==========================================================
   // ABRIR CAJA
   // ==========================================================
@@ -139,7 +153,23 @@ class _CajaScreenState extends State<CajaScreen> {
 
     if (monto == null) return;
 
-    await _repository.abrir(montoInicial: monto);
+    try {
+      await _repository.abrir(montoInicial: monto);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            e is StateError
+                ? e.message
+                : 'No se pudo abrir la caja.',
+          ),
+        ),
+      );
+      return;
+    }
 
     await _cargarCaja();
   }
@@ -641,6 +671,71 @@ class _CajaScreenState extends State<CajaScreen> {
     // CAJA ABIERTA
     // ========================================================
 
+    final cajaEsDeHoy = _cajaEsDeHoy(caja);
+
+    // Una caja de una jornada anterior debe permanecer abierta
+    // hasta que el usuario la cierre manualmente. No permitimos
+    // operar ni abrir una segunda caja mientras exista.
+    if (!cajaEsDeHoy) {
+      return Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ModuleHeader(
+              icon: Icons.point_of_sale,
+              title: 'Caja',
+              subtitle: 'Gestiona la caja y los movimientos de efectivo',
+            ),
+            const SizedBox(height: 32),
+            Expanded(
+              child: Center(
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(28),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 620),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            size: 64,
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Caja de una jornada anterior pendiente de cierre',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'La caja #${caja.id} fue abierta el '
+                            '${_fechaCaja(caja)} y todavía está ABIERTA. '
+                            'Debes cerrarla antes de abrir la caja de hoy.',
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          FilledButton.icon(
+                            onPressed: _cerrarCaja,
+                            icon: const Icon(Icons.lock),
+                            label: const Text('Cerrar caja pendiente'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -723,11 +818,13 @@ class _CajaScreenState extends State<CajaScreen> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    _registrarMovimientoManual(
-                      esIngreso: true,
-                    );
-                  },
+                  onPressed: cajaEsDeHoy
+                      ? () {
+                          _registrarMovimientoManual(
+                            esIngreso: true,
+                          );
+                        }
+                      : null,
                   icon: const Icon(
                     Icons.add_circle_outline,
                   ),
@@ -741,11 +838,13 @@ class _CajaScreenState extends State<CajaScreen> {
 
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    _registrarMovimientoManual(
-                      esIngreso: false,
-                    );
-                  },
+                  onPressed: cajaEsDeHoy
+                      ? () {
+                          _registrarMovimientoManual(
+                            esIngreso: false,
+                          );
+                        }
+                      : null,
                   icon: const Icon(
                     Icons.remove_circle_outline,
                   ),
