@@ -16,9 +16,10 @@ class PedidosService extends ChangeNotifier {
   final AppDatabase database;
 
   PedidosService(this.database) {
-    unawaited(cargarPedidosPersistidos());
+    _cargaInicial = cargarPedidosPersistidos();
   }
 
+  late final Future<void> _cargaInicial;
   final Map<String, PedidoAbierto> _pedidos = {};
 
   /// Cantidades que ya fueron enviadas a preparación.
@@ -46,6 +47,8 @@ class PedidosService extends ChangeNotifier {
   }
 
   Future<PedidoAbierto> abrirPedido(UbicacionPedido ubicacion) async {
+    await _cargaInicial;
+
     final existente = _pedidos[ubicacion.id];
 
     if (existente != null) {
@@ -350,7 +353,7 @@ class PedidosService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> cerrarPedido(String ubicacionId) {
+  Future<void> cerrarPedido(String ubicacionId) async {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
