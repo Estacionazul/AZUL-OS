@@ -62,6 +62,14 @@ class PedidoDetalleScreen extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           actions: [
+            if (pedido.estado != EstadoPedido.cerrado) ...[
+              IconButton(
+                tooltip: 'Anular pedido',
+                onPressed: () => _mostrarAnularPedido(context, pedido, pedidosService),
+                icon: const Icon(Icons.cancel_outlined),
+              ),
+              const SizedBox(width: 4),
+            ],
             Padding(
               padding: const EdgeInsets.only(right: 18),
               child: Center(
@@ -218,6 +226,112 @@ class _ProductosPedidoPanelState extends State<_ProductosPedidoPanel> {
         ),
       ),
     );
+  }
+
+  Future<void> _mostrarAnularPedido(
+    BuildContext context,
+    PedidoAbierto pedido,
+    PedidosService service,
+  ) async {
+    final motivoController = TextEditingController();
+
+    final confirmado = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.orange),
+              SizedBox(width: 10),
+              Expanded(child: Text('Anular pedido')),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Se anulará ${pedido.numero} de ${pedido.ubicacion.nombre}.',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'El pedido no se eliminará de la base de datos. Quedará registrado como ANULADO y la mesa quedará disponible.',
+              ),
+              const SizedBox(height: 18),
+              TextField(
+                controller: motivoController,
+                autofocus: true,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Motivo de anulación',
+                  hintText: 'Ej.: pedido de prueba',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('VOLVER'),
+            ),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () {
+                if (motivoController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(dialogContext).showSnackBar(
+                    const SnackBar(
+                      content: Text('Ingrese un motivo para anular el pedido.'),
+                    ),
+                  );
+                  return;
+                }
+                Navigator.of(dialogContext).pop(true);
+              },
+              icon: const Icon(Icons.cancel_outlined),
+              label: const Text('ANULAR PEDIDO'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmado != true) {
+      motivoController.dispose();
+      return;
+    }
+
+    final anulado = await service.anularPedido(
+      pedido.ubicacion.id,
+      motivo: motivoController.text,
+    );
+
+    motivoController.dispose();
+
+    if (!context.mounted) return;
+
+    if (!anulado) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo anular el pedido.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${pedido.numero} anulado correctamente. Mesa liberada.'),
+        backgroundColor: Colors.green,
+      ),
+    );
+
+    Navigator.of(context).pop();
   }
 
   Future<void> _agregarProducto(
