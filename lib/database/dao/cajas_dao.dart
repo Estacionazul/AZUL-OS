@@ -85,7 +85,21 @@ class CajasDao extends DatabaseAccessor<AppDatabase> with _$CajasDaoMixin {
   }
 
   /// Abre una nueva caja.
-  Future<int> abrirCaja(CajasCompanion datos) {
+  ///
+  /// Regla de negocio: solo puede existir una caja ABIERTA.
+  Future<int> abrirCaja(CajasCompanion datos) async {
+    final abierta = await (select(cajas)
+          ..where((t) => t.estado.equals('ABIERTA'))
+          ..limit(1))
+        .getSingleOrNull();
+
+    if (abierta != null) {
+      throw StateError(
+        'No se puede abrir una nueva caja porque existe '
+        'la caja ${abierta.id} todavía ABIERTA.',
+      );
+    }
+
     return into(cajas).insert(datos);
   }
 
