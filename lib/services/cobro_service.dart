@@ -238,7 +238,15 @@ class CobroService {
     });
 
     // La transacción venta + inventario + caja ya terminó.
-    // Ahora sincronizamos los servicios en memoria con la BD para
+    //
+    // Desde este punto la venta ya existe en producción. Limpiamos
+    // inmediatamente el carrito para impedir que un fallo posterior
+    // (XML, SUNAT o impresora) permita volver a cobrar accidentalmente
+    // la misma operación.
+    ventaService.nuevaVenta();
+    carritoService.vaciarCarrito();
+
+    // Sincronizamos los servicios en memoria con la BD para
     // que las pantallas reflejen inmediatamente el stock real.
     await inventarioAutomaticoService.refrescarEstado();
 
