@@ -416,7 +416,7 @@ class PedidosService extends ChangeNotifier {
   Future<void> cargarPedidosPersistidos() async {
     try {
       final filas = await (database.select(database.pedidos)
-            ..where((t) => t.estado.isNotIn(['cerrado'])))
+            ..where((t) => t.estado.isNotIn(['cerrado', 'anulado'])))
           .get();
 
       for (final fila in filas) {
