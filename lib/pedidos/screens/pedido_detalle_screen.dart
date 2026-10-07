@@ -94,6 +94,8 @@ class PedidoDetalleScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
   Future<void> _mostrarAnularPedido(
     BuildContext context,
     PedidoAbierto pedido,
@@ -198,8 +200,6 @@ class PedidoDetalleScreen extends StatelessWidget {
     );
 
     Navigator.of(context).pop();
-  }
-
   }
 }
 
