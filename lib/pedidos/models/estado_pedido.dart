@@ -1,1 +1,1 @@
-enum EstadoPedido { abierto, enviado, esperandoCuenta, cerrado }
+enum EstadoPedido { abierto, enviado, esperandoCuenta, cerrado, anulado }
