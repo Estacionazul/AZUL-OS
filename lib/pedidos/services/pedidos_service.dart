@@ -99,7 +99,8 @@ class PedidosService extends ChangeNotifier {
     }
 
     if (pedido.estado == EstadoPedido.esperandoCuenta ||
-        pedido.estado == EstadoPedido.cerrado) {
+        pedido.estado == EstadoPedido.cerrado ||
+        pedido.estado == EstadoPedido.anulado) {
       throw StateError('El pedido ya está cerrado para nuevos productos.');
     }
 
@@ -132,7 +133,8 @@ class PedidosService extends ChangeNotifier {
     }
 
     if (pedido.estado == EstadoPedido.esperandoCuenta ||
-        pedido.estado == EstadoPedido.cerrado) {
+        pedido.estado == EstadoPedido.cerrado ||
+        pedido.estado == EstadoPedido.anulado) {
       return;
     }
 
@@ -353,6 +355,34 @@ class PedidosService extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> anularPedido(String ubicacionId, {required String motivo}) async {
+    final pedido = _pedidos[ubicacionId];
+
+    if (pedido == null) {
+      return false;
+    }
+
+    if (pedido.estado == EstadoPedido.cerrado ||
+        pedido.estado == EstadoPedido.anulado) {
+      return false;
+    }
+
+    final motivoLimpio = motivo.trim();
+    if (motivoLimpio.isEmpty) {
+      return false;
+    }
+
+    pedido.estado = EstadoPedido.anulado;
+    pedido.observaciones = 'ANULADO: $motivoLimpio';
+
+    await _guardarPedido(pedido);
+    _pedidos.remove(ubicacionId);
+    _cantidadesComandadas.remove(ubicacionId);
+
+    notifyListeners();
+    return true;
+  }
+
   Future<void> cerrarPedido(String ubicacionId) async {
     final pedido = _pedidos[ubicacionId];
 
@@ -459,6 +489,8 @@ class PedidosService extends ChangeNotifier {
         return EstadoPedido.esperandoCuenta;
       case 'cerrado':
         return EstadoPedido.cerrado;
+      case 'anulado':
+        return EstadoPedido.anulado;
       default:
         return EstadoPedido.abierto;
     }
@@ -474,6 +506,8 @@ class PedidosService extends ChangeNotifier {
         return 'esperando_cuenta';
       case EstadoPedido.cerrado:
         return 'cerrado';
+      case EstadoPedido.anulado:
+        return 'anulado';
     }
   }
 
