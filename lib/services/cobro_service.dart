@@ -76,6 +76,25 @@ class CobroService {
       );
     }
 
+    // Una caja abierta solo puede operar durante su propia jornada.
+    final esMismaJornada =
+        cajaAbierta.fechaApertura.year == ahora.year &&
+        cajaAbierta.fechaApertura.month == ahora.month &&
+        cajaAbierta.fechaApertura.day == ahora.day;
+
+    if (!esMismaJornada) {
+      final fechaCaja =
+          '${cajaAbierta.fechaApertura.day.toString().padLeft(2, '0')}/'
+          '${cajaAbierta.fechaApertura.month.toString().padLeft(2, '0')}/'
+          '${cajaAbierta.fechaApertura.year}';
+
+      throw StateError(
+        'La caja ${cajaAbierta.id} pertenece al $fechaCaja '
+        'y todavía está abierta. '
+        'Debe cerrar esa caja antes de operar una nueva jornada.',
+      );
+    }
+
     // ==========================================================
     // VALIDAR DATOS FISCALES
     // ==========================================================
