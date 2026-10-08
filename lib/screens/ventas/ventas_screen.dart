@@ -7,7 +7,6 @@ import '../../core/widgets/app_card.dart';
 
 import '../../models/venta.dart';
 import '../../repositories/ventas_repository.dart';
-import '../../services/sesion_service.dart';
 
 import '../../widgets/ventas/venta_empty.dart';
 import '../../widgets/ventas/venta_search_bar.dart';
@@ -38,13 +37,8 @@ class _VentasScreenState extends State<VentasScreen> {
 
   Future<void> _cargarVentas() async {
     final repository = context.read<VentasRepository>();
-    final sesion = SesionService.instancia;
 
-    final ventas = sesion.esCEO
-        ? await repository.obtenerVentas()
-        : sesion.idUsuario == null
-            ? <Venta>[]
-            : await repository.obtenerVentasPorUsuario(sesion.idUsuario!);
+    final ventas = await repository.obtenerVentas();
 
     if (!mounted) return;
 
