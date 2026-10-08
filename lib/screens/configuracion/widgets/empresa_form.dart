@@ -105,6 +105,7 @@ class _EmpresaFormState extends State<EmpresaForm> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    bool readOnly = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
@@ -113,6 +114,7 @@ class _EmpresaFormState extends State<EmpresaForm> {
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
+          readOnly: readOnly,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
@@ -134,7 +136,12 @@ class _EmpresaFormState extends State<EmpresaForm> {
           label: "Nombre Comercial",
           icon: Icons.store,
         ),
-        _campo(controller: _rucController, label: "RUC", icon: Icons.badge),
+        _campo(
+          controller: _rucController,
+          label: "RUC",
+          icon: Icons.badge,
+          readOnly: true,
+        ),
         _campo(
           controller: _direccionController,
           label: "Dirección",
