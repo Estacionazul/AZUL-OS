@@ -111,10 +111,10 @@ class _EmpresaFormState extends State<EmpresaForm> {
       padding: const EdgeInsets.only(bottom: 18),
       child: TextField(
         controller: controller,
+        readOnly: readOnly,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
-          readOnly: readOnly,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
