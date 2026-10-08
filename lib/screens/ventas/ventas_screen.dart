@@ -7,6 +7,7 @@ import '../../core/widgets/app_card.dart';
 
 import '../../models/venta.dart';
 import '../../repositories/ventas_repository.dart';
+import '../../services/sesion_service.dart';
 
 import '../../widgets/ventas/venta_empty.dart';
 import '../../widgets/ventas/venta_search_bar.dart';
@@ -37,8 +38,13 @@ class _VentasScreenState extends State<VentasScreen> {
 
   Future<void> _cargarVentas() async {
     final repository = context.read<VentasRepository>();
+    final sesion = SesionService.instancia;
 
-    final ventas = await repository.obtenerVentas();
+    final ventas = sesion.esCEO
+        ? await repository.obtenerVentas()
+        : sesion.idUsuario == null
+            ? <Venta>[]
+            : await repository.obtenerVentasPorUsuario(sesion.idUsuario!);
 
     if (!mounted) return;
 
@@ -52,6 +58,21 @@ class _VentasScreenState extends State<VentasScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  List<Venta> get _ventasFiltradas {
+    final texto = _searchController.text.trim().toLowerCase();
+
+    if (texto.isEmpty) return _ventas;
+
+    return _ventas.where((venta) {
+      return venta.numero.toLowerCase().contains(texto) ||
+          (venta.nombreCliente?.toLowerCase().contains(texto) ?? false) ||
+          venta.tipoDocumento.toLowerCase().contains(texto) ||
+          venta.metodoPago.toLowerCase().contains(texto) ||
+          (venta.dni?.toLowerCase().contains(texto) ?? false) ||
+          (venta.ruc?.toLowerCase().contains(texto) ?? false);
+    }).toList();
   }
 
   @override
@@ -105,6 +126,7 @@ class _VentasScreenState extends State<VentasScreen> {
             // ========================================================
             VentaSearchBar(
               controller: _searchController,
+              onChanged: (_) => setState(() {}),
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -121,7 +143,7 @@ class _VentasScreenState extends State<VentasScreen> {
                     : _ventas.isEmpty
                     ? const VentaEmpty()
                     : VentasTable(
-                  ventas: _ventas,
+                  ventas: _ventasFiltradas,
                 ),
               ),
             ),
