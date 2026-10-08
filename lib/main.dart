@@ -23,7 +23,6 @@ import 'pedidos/services/pedidos_service.dart';
 import 'services/carrito_service.dart';
 import 'services/cobro_service.dart';
 import 'services/insumo_service.dart';
-import 'services/inventario_service.dart';
 import 'services/producto_service.dart';
 import 'services/recetas_service.dart';
 import 'services/receta_detalle_service.dart';
@@ -32,7 +31,6 @@ import 'services/ventas_service.dart';
 import 'services/clientes_service.dart';
 import 'repositories/movimiento_inventario_repository.dart';
 import 'services/movimiento_inventario_service.dart';
-import 'services/produccion_service.dart';
 import 'services/printer_service.dart';
 import 'services/ticket_print_service.dart';
 import 'ticket/esc_pos_renderer.dart';
@@ -212,8 +210,6 @@ Provider<FacturacionService>(
           create: (_) => InsumoService(database)..obtenerTodos(),
         ),
 
-        Provider(create: (_) => InventarioService()),
-
         Provider(create: (_) => MovimientoInventarioRepository(database)),
 
         ChangeNotifierProvider(
@@ -223,15 +219,6 @@ Provider<FacturacionService>(
             insumoRepository: context.read<InsumoRepository>(),
             productoService: context.read<ProductoService>(),
             insumoService: context.read<InsumoService>(),
-          ),
-        ),
-
-        ChangeNotifierProvider(
-          create: (context) => ProduccionService(
-            productoService: context.read<ProductoService>(),
-            insumoService: context.read<InsumoService>(),
-            recetaDetalleService: context.read<RecetaDetalleService>(),
-            movimientoService: context.read<MovimientoInventarioService>(),
           ),
         ),
 

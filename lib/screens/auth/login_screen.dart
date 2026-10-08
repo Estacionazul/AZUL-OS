@@ -41,8 +41,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final repository = context.read<UsuariosRepository>();
-      final permisosRepository =
-          context.read<PermisosUsuarioRepository>();
 
       final usuario = await repository.validarAcceso(
         nombre: _usuarioController.text.trim(),
@@ -61,11 +59,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
         return;
       }
-
-      await permisosRepository.aplicarPerfilPorRol(
-        usuario.id,
-        usuario.rol,
-      );
 
       if (!mounted) return;
 

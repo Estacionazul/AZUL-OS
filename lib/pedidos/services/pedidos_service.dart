@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
 
 import '../../database/app_database.dart';
+import '../../mappers/producto_mapper.dart';
 
 import '../../models/item_carrito.dart';
 import '../data/ubicaciones_pedido_data.dart';
@@ -12,7 +15,11 @@ import '../models/ubicacion_pedido.dart';
 class PedidosService extends ChangeNotifier {
   final AppDatabase database;
 
-  PedidosService(this.database);
+  PedidosService(this.database) {
+    _cargaInicial = cargarPedidosPersistidos();
+  }
+
+  late final Future<void> _cargaInicial;
   final Map<String, PedidoAbierto> _pedidos = {};
 
   /// Cantidades que ya fueron enviadas a preparación.
@@ -40,6 +47,8 @@ class PedidosService extends ChangeNotifier {
   }
 
   Future<PedidoAbierto> abrirPedido(UbicacionPedido ubicacion) async {
+    await _cargaInicial;
+
     final existente = _pedidos[ubicacion.id];
 
     if (existente != null) {
@@ -47,24 +56,34 @@ class PedidosService extends ChangeNotifier {
     }
 
     final ahora = DateTime.now();
-
     final numeroPedido = await _obtenerSiguienteNumeroPedido();
-
     final numero = 'P${numeroPedido.toString().padLeft(6, '0')}';
 
+    final idDb = await database.into(database.pedidos).insert(
+      PedidosCompanion.insert(
+        numero: numero,
+        ubicacionId: ubicacion.id,
+        ubicacionNombre: ubicacion.nombre,
+        esMesa: Value(ubicacion.esMesa),
+        fechaApertura: Value(ahora),
+        estado: const Value('abierto'),
+        numeroComanda: const Value(0),
+        observaciones: const Value(''),
+        total: const Value(0),
+      ),
+    );
+
     final pedido = PedidoAbierto(
-      id: '${ubicacion.id}_${ahora.microsecondsSinceEpoch}',
+      id: idDb.toString(),
       numero: numero,
       ubicacion: ubicacion,
       fechaApertura: ahora,
     );
 
     _pedidos[ubicacion.id] = pedido;
-
     _cantidadesComandadas[ubicacion.id] = {};
 
     notifyListeners();
-
     return pedido;
   }
 
@@ -72,7 +91,7 @@ class PedidosService extends ChangeNotifier {
   ///
   /// Si el producto con la misma configuración ya existe,
   /// aumenta su cantidad en lugar de crear otra línea.
-  void agregarProductos(String ubicacionId, List<ItemCarrito> items) {
+  Future<void> agregarProductos(String ubicacionId, List<ItemCarrito> items) async {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -80,7 +99,8 @@ class PedidosService extends ChangeNotifier {
     }
 
     if (pedido.estado == EstadoPedido.esperandoCuenta ||
-        pedido.estado == EstadoPedido.cerrado) {
+        pedido.estado == EstadoPedido.cerrado ||
+        pedido.estado == EstadoPedido.anulado) {
       throw StateError('El pedido ya está cerrado para nuevos productos.');
     }
 
@@ -100,11 +120,12 @@ class PedidosService extends ChangeNotifier {
       pedido.estado = EstadoPedido.abierto;
     }
 
+    await _guardarPedido(pedido);
     notifyListeners();
   }
 
   /// Aumenta en una unidad la cantidad de un producto.
-  void aumentarCantidad(String ubicacionId, ItemCarrito item) {
+  Future<void> aumentarCantidad(String ubicacionId, ItemCarrito item) async {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -112,7 +133,8 @@ class PedidosService extends ChangeNotifier {
     }
 
     if (pedido.estado == EstadoPedido.esperandoCuenta ||
-        pedido.estado == EstadoPedido.cerrado) {
+        pedido.estado == EstadoPedido.cerrado ||
+        pedido.estado == EstadoPedido.anulado) {
       return;
     }
 
@@ -130,6 +152,7 @@ class PedidosService extends ChangeNotifier {
       pedido.estado = EstadoPedido.abierto;
     }
 
+    await _guardarPedido(pedido);
     notifyListeners();
   }
 
@@ -138,7 +161,7 @@ class PedidosService extends ChangeNotifier {
   /// IMPORTANTE:
   /// Si parte de la cantidad ya fue enviada a preparación,
   /// nunca permite bajar por debajo de esa cantidad.
-  bool disminuirCantidad(String ubicacionId, ItemCarrito item) {
+  Future<bool> disminuirCantidad(String ubicacionId, ItemCarrito item) async {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -177,6 +200,7 @@ class PedidosService extends ChangeNotifier {
       pedido.items.removeAt(indice);
     }
 
+    await _guardarPedido(pedido);
     notifyListeners();
 
     return true;
@@ -186,7 +210,7 @@ class PedidosService extends ChangeNotifier {
   ///
   /// Solo se permite eliminarlo si todavía NO fue enviado
   /// a preparación.
-  bool eliminarItem(String ubicacionId, ItemCarrito item) {
+  Future<bool> eliminarItem(String ubicacionId, ItemCarrito item) async {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -220,6 +244,7 @@ class PedidosService extends ChangeNotifier {
 
     pedido.items.removeAt(indice);
 
+    await _guardarPedido(pedido);
     notifyListeners();
 
     return true;
@@ -268,7 +293,7 @@ class PedidosService extends ChangeNotifier {
 
   /// Marca como enviados a preparación los productos
   /// que existen actualmente en el pedido.
-  void marcarComandaEnviada(String ubicacionId) {
+  Future<void> marcarComandaEnviada(String ubicacionId) async {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -286,6 +311,7 @@ class PedidosService extends ChangeNotifier {
     pedido.numeroComanda++;
     pedido.estado = EstadoPedido.enviado;
 
+    await _guardarPedido(pedido);
     notifyListeners();
   }
 
@@ -299,7 +325,7 @@ class PedidosService extends ChangeNotifier {
     return pedido.numeroComanda + 1;
   }
 
-  void pasarAEsperandoCuenta(String ubicacionId) {
+  Future<void> pasarAEsperandoCuenta(String ubicacionId) async {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -312,10 +338,11 @@ class PedidosService extends ChangeNotifier {
 
     pedido.estado = EstadoPedido.esperandoCuenta;
 
+    await _guardarPedido(pedido);
     notifyListeners();
   }
 
-  void actualizarObservaciones(String ubicacionId, String observaciones) {
+  Future<void> actualizarObservaciones(String ubicacionId, String observaciones) async {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -324,10 +351,39 @@ class PedidosService extends ChangeNotifier {
 
     pedido.observaciones = observaciones.trim();
 
+    await _guardarPedido(pedido);
     notifyListeners();
   }
 
-  void cerrarPedido(String ubicacionId) {
+  Future<bool> anularPedido(String ubicacionId, {required String motivo}) async {
+    final pedido = _pedidos[ubicacionId];
+
+    if (pedido == null) {
+      return false;
+    }
+
+    if (pedido.estado == EstadoPedido.cerrado ||
+        pedido.estado == EstadoPedido.anulado) {
+      return false;
+    }
+
+    final motivoLimpio = motivo.trim();
+    if (motivoLimpio.isEmpty) {
+      return false;
+    }
+
+    pedido.estado = EstadoPedido.anulado;
+    pedido.observaciones = 'ANULADO: $motivoLimpio';
+
+    await _guardarPedido(pedido);
+    _pedidos.remove(ubicacionId);
+    _cantidadesComandadas.remove(ubicacionId);
+
+    notifyListeners();
+    return true;
+  }
+
+  Future<void> cerrarPedido(String ubicacionId) async {
     final pedido = _pedidos[ubicacionId];
 
     if (pedido == null) {
@@ -336,20 +392,184 @@ class PedidosService extends ChangeNotifier {
 
     pedido.estado = EstadoPedido.cerrado;
 
+    await _guardarPedido(pedido);
     _pedidos.remove(ubicacionId);
     _cantidadesComandadas.remove(ubicacionId);
 
     notifyListeners();
   }
 
-  void cancelarPedido(String ubicacionId) {
-    _pedidos.remove(ubicacionId);
+  Future<void> cancelarPedido(String ubicacionId) async {
+    final pedido = _pedidos.remove(ubicacionId);
     _cantidadesComandadas.remove(ubicacionId);
+
+    final id = pedido == null ? null : int.tryParse(pedido.id);
+    if (id != null) {
+      await (database.delete(database.pedidos)..where((t) => t.id.equals(id))).go();
+    }
 
     notifyListeners();
   }
 
   bool get hayPedidosAbiertos => _pedidos.isNotEmpty;
+
+  Future<void> cargarPedidosPersistidos() async {
+    try {
+      final filas = await (database.select(database.pedidos)
+            ..where((t) => t.estado.isNotIn(['cerrado', 'anulado'])))
+          .get();
+
+      for (final fila in filas) {
+        final ubicacion = ubicaciones.firstWhere(
+          (x) => x.id == fila.ubicacionId,
+          orElse: () => UbicacionPedido(
+            id: fila.ubicacionId,
+            nombre: fila.ubicacionNombre,
+            tipo: fila.esMesa
+                ? TipoUbicacion.mesa
+                : TipoUbicacion.paraLlevar,
+          ),
+        );
+
+        final detalles = await (database.select(database.pedidoDetalles)
+              ..where((d) => d.pedidoId.equals(fila.id))
+              ..orderBy([(d) => OrderingTerm(expression: d.orden)]))
+            .get();
+
+        final items = <ItemCarrito>[];
+        final cantidadesComandadas = <String, int>{};
+
+        for (final detalle in detalles) {
+          final producto = await (database.select(database.productos)
+                ..where((p) => p.id.equals(detalle.productoId)))
+              .getSingleOrNull();
+
+          if (producto == null) continue;
+
+          final item = ItemCarrito(
+            producto: ProductoMapper.toModel(producto),
+            cantidad: detalle.cantidad,
+            tamano: detalle.tamano,
+            tipoLeche: detalle.tipoLeche,
+            endulzante: detalle.endulzante,
+            infusion: detalle.infusion,
+            extraShot: detalle.extraShot,
+            observaciones: detalle.observaciones,
+          );
+
+          items.add(item);
+          cantidadesComandadas[_claveItem(item)] =
+              detalle.cantidadComandada.clamp(0, detalle.cantidad);
+        }
+
+        _pedidos[ubicacion.id] = PedidoAbierto(
+          id: fila.id.toString(),
+          numero: fila.numero,
+          ubicacion: ubicacion,
+          fechaApertura: fila.fechaApertura,
+          items: items,
+          estado: _estadoDesdeTexto(fila.estado),
+          numeroComanda: fila.numeroComanda,
+          observaciones: fila.observaciones,
+        );
+        _cantidadesComandadas[ubicacion.id] = cantidadesComandadas;
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('⚠️ No se pudieron cargar los pedidos persistidos: $e');
+    }
+  }
+
+  EstadoPedido _estadoDesdeTexto(String estado) {
+    switch (estado.toLowerCase()) {
+      case 'enviado':
+        return EstadoPedido.enviado;
+      case 'esperando_cuenta':
+        return EstadoPedido.esperandoCuenta;
+      case 'cerrado':
+        return EstadoPedido.cerrado;
+      case 'anulado':
+        return EstadoPedido.anulado;
+      default:
+        return EstadoPedido.abierto;
+    }
+  }
+
+  String _estadoATexto(EstadoPedido estado) {
+    switch (estado) {
+      case EstadoPedido.abierto:
+        return 'abierto';
+      case EstadoPedido.enviado:
+        return 'enviado';
+      case EstadoPedido.esperandoCuenta:
+        return 'esperando_cuenta';
+      case EstadoPedido.cerrado:
+        return 'cerrado';
+      case EstadoPedido.anulado:
+        return 'anulado';
+    }
+  }
+
+  Future<void> _guardarPedido(PedidoAbierto pedido) async {
+    final id = int.tryParse(pedido.id);
+    if (id == null) {
+      throw StateError('El pedido no tiene un ID de base de datos válido.');
+    }
+
+    await database.transaction(() async {
+      await (database.update(database.pedidos)..where((t) => t.id.equals(id)))
+          .write(
+        PedidosCompanion(
+          estado: Value(_estadoATexto(pedido.estado)),
+          numeroComanda: Value(pedido.numeroComanda),
+          observaciones: Value(pedido.observaciones),
+          total: Value(pedido.total),
+        ),
+      );
+
+      await (database.delete(database.pedidoDetalles)
+            ..where((t) => t.pedidoId.equals(id)))
+          .go();
+
+      for (var i = 0; i < pedido.items.length; i++) {
+        final item = pedido.items[i];
+        final productoId = item.producto.id;
+
+        if (productoId == null) {
+          throw StateError(
+            'El producto ${item.producto.nombre} no tiene ID válido.',
+          );
+        }
+
+        final comandada =
+            (_cantidadesComandadas[pedido.ubicacion.id] ?? {})[
+              _claveItem(item)
+            ] ??
+            0;
+
+        await database.into(database.pedidoDetalles).insert(
+          PedidoDetallesCompanion.insert(
+            pedidoId: id,
+            productoId: productoId,
+            codigoProducto: item.producto.codigo,
+            nombreProducto: item.producto.nombre,
+            cantidad: Value(item.cantidad),
+            cantidadComandada: Value(comandada.clamp(0, item.cantidad)),
+            precioUnitario: Value(item.producto.precioVenta),
+            subtotal: Value(item.subtotal),
+            tamano: Value(item.tamano),
+            tipoLeche: Value(item.tipoLeche),
+            endulzante: Value(item.endulzante),
+            infusion: Value(item.infusion),
+            extraShot: Value(item.extraShot),
+            observaciones: Value(item.observaciones),
+            orden: Value(i),
+          ),
+        );
+      }
+    });
+  }
 
   String _claveItem(ItemCarrito item) {
     return [

@@ -56,7 +56,7 @@ class ProductoService extends ChangeNotifier {
       categoriaId: producto.categoriaId,
       costo: producto.costo,
       precioVenta: producto.precioVenta,
-      stock: producto.stock,
+      stock: 0,
       stockMinimo: producto.stockMinimo,
       tipoInventario: producto.tipoInventario,
       tipoAfectacionIgv: producto.tipoAfectacionIgv,
@@ -91,8 +91,20 @@ class ProductoService extends ChangeNotifier {
       );
     }
 
+    final id = producto.id;
+
+    if (id == null) {
+      throw Exception('El producto no tiene un ID válido.');
+    }
+
+    final actual = await _repository.obtenerPorId(id);
+
+    if (actual == null) {
+      throw Exception('No existe el producto que deseas editar.');
+    }
+
     final productoActualizar = ProductoModel(
-      id: producto.id,
+      id: actual.id,
       codigo: codigo,
       codigoBarras: producto.codigoBarras,
       nombre: producto.nombre,
@@ -100,7 +112,7 @@ class ProductoService extends ChangeNotifier {
       categoriaId: producto.categoriaId,
       costo: producto.costo,
       precioVenta: producto.precioVenta,
-      stock: producto.stock,
+      stock: actual.stock,
       stockMinimo: producto.stockMinimo,
       tipoInventario: producto.tipoInventario,
       tipoAfectacionIgv: producto.tipoAfectacionIgv,
@@ -193,34 +205,4 @@ class ProductoService extends ChangeNotifier {
   }
 
   int get cantidadProductos => _productos.length;
-
-  Future<bool> aumentarStock(int productoId, double cantidad) async {
-    final producto = obtenerProducto(productoId);
-
-    if (producto == null) {
-      return false;
-    }
-
-    final actualizado = ProductoModel(
-      id: producto.id,
-      codigo: producto.codigo,
-      codigoBarras: producto.codigoBarras,
-      nombre: producto.nombre,
-      descripcion: producto.descripcion,
-      categoriaId: producto.categoriaId,
-      costo: producto.costo,
-      precioVenta: producto.precioVenta,
-      stock: producto.stock + cantidad.toInt(),
-      stockMinimo: producto.stockMinimo,
-      tipoInventario: producto.tipoInventario,
-      tipoAfectacionIgv: producto.tipoAfectacionIgv,
-      emoji: producto.emoji,
-      imagen: producto.imagen,
-      activo: producto.activo,
-    );
-
-    await editarProducto(actualizado);
-
-    return true;
-  }
 }

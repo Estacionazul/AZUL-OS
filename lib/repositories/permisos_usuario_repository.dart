@@ -51,10 +51,19 @@ class PermisosUsuarioRepository {
   // APLICAR PERFIL OPERATIVO SEGÚN EL ROL
   // ==========================================================
 
-  Future<void> aplicarPerfilPorRol(
+  Future<void> inicializarPerfilPorRol(
     int usuarioId,
     String rol,
   ) async {
+    // Los permisos se establecen una sola vez como perfil inicial.
+    // Después, el CEO puede personalizarlos sin que un nuevo login
+    // vuelva a sobrescribir sus decisiones.
+    final existentes = await obtenerPorUsuario(usuarioId);
+
+    if (existentes.isNotEmpty) {
+      return;
+    }
+
     final rolNormalizado = rol.trim().toUpperCase();
 
     if (rolNormalizado == 'CAJERO') {
@@ -69,17 +78,12 @@ class PermisosUsuarioRepository {
         'CLIENTES': true,
         'CAJA': true,
         'REPORTES': false,
+        'CONFIGURACION': false,
       };
 
       for (final entry in permisosCajero.entries) {
-        await cambiarPermiso(
-          usuarioId,
-          entry.key,
-          entry.value,
-        );
+        await cambiarPermiso(usuarioId, entry.key, entry.value);
       }
-
-      return;
     }
   }
 }

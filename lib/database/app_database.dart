@@ -1219,11 +1219,14 @@ class AppDatabase extends _$AppDatabase {
 
 LazyDatabase _openConnection(String? databasePath) {
   return LazyDatabase(() async {
-    final directory = await getApplicationDocumentsDirectory();
-
     final file = databasePath != null
         ? File(databasePath)
-        : File(p.join(directory.path, 'azul_os.db'));
+        : File(
+            p.join(
+              (await getApplicationDocumentsDirectory()).path,
+              'azul_os.db',
+            ),
+          );
 
     return NativeDatabase(file);
   });

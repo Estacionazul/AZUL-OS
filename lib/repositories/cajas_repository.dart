@@ -27,7 +27,16 @@ class CajasRepository {
     return _dao.obtenerCajaPorId(id);
   }
 
+  /// Indica si la caja abierta corresponde a la fecha indicada.
+  bool esCajaDelDia(Caja caja, DateTime fecha) {
+    return caja.fechaApertura.year == fecha.year &&
+        caja.fechaApertura.month == fecha.month &&
+        caja.fechaApertura.day == fecha.day;
+  }
+
   /// Abre una nueva caja.
+  ///
+  /// El DAO vuelve a validar que no exista otra caja ABIERTA.
   Future<int> abrir({required double montoInicial}) {
     return _dao.abrirCaja(
       CajasCompanion(

@@ -43,7 +43,12 @@ class RecetasService extends ChangeNotifier {
   }
 
   Future<void> eliminarReceta(int id) async {
-    await _repository.eliminarReceta(id);
+    final receta = _recetas.firstWhere(
+      (item) => item.id == id,
+      orElse: () => throw StateError('No existe la receta seleccionada.'),
+    );
+
+    await _repository.actualizarReceta(receta.copyWith(activo: false));
 
     await cargarRecetas();
   }

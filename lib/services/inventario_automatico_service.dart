@@ -65,6 +65,19 @@ class InventarioAutomaticoService {
   }
 
   // ==========================================================
+  // SINCRONIZAR ESTADO EN MEMORIA
+  // ==========================================================
+  //
+  // Se utiliza después de una transacción externa que modifica
+  // venta + inventario + caja. La transacción debe haber terminado
+  // antes de refrescar para evitar leer un estado intermedio.
+  // ==========================================================
+
+  Future<void> refrescarEstado() {
+    return _movimientoService.refrescarEstado();
+  }
+
+  // ==========================================================
   // CONSTRUIR MOVIMIENTOS
   // ==========================================================
 

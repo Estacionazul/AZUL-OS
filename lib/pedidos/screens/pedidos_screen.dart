@@ -135,8 +135,8 @@ class _PedidosView extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(28, 0, 28, 32),
                   sliver: SliverToBoxAdapter(
                     child: _ParaLlevarCard(
-                      onTap: () {
-                        _abrirUbicacion(
+                      onTap: () async {
+                        await _abrirUbicacion(
                           context,
                           pedidosService.ubicaciones.firstWhere(
                                 (ubicacion) => ubicacion.tipo == TipoUbicacion.paraLlevar,
@@ -154,14 +154,18 @@ class _PedidosView extends StatelessWidget {
     );
   }
 
-  static void _abrirUbicacion(BuildContext context, UbicacionPedido ubicacion) {
+  static Future<void> _abrirUbicacion(
+    BuildContext context,
+    UbicacionPedido ubicacion,
+  ) async {
     final service = context.read<PedidosService>();
 
-    // Crea el pedido si la ubicación está libre.
-    // Si ya existe, devuelve el pedido existente.
-    service.abrirPedido(ubicacion);
+    // Esperamos a que el pedido quede persistido antes de abrir su detalle.
+    await service.abrirPedido(ubicacion);
 
-    // Abrimos inmediatamente el detalle del pedido.
+    if (!context.mounted) return;
+
+    // Abrimos el detalle del pedido.
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ChangeNotifierProvider.value(

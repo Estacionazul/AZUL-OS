@@ -143,8 +143,11 @@ class PedidoComandaPrintService {
       ),
     );
 
-    bytes.addAll(generator.emptyLines(2));
-    bytes.addAll(generator.cut());
+    // Una sola línea para dejar el mínimo margen físico antes del corte.
+    // Usamos el comando ESC/POS de corte directamente para evitar el
+    // avance adicional que algunos perfiles aplican al helper cut().
+    bytes.addAll(generator.emptyLines(1));
+    bytes.addAll(generator.rawBytes(const [0x1D, 0x56, 0x00]));
 
     await printerService.print(bytes);
   }

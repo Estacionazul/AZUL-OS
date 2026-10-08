@@ -76,52 +76,45 @@ class SidebarMenu extends StatelessWidget {
                     ),
 
                     SidebarMenuItem(
-                      icon: Icons.precision_manufacturing_rounded,
-                      title: "Producción",
+                      icon: Icons.shopping_cart_rounded,
+                      title: "Pedidos",
                       selected: selectedIndex == 5,
                       onTap: () => onItemSelected(5),
                     ),
 
                     SidebarMenuItem(
-                      icon: Icons.shopping_cart_rounded,
-                      title: "Pedidos",
-                      selected: selectedIndex == 6,
-                      onTap: () => onItemSelected(6),
-                    ),
-
-                    SidebarMenuItem(
                       icon: Icons.point_of_sale_rounded,
                       title: "Ventas",
-                      selected: selectedIndex == 7,
-                      onTap: () => onItemSelected(7),
+                      selected: selectedIndex == 5,
+                      onTap: () => onItemSelected(5),
                     ),
 
                     SidebarMenuItem(
                       icon: Icons.people_alt_rounded,
                       title: "Clientes",
-                      selected: selectedIndex == 8,
-                      onTap: () => onItemSelected(8),
+                      selected: selectedIndex == 5,
+                      onTap: () => onItemSelected(5),
                     ),
 
                     SidebarMenuItem(
                       icon: Icons.account_balance_wallet_rounded,
                       title: "Caja",
-                      selected: selectedIndex == 9,
-                      onTap: () => onItemSelected(9),
+                      selected: selectedIndex == 5,
+                      onTap: () => onItemSelected(5),
                     ),
 
                     SidebarMenuItem(
                       icon: Icons.bar_chart_rounded,
                       title: "Reportes",
-                      selected: selectedIndex == 10,
-                      onTap: () => onItemSelected(10),
+                      selected: selectedIndex == 5,
+                      onTap: () => onItemSelected(5),
                     ),
 
                     SidebarMenuItem(
                       icon: Icons.settings_rounded,
                       title: "Configuración",
-                      selected: selectedIndex == 11,
-                      onTap: () => onItemSelected(11),
+                      selected: selectedIndex == 5,
+                      onTap: () => onItemSelected(5),
                     ),
                   ],
                 ),

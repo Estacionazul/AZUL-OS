@@ -41,6 +41,10 @@ class ProduccionService extends ChangeNotifier {
       return 'La receta no tiene un ID válido.';
     }
 
+    if (!receta.activo) {
+      return 'No se puede producir con una receta inactiva.';
+    }
+
     // ==========================================================
     // CARGAR INGREDIENTES
     // ==========================================================

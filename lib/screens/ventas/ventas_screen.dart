@@ -54,6 +54,21 @@ class _VentasScreenState extends State<VentasScreen> {
     super.dispose();
   }
 
+  List<Venta> get _ventasFiltradas {
+    final texto = _searchController.text.trim().toLowerCase();
+
+    if (texto.isEmpty) return _ventas;
+
+    return _ventas.where((venta) {
+      return venta.numero.toLowerCase().contains(texto) ||
+          (venta.nombreCliente?.toLowerCase().contains(texto) ?? false) ||
+          venta.tipoDocumento.toLowerCase().contains(texto) ||
+          venta.metodoPago.toLowerCase().contains(texto) ||
+          (venta.dni?.toLowerCase().contains(texto) ?? false) ||
+          (venta.ruc?.toLowerCase().contains(texto) ?? false);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,6 +120,7 @@ class _VentasScreenState extends State<VentasScreen> {
             // ========================================================
             VentaSearchBar(
               controller: _searchController,
+              onChanged: (_) => setState(() {}),
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -121,7 +137,7 @@ class _VentasScreenState extends State<VentasScreen> {
                     : _ventas.isEmpty
                     ? const VentaEmpty()
                     : VentasTable(
-                  ventas: _ventas,
+                  ventas: _ventasFiltradas,
                 ),
               ),
             ),

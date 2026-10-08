@@ -1,68 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/producto_model.dart';
+import '../../models/insumo_model.dart';
 import '../../services/movimiento_inventario_service.dart';
-import '../../models/movimiento_inventario_model.dart';
 
-class RegistrarEntradaProductoDialog extends StatefulWidget {
-  final ProductoModel producto;
+class AjustarStockInsumoDialog extends StatefulWidget {
+  final InsumoModel insumo;
 
-  const RegistrarEntradaProductoDialog({super.key, required this.producto});
+  const AjustarStockInsumoDialog({
+    super.key,
+    required this.insumo,
+  });
 
   @override
-  State<RegistrarEntradaProductoDialog> createState() =>
-      _RegistrarEntradaProductoDialogState();
+  State<AjustarStockInsumoDialog> createState() =>
+      _AjustarStockInsumoDialogState();
 }
 
-class _RegistrarEntradaProductoDialogState
-    extends State<RegistrarEntradaProductoDialog> {
-  final _cantidadController = TextEditingController();
-  final _motivoController = TextEditingController(text: "Compra");
+class _AjustarStockInsumoDialogState
+    extends State<AjustarStockInsumoDialog> {
+  final _nuevoStockController = TextEditingController();
+  final _motivoController = TextEditingController(
+    text: 'Ajuste de inventario',
+  );
 
   bool _guardando = false;
 
   @override
   void dispose() {
-    _cantidadController.dispose();
+    _nuevoStockController.dispose();
     _motivoController.dispose();
     super.dispose();
   }
 
-  Future<void> _registrarEntrada() async {
-    final cantidad = int.tryParse(_cantidadController.text.trim()) ?? 0;
-
+  Future<void> _ajustarStock() async {
+    final nuevoStock = double.tryParse(
+      _nuevoStockController.text.trim().replaceAll(',', '.'),
+    );
     final motivo = _motivoController.text.trim();
 
-    if (cantidad <= 0) {
+    if (nuevoStock == null || nuevoStock < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Ingresa una cantidad válida mayor a 0.")),
+        const SnackBar(
+          content: Text('Ingresa un stock final válido de 0 o más.'),
+        ),
       );
       return;
     }
 
     if (motivo.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Ingresa el motivo de la entrada.")),
-      );
-      return;
-    }
-
-    if (widget.producto.tipoInventario == 'receta') {
-      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Este producto usa inventario por receta. '
-            'Las entradas se registran en sus insumos.',
-          ),
+          content: Text('Ingresa el motivo del ajuste.'),
         ),
       );
       return;
     }
 
-    if (widget.producto.id == null) {
+    final id = widget.insumo.id;
+
+    if (id == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("El producto no tiene un ID válido.")),
+        const SnackBar(
+          content: Text('El insumo no tiene un ID válido.'),
+        ),
       );
       return;
     }
@@ -72,24 +73,13 @@ class _RegistrarEntradaProductoDialogState
     });
 
     try {
-      final movimientoService = context.read<MovimientoInventarioService>();
+      final movimientoService =
+          context.read<MovimientoInventarioService>();
 
-      final stockAnterior = widget.producto.stock;
-
-      await movimientoService.registrarMovimiento(
-        MovimientoInventarioModel(
-          fecha: DateTime.now(),
-          tipo: "ENTRADA",
-          nombreItem: widget.producto.nombre,
-          emoji: widget.producto.emoji,
-          unidad: "unidad",
-          referenciaId: null,
-          insumoId: null,
-          productoId: widget.producto.id,
-          cantidad: cantidad.toDouble(),
-          signo: 1,
-          observacion: "$motivo - Stock anterior: $stockAnterior",
-        ),
+      await movimientoService.ajustarStockInsumoA(
+        insumo: widget.insumo,
+        nuevoStock: nuevoStock,
+        motivo: motivo,
       );
 
       if (!mounted) return;
@@ -99,7 +89,7 @@ class _RegistrarEntradaProductoDialogState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            "Entrada registrada: +$cantidad ${widget.producto.nombre}",
+            'Stock de ${widget.insumo.nombre} actualizado a ${nuevoStock.toString()}.',
           ),
         ),
       );
@@ -111,7 +101,9 @@ class _RegistrarEntradaProductoDialogState
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("No se pudo registrar la entrada: $e")),
+        SnackBar(
+          content: Text('No se pudo ajustar el stock: $e'),
+        ),
       );
     }
   }
@@ -119,14 +111,19 @@ class _RegistrarEntradaProductoDialogState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+      ),
       title: Row(
         children: [
-          const Icon(Icons.move_to_inbox, color: Color(0xff0A2E6E)),
+          const Icon(
+            Icons.tune,
+            color: Color(0xff0A2E6E),
+          ),
           const SizedBox(width: 10),
           const Expanded(
             child: Text(
-              "Registrar entrada",
+              'Ajustar stock',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
@@ -147,7 +144,7 @@ class _RegistrarEntradaProductoDialogState
               child: Row(
                 children: [
                   Text(
-                    widget.producto.emoji,
+                    widget.insumo.emoji,
                     style: const TextStyle(fontSize: 32),
                   ),
                   const SizedBox(width: 12),
@@ -156,47 +153,59 @@ class _RegistrarEntradaProductoDialogState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.producto.nombre,
+                          widget.insumo.nombre,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 17,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text("Stock actual: ${widget.producto.stock} und"),
+                        Text(
+                          'Stock actual: ${widget.insumo.stock} ${widget.insumo.unidadMedida}',
+                        ),
                       ],
                     ),
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: 18),
-
             TextField(
-              controller: _cantidadController,
+              controller: _nuevoStockController,
               autofocus: true,
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: InputDecoration(
-                labelText: "Cantidad",
-                hintText: "Ejemplo: 24",
-                prefixIcon: const Icon(Icons.add_box),
+                labelText: 'Nuevo stock',
+                hintText: 'Ejemplo: 5000',
+                prefixIcon: const Icon(Icons.inventory_2_outlined),
+                suffixText: widget.insumo.unidadMedida,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
             ),
-
             const SizedBox(height: 18),
-
             TextField(
               controller: _motivoController,
               decoration: InputDecoration(
-                labelText: "Motivo",
-                hintText: "Ejemplo: Compra",
+                labelText: 'Motivo',
+                hintText: 'Ejemplo: Merma o vencimiento',
                 prefixIcon: const Icon(Icons.description),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Ingresa el stock físico final. AZUL OS calculará automáticamente la diferencia y la registrará en el Kardex.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.black54,
                 ),
               ),
             ),
@@ -207,10 +216,10 @@ class _RegistrarEntradaProductoDialogState
         TextButton.icon(
           onPressed: _guardando ? null : () => Navigator.pop(context),
           icon: const Icon(Icons.close),
-          label: const Text("Cancelar"),
+          label: const Text('Cancelar'),
         ),
         ElevatedButton.icon(
-          onPressed: _guardando ? null : _registrarEntrada,
+          onPressed: _guardando ? null : _ajustarStock,
           icon: _guardando
               ? const SizedBox(
                   width: 18,
@@ -221,7 +230,7 @@ class _RegistrarEntradaProductoDialogState
                   ),
                 )
               : const Icon(Icons.save),
-          label: Text(_guardando ? "Guardando..." : "Registrar"),
+          label: Text(_guardando ? 'Guardando...' : 'Ajustar stock'),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xff0A2E6E),
             foregroundColor: Colors.white,

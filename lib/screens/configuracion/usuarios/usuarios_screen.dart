@@ -19,257 +19,29 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   List<Usuario> _usuarios = [];
 
   Future<void> _mostrarDialogoNuevoUsuario() async {
-    final nombreController = TextEditingController();
-    final pinController = TextEditingController();
-    final confirmarPinController = TextEditingController();
-
-    bool ocultarPin = true;
-    bool ocultarConfirmacion = true;
-    bool guardando = false;
+    final repository = context.read<UsuariosRepository>();
 
     final creado = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (dialogBuildContext, setDialogState) {
-            Future<void> guardar() async {
-              if (guardando) return;
-
-              final nombre = nombreController.text.trim();
-              final pin = pinController.text.trim();
-              final confirmarPin = confirmarPinController.text.trim();
-
-              if (nombre.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Ingresa el nombre del usuario.'),
-                  ),
-                );
-                return;
-              }
-
-              if (pin.length != 4) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('El PIN debe tener 4 dígitos.')),
-                );
-                return;
-              }
-
-              if (!RegExp(r'^\d{4}$').hasMatch(pin)) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('El PIN solo puede contener números.'),
-                  ),
-                );
-                return;
-              }
-
-              if (pin != confirmarPin) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Los PIN no coinciden.')),
-                );
-                return;
-              }
-
-              setDialogState(() {
-                guardando = true;
-              });
-
-              try {
-                final repository = context.read<UsuariosRepository>();
-
-                final existente = await repository.obtenerPorNombre(nombre);
-
-                if (existente != null) {
-                  setDialogState(() {
-                    guardando = false;
-                  });
-
-                  if (!dialogBuildContext.mounted) return;
-
-                  ScaffoldMessenger.of(dialogBuildContext).showSnackBar(
-                    const SnackBar(
-                      content: Text('Ya existe un usuario con ese nombre.'),
-                    ),
-                  );
-
-                  return;
-                }
-
-                await repository.crearUsuario(
-                  nombre: nombre,
-                  pin: pin,
-                  rol: 'CAJERO',
-                  activo: true,
-                );
-
-                if (!dialogBuildContext.mounted) return;
-
-                Navigator.of(dialogContext).pop(true);
-              } catch (e) {
-                if (!dialogBuildContext.mounted) return;
-
-                setDialogState(() {
-                  guardando = false;
-                });
-
-                ScaffoldMessenger.of(dialogBuildContext).showSnackBar(
-                  SnackBar(
-                    content: Text('No se pudo crear el usuario: $e'),
-                    backgroundColor: AppColors.error,
-                  ),
-                );
-              }
-            }
-
-            return AlertDialog(
-              title: const Row(
-                children: [
-                  Icon(Icons.person_add_alt_1_rounded),
-                  SizedBox(width: 10),
-                  Text('Nuevo usuario'),
-                ],
-              ),
-              content: SizedBox(
-                width: 420,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: nombreController,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'Nombre',
-                        hintText: 'Ej. María',
-                        prefixIcon: Icon(Icons.person_outline),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    TextField(
-                      controller: pinController,
-                      obscureText: ocultarPin,
-                      keyboardType: TextInputType.number,
-                      maxLength: 4,
-                      decoration: InputDecoration(
-                        labelText: 'PIN',
-                        hintText: '4 dígitos',
-                        counterText: '',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setDialogState(() {
-                              ocultarPin = !ocultarPin;
-                            });
-                          },
-                          icon: Icon(
-                            ocultarPin
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    TextField(
-                      controller: confirmarPinController,
-                      obscureText: ocultarConfirmacion,
-                      keyboardType: TextInputType.number,
-                      maxLength: 4,
-                      decoration: InputDecoration(
-                        labelText: 'Confirmar PIN',
-                        hintText: 'Repite el PIN',
-                        counterText: '',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setDialogState(() {
-                              ocultarConfirmacion = !ocultarConfirmacion;
-                            });
-                          },
-                          icon: Icon(
-                            ocultarConfirmacion
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.info.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.badge_outlined),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Rol: CAJERO',
-                              style: TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: guardando
-                      ? null
-                      : () {
-                          Navigator.of(dialogContext).pop();
-                        },
-                  child: const Text('CANCELAR'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: guardando ? null : guardar,
-                  icon: guardando
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.save_rounded),
-                  label: Text(guardando ? 'GUARDANDO...' : 'CREAR USUARIO'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      builder: (dialogContext) => _NuevoUsuarioDialog(
+        repository: repository,
+        permisosRepository: context.read<PermisosUsuarioRepository>(),
+      ),
     );
 
-    nombreController.dispose();
-    pinController.dispose();
-    confirmarPinController.dispose();
+    if (!mounted || creado != true) return;
+
+    await _cargarUsuarios();
 
     if (!mounted) return;
 
-    if (creado == true) {
-      await _cargarUsuarios();
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Usuario creado correctamente.'),
-          backgroundColor: AppColors.success,
-        ),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Usuario creado correctamente.'),
+        backgroundColor: AppColors.success,
+      ),
+    );
   }
 
   @override
@@ -333,6 +105,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
       {'codigo': 'INVENTARIO', 'nombre': 'Inventario'},
       {'codigo': 'RECETAS', 'nombre': 'Recetas'},
       {'codigo': 'PRODUCCION', 'nombre': 'Producción'},
+      {'codigo': 'PEDIDOS', 'nombre': 'Pedidos'},
       {'codigo': 'VENTAS', 'nombre': 'Ventas'},
       {'codigo': 'CLIENTES', 'nombre': 'Clientes'},
       {'codigo': 'CAJA', 'nombre': 'Caja'},
@@ -340,7 +113,14 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
       {'codigo': 'CONFIGURACION', 'nombre': 'Configuración'},
     ];
 
-    final permisos = await repository.obtenerPorUsuario(usuario.id);
+    var permisos = await repository.obtenerPorUsuario(usuario.id);
+
+    // Compatibilidad con usuarios CAJERO creados antes de la
+    // inicialización del perfil por rol.
+    if (permisos.isEmpty) {
+      await repository.inicializarPerfilPorRol(usuario.id, usuario.rol);
+      permisos = await repository.obtenerPorUsuario(usuario.id);
+    }
 
     if (!mounted) return;
 
@@ -688,6 +468,270 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _NuevoUsuarioDialog extends StatefulWidget {
+  final UsuariosRepository repository;
+  final PermisosUsuarioRepository permisosRepository;
+
+  const _NuevoUsuarioDialog({
+    required this.repository,
+    required this.permisosRepository,
+  });
+
+  @override
+  State<_NuevoUsuarioDialog> createState() => _NuevoUsuarioDialogState();
+}
+
+class _NuevoUsuarioDialogState extends State<_NuevoUsuarioDialog> {
+  final _nombreController = TextEditingController();
+  final _pinController = TextEditingController();
+  final _confirmarPinController = TextEditingController();
+
+  bool _ocultarPin = true;
+  bool _ocultarConfirmacion = true;
+  bool _guardando = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _nombreController.dispose();
+    _pinController.dispose();
+    _confirmarPinController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _guardar() async {
+    if (_guardando) return;
+
+    final nombre = _nombreController.text.trim();
+    final pin = _pinController.text.trim();
+    final confirmarPin = _confirmarPinController.text.trim();
+
+    if (nombre.isEmpty) {
+      _mostrarError('Ingresa el nombre del usuario.');
+      return;
+    }
+
+    if (pin.length != 4) {
+      _mostrarError('El PIN debe tener 4 dígitos.');
+      return;
+    }
+
+    if (!RegExp(r'^\\d{4}$').hasMatch(pin)) {
+      _mostrarError('El PIN solo puede contener números.');
+      return;
+    }
+
+    if (pin != confirmarPin) {
+      _mostrarError('Los PIN no coinciden.');
+      return;
+    }
+
+    setState(() {
+      _guardando = true;
+    });
+
+    try {
+      final existente = await widget.repository.obtenerPorNombre(nombre);
+
+      if (!mounted) return;
+
+      if (existente != null) {
+        setState(() {
+          _guardando = false;
+        });
+        _mostrarError('Ya existe un usuario con ese nombre.');
+        return;
+      }
+
+      final usuarioId = await widget.repository.crearUsuario(
+        nombre: nombre,
+        pin: pin,
+        rol: 'CAJERO',
+        activo: true,
+      );
+
+      await widget.permisosRepository.inicializarPerfilPorRol(
+        usuarioId,
+        'CAJERO',
+      );
+
+      if (!mounted) return;
+
+      // El usuario se crea como CAJERO. Sus permisos operativos
+      // se aplicarán al iniciar sesión mediante el perfil por rol.
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _guardando = false;
+      });
+
+      _mostrarError('No se pudo crear el usuario: $e');
+    }
+  }
+
+  void _mostrarError(String mensaje) {
+    if (!mounted) return;
+
+    setState(() {
+      _error = mensaje;
+      _guardando = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Row(
+        children: [
+          Icon(Icons.person_add_alt_1_rounded),
+          SizedBox(width: 10),
+          Text('Nuevo usuario'),
+        ],
+      ),
+      content: SizedBox(
+        width: 420,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _nombreController,
+              textCapitalization: TextCapitalization.words,
+              decoration: const InputDecoration(
+                labelText: 'Nombre',
+                hintText: 'Ej. María',
+                prefixIcon: Icon(Icons.person_outline),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _pinController,
+              obscureText: _ocultarPin,
+              keyboardType: TextInputType.number,
+              maxLength: 4,
+              decoration: InputDecoration(
+                labelText: 'PIN',
+                hintText: '4 dígitos',
+                counterText: '',
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _ocultarPin = !_ocultarPin;
+                    });
+                  },
+                  icon: Icon(
+                    _ocultarPin
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _confirmarPinController,
+              obscureText: _ocultarConfirmacion,
+              keyboardType: TextInputType.number,
+              maxLength: 4,
+              decoration: InputDecoration(
+                labelText: 'Confirmar PIN',
+                hintText: 'Repite el PIN',
+                counterText: '',
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _ocultarConfirmacion = !_ocultarConfirmacion;
+                    });
+                  },
+                  icon: Icon(
+                    _ocultarConfirmacion
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                ),
+              ),
+            ),
+            if (_error != null) ...[
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppColors.error.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      color: AppColors.error,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _error!,
+                        style: const TextStyle(color: AppColors.error),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.info.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.badge_outlined),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Rol: CAJERO',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _guardando
+              ? null
+              : () => Navigator.of(context).pop(),
+          child: const Text('CANCELAR'),
+        ),
+        ElevatedButton.icon(
+          onPressed: _guardando ? null : _guardar,
+          icon: _guardando
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.save_rounded),
+          label: Text(
+            _guardando ? 'GUARDANDO...' : 'CREAR USUARIO',
+          ),
+        ),
+      ],
     );
   }
 }

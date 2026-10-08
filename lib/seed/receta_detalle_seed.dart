@@ -51,6 +51,15 @@ class RecetaDetalleSeed {
       )).getSingleOrNull();
 
       if (existente != null) {
+        await (db.update(db.recetaDetalle)
+          ..where((d) => d.id.equals(existente.id)))
+            .write(
+          RecetaDetalleCompanion(
+            cantidad: Value(cantidad),
+            unidad: Value(unidad),
+            orden: Value(orden),
+          ),
+        );
         return;
       }
 
@@ -341,6 +350,42 @@ class RecetaDetalleSeed {
       cantidad: 15.0,
       unidad: "g",
       orden: 3,
+    );
+
+    // ==========================================================
+    // ICED COFFEE
+    // ==========================================================
+
+    await agregarDetalle(
+      receta: "Iced Coffee",
+      insumo: "INS001",
+      cantidad: 10.0,
+      unidad: "g",
+      orden: 1,
+    );
+
+    // ==========================================================
+    // ICED MOCCA
+    // ==========================================================
+
+    await agregarDetalle(
+      receta: "Iced Mocca",
+      insumo: "INS001",
+      cantidad: 10.0,
+      unidad: "g",
+      orden: 1,
+    );
+
+    // ==========================================================
+    // ICED CARAMEL
+    // ==========================================================
+
+    await agregarDetalle(
+      receta: "Iced Caramel",
+      insumo: "INS001",
+      cantidad: 10.0,
+      unidad: "g",
+      orden: 1,
     );
 
     // ==========================================================

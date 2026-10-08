@@ -76,6 +76,25 @@ class CobroService {
       );
     }
 
+    // Una caja abierta solo puede operar durante su propia jornada.
+    final esMismaJornada =
+        cajaAbierta.fechaApertura.year == ahora.year &&
+        cajaAbierta.fechaApertura.month == ahora.month &&
+        cajaAbierta.fechaApertura.day == ahora.day;
+
+    if (!esMismaJornada) {
+      final fechaCaja =
+          '${cajaAbierta.fechaApertura.day.toString().padLeft(2, '0')}/'
+          '${cajaAbierta.fechaApertura.month.toString().padLeft(2, '0')}/'
+          '${cajaAbierta.fechaApertura.year}';
+
+      throw StateError(
+        'La caja ${cajaAbierta.id} pertenece al $fechaCaja '
+        'y todavía está abierta. '
+        'Debe cerrar esa caja antes de operar una nueva jornada.',
+      );
+    }
+
     // ==========================================================
     // VALIDAR DATOS FISCALES
     // ==========================================================
@@ -217,6 +236,19 @@ class CobroService {
 
       return id;
     });
+
+    // La transacción venta + inventario + caja ya terminó.
+    //
+    // Desde este punto la venta ya existe en producción. Limpiamos
+    // inmediatamente el carrito para impedir que un fallo posterior
+    // (XML, SUNAT o impresora) permita volver a cobrar accidentalmente
+    // la misma operación.
+    ventaService.nuevaVenta();
+    carritoService.vaciarCarrito();
+
+    // Sincronizamos los servicios en memoria con la BD para
+    // que las pantallas reflejen inmediatamente el stock real.
+    await inventarioAutomaticoService.refrescarEstado();
 
     // ==========================================================
     // CREAR COMPROBANTE ELECTRONICO

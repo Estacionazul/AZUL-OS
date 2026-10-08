@@ -154,7 +154,14 @@ class EscPosRenderer {
   Future<List<int>> render(Ticket ticket) async {
     final profile = await CapabilityProfile.load();
 
-    final generator = Generator(PaperSize.mm58, profile);
+    // POS-58: eliminar el espacio vertical automático entre líneas.
+    // La impresora ya agrega su avance físico; el valor por defecto de
+    // esc_pos_utils_plus (5) hace que el ticket quede innecesariamente largo.
+    final generator = Generator(
+      PaperSize.mm58,
+      profile,
+      spaceBetweenRows: 0,
+    );
 
     final bytes = <int>[];
 
@@ -236,10 +243,14 @@ class EscPosRenderer {
     }
 
 //==================================================
-// CORTE
+// CORTE COMPACTO
 //==================================================
+// esc_pos_utils_plus añade 5 líneas automáticamente antes de cut().
+// Para una POS-58 eso deja demasiado papel en blanco al final.
+// Dejamos solo una línea y enviamos el comando ESC/POS de corte directo.
 
-    bytes.addAll(generator.cut());
+    bytes.addAll(generator.emptyLines(1));
+    bytes.addAll(generator.rawBytes([0x1D, 0x56, 0x00]));
 
     return bytes;
   }
@@ -266,12 +277,15 @@ class EscPosRenderer {
 
       if (logoOriginal != null) {
         //================================================
-        // RECORTAR ESPACIO BLANCO DEL PNG
+        // RECORTAR EL LIENZO BLANCO/TRANSPARENTE DEL PNG.
+        // Esto evita que el logo arrastre márgenes superiores e inferiores
+        // que terminan convirtiéndose en papel en blanco en la POS-58.
         //================================================
 
         final logoRecortado = img.trim(
           logoOriginal,
-          mode: img.TrimMode.transparent,
+          mode: img.TrimMode.topLeftColor,
+          fuzzy: 0.05,
         );
 
         //================================================
@@ -312,15 +326,27 @@ class EscPosRenderer {
         }
 
         //================================================
+        // RECORTE FINAL DEL ÁREA BLANCA
+        //================================================
+        // Después de convertir el logo a blanco/negro volvemos a recortar.
+        // Así eliminamos cualquier margen blanco que haya sobrevivido al
+        // primer recorte del PNG y evitamos que la POS-58 avance papel antes
+        // de comenzar el logo.
+        final logoSinMargen = img.trim(
+          contraste,
+          mode: img.TrimMode.topLeftColor,
+          fuzzy: 0.0,
+        );
+
+        //================================================
         // REDIMENSIONAR PARA POS-58
-        //
-        // 280 px permite conservar buena definición
-        // sin ocupar demasiado papel.
+        //================================================
+        // 250 px conserva buena definición y reduce la altura del logo.
         //================================================
 
         final logo = img.copyResize(
-          contraste,
-          width: 280,
+          logoSinMargen,
+          width: 250,
           interpolation: img.Interpolation.cubic,
         );
 
@@ -334,6 +360,30 @@ class EscPosRenderer {
         bytes.addAll(
           generator.image(logo, align: PosAlign.center, isDoubleDensity: true),
         );
+
+        // Separación visual mínima entre el logo y los datos fiscales.
+        // Una sola línea mantiene el encabezado compacto sin pegar el RUC al logo.
+        bytes.addAll(generator.emptyLines(1));
+
+        bytes.addAll(
+          generator.textEncoded(
+            _cp850("RUC: 10446152080"),
+            styles: const PosStyles(
+              align: PosAlign.center,
+              bold: true,
+            ),
+          ),
+        );
+
+        bytes.addAll(
+          generator.textEncoded(
+            _cp850("Av. Nicolás Ayllón 582 - Ate"),
+            styles: const PosStyles(
+              align: PosAlign.center,
+            ),
+          ),
+        );
+
       }
     } catch (e, stackTrace) {
       debugPrint('ERROR IMPRIMIENDO LOGO: $e');
@@ -367,8 +417,6 @@ class EscPosRenderer {
         styles: const PosStyles(align: PosAlign.center, bold: true),
       ),
     );
-
-    bytes.addAll(generator.emptyLines(1));
 
     bytes.addAll(
       generator.row([
@@ -688,9 +736,13 @@ class EscPosRenderer {
 
       //================================================
       // SEPARACIÓN PEQUEÑA ENTRE PRODUCTOS
+      // Solo se deja separación cuando realmente hay otro
+      // producto; una venta de un solo producto queda compacta.
       //================================================
 
-      bytes.addAll(generator.emptyLines(1));
+      if (item != ticket.items.last) {
+        bytes.addAll(generator.emptyLines(1));
+      }
     }
 
     bytes.addAll(generator.hr());
@@ -796,8 +848,6 @@ class EscPosRenderer {
       ]),
     );
 
-    bytes.addAll(generator.emptyLines(1));
-
     //==================================================
     // MÉTODO DE PAGO
     //==================================================
@@ -831,8 +881,6 @@ class EscPosRenderer {
         styles: const PosStyles(align: PosAlign.center, bold: true),
       ),
     );
-
-    bytes.addAll(generator.emptyLines(1));
 
     //==================================================
     // INSTAGRAM

@@ -50,11 +50,6 @@ class InsumoRepository {
     );
   }
 
-  /// Actualizar solamente el stock
-  Future<bool> actualizarStock(int id, double stock) {
-    return _dao.actualizarStock(id, stock);
-  }
-
   /// Eliminar
   Future<int> eliminar(int id) {
     return _dao.eliminar(id);

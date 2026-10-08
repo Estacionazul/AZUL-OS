@@ -28,6 +28,8 @@ class ProductoCard extends StatelessWidget {
         return "Postres";
       case 7:
         return "Combos";
+      case 9:
+        return "Gaseosas y Aguas";
       default:
         return "";
     }

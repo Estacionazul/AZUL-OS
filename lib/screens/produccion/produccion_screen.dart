@@ -116,8 +116,33 @@ class _ProduccionScreenState extends State<ProduccionScreen> {
 
                           subtitle: Padding(
                             padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              "Producto ID: ${receta.productoId}",
+                            child: Row(
+                              children: [
+                                Text("Producto ID: ${receta.productoId}"),
+                                const SizedBox(width: 10),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: receta.activo
+                                        ? Colors.green.shade100
+                                        : Colors.red.shade100,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    receta.activo ? "Activa" : "Inactiva",
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: receta.activo
+                                          ? Colors.green.shade800
+                                          : Colors.red.shade800,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
 
@@ -146,7 +171,9 @@ class _ProduccionScreenState extends State<ProduccionScreen> {
                                 const SizedBox(width: 12),
 
                                 ElevatedButton.icon(
-                                  onPressed: () async {
+                                  onPressed: !receta.activo
+                                      ? null
+                                      : () async {
                                     final cantidad =
                                     double.tryParse(
                                       controller.text,

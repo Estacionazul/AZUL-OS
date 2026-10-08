@@ -33,8 +33,15 @@ class ClientesDao extends DatabaseAccessor<AppDatabase>
   //=========================================================
 
   Future<List<Cliente>> buscarClientes(String texto) {
+    final busqueda = '%$texto%';
+
     return (select(clientes)
-          ..where((t) => t.nombre.like('%$texto%'))
+          ..where(
+            (t) =>
+                t.nombre.like(busqueda) |
+                t.dni.like(busqueda) |
+                t.telefono.like(busqueda),
+          )
           ..orderBy([(t) => OrderingTerm.asc(t.nombre)]))
         .get();
   }
