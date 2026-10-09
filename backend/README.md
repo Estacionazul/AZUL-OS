@@ -60,9 +60,9 @@ Pendiente antes de uso operativo:
 
 ## Endpoints de autenticación actuales
 
-- `POST /api/v1/auth/login`: recibe `establishmentId`, `username`, `pin` (exactamente cuatro dígitos) y `deviceId`. Tanto el establecimiento como el usuario y el dispositivo deben existir y estar activos.
-- `GET /api/v1/auth/me`: requiere `Authorization: Bearer <token>`.
-- `POST /api/v1/auth/logout`: requiere token y revoca la sesión.
+- `POST /v1/auth/login`: recibe `establishmentId`, `username`, `pin` (exactamente cuatro dígitos) y `deviceId`. Tanto el establecimiento como el usuario y el dispositivo deben existir y estar activos.
+- `GET /v1/auth/me`: requiere `Authorization: Bearer <token>`.
+- `POST /v1/auth/logout`: requiere token y revoca la sesión.
 
 No existe todavía una ruta pública para registrar usuarios o dispositivos. La creación inicial debe realizarse mediante un procedimiento administrativo controlado, que se implementará antes de conectar clientes reales.
 
