@@ -1,16 +1,12 @@
 import express, { type ErrorRequestHandler } from "express";
 import helmet from "helmet";
 import { pool } from "./db.js";
-import { authRouter } from "./auth.js";
-import { authRouter } from "./auth.js";
 import { authRouter } from "./auth.routes.js";
 
 export const app = express();
 app.disable("x-powered-by");
 app.use(helmet());
 app.use(express.json({ limit: "256kb" }));
-app.use("/api/v1/auth", authRouter);
-app.use("/auth", authRouter);
 app.use("/v1/auth", authRouter);
 
 app.get("/health/live", (_req, res) => {
