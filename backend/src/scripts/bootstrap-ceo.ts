@@ -20,6 +20,9 @@ async function main(): Promise<void> {
   if (!/^\d{4}$/.test(pin)) {
     throw new Error("BOOTSTRAP_PIN must be exactly four digits");
   }
+  if (["0000", "1111", "1234", "4321", "1212"].includes(pin)) {
+    throw new Error("Choose a non-obvious four-digit CEO PIN");
+  }
   if (username.length > 80 || ceoName.length > 120 || establishmentName.length > 160) {
     throw new Error("Bootstrap names exceed the supported length");
   }
