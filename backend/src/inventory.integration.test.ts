@@ -17,6 +17,9 @@ test("inventory movements enforce idempotency, non-negative stock and recipe res
     ["CI inventory integration"],
   );
   const establishmentId = establishment.rows[0].id as string;
+  let foreignEstablishmentId: string | undefined;
+  let foreignCategoryId: string | undefined;
+  let foreignProductId: string | undefined;
   let deviceId: string | undefined;
   let userId: string | undefined;
   let categoryId: string | undefined;
@@ -53,6 +56,23 @@ test("inventory movements enforce idempotency, non-negative stock and recipe res
       [establishmentId, `CI-${establishmentId.slice(0, 8)}-R`, "CI Recipe Product", categoryId],
     );
     recipeProductId = recipe.rows[0].id as string;
+
+    const foreignEstablishment = await pool.query(
+      "INSERT INTO establecimientos (nombre) VALUES ($1) RETURNING id",
+      ["CI foreign establishment"],
+    );
+    foreignEstablishmentId = foreignEstablishment.rows[0].id as string;
+    const foreignCategory = await pool.query(
+      "INSERT INTO categorias (establecimiento_id, nombre) VALUES ($1, $2) RETURNING id",
+      [foreignEstablishmentId, "CI foreign category"],
+    );
+    foreignCategoryId = foreignCategory.rows[0].id as string;
+    const foreignProduct = await pool.query(
+      `INSERT INTO productos (establecimiento_id, codigo, nombre, categoria_id, tipo_inventario)
+       VALUES ($1, $2, $3, $4, 'producto') RETURNING id`,
+      [foreignEstablishmentId, `CI-${foreignEstablishmentId.slice(0, 8)}-X`, "CI Foreign Product", foreignCategoryId],
+    );
+    foreignProductId = foreignProduct.rows[0].id as string;
 
     server = app.listen(0, "127.0.0.1");
     await once(server, "listening");
@@ -109,16 +129,33 @@ test("inventory movements enforce idempotency, non-negative stock and recipe res
     const current = stockBody.items.find((item) => item.id === productId);
     assert.ok(current);
     assert.equal(Number(current.currentStock), 10);
+
+    const allStock = await fetch(`${base}/api/v1/inventory/stock?itemType=producto`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    assert.equal(allStock.status, 200);
+    const allStockBody = await allStock.json() as { items: Array<{ id: string }> };
+    assert.equal(allStockBody.items.some((item) => item.id === foreignProductId), false);
+
+    const foreignMovement = await sendMovement("66666666-6666-4666-8666-666666666666", {
+      itemType: "producto", itemId: foreignProductId, type: "ENTRADA", quantity: 1,
+    });
+    assert.equal(foreignMovement.status, 404);
+    assert.equal((await foreignMovement.json() as { error: { code: string } }).error.code, "ITEM_NOT_FOUND");
   } finally {
     if (server) await new Promise<void>((resolve) => server!.close(() => resolve()));
     if (productId) await pool.query("DELETE FROM movimientos_inventario WHERE producto_id = $1", [productId]);
+    if (foreignProductId) await pool.query("DELETE FROM movimientos_inventario WHERE producto_id = $1", [foreignProductId]);
     if (recipeProductId) await pool.query("DELETE FROM movimientos_inventario WHERE producto_id = $1", [recipeProductId]);
     if (userId) await pool.query("DELETE FROM sesiones WHERE usuario_id = $1", [userId]);
     if (productId) await pool.query("DELETE FROM productos WHERE id = $1", [productId]);
     if (recipeProductId) await pool.query("DELETE FROM productos WHERE id = $1", [recipeProductId]);
+    if (foreignProductId) await pool.query("DELETE FROM productos WHERE id = $1", [foreignProductId]);
     if (categoryId) await pool.query("DELETE FROM categorias WHERE id = $1", [categoryId]);
+    if (foreignCategoryId) await pool.query("DELETE FROM categorias WHERE id = $1", [foreignCategoryId]);
     if (userId) await pool.query("DELETE FROM usuarios WHERE id = $1", [userId]);
     if (deviceId) await pool.query("DELETE FROM dispositivos WHERE id = $1", [deviceId]);
+    if (foreignEstablishmentId) await pool.query("DELETE FROM establecimientos WHERE id = $1", [foreignEstablishmentId]);
     await pool.query("DELETE FROM establecimientos WHERE id = $1", [establishmentId]);
   }
 });
