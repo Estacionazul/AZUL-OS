@@ -6,9 +6,7 @@ on:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
   push:
-    branches:
-      - main
-      - arquitectura-multidispositivo-20261008
+    branches: ["main"]
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
@@ -21,8 +19,8 @@ jobs:
         working-directory: backend
     env:
       NODE_ENV: test
-      DATABASE_URL: postgres://ci:ci@127.0.0.1:5432/azul_os_ci
-      JWT_SECRET: ci-only-secret-not-used-in-production-0123456789
+      DATABASE_URL: postgres://azul_os:azul_os_test_only@127.0.0.1:5432/azul_os_test
+      JWT_SECRET: test-only-secret-that-is-at-least-32-characters-long
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
