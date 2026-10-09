@@ -46,6 +46,14 @@ export async function login(input: {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+    const device = await client.query(
+      "SELECT id FROM dispositivos WHERE id = $1 AND establecimiento_id = $2 AND activo = true",
+      [input.deviceId, input.establishmentId],
+    );
+    if (!device.rowCount) {
+      await client.query("ROLLBACK");
+      return null;
+    }
     const found = await client.query(
       `SELECT id, establecimiento_id, usuario, nombre, pin_hash, rol, activo,
               intentos_fallidos, bloqueado_hasta
@@ -77,15 +85,6 @@ export async function login(input: {
       await client.query("COMMIT");
       return null;
     }
-    const device = await client.query(
-      "SELECT id FROM dispositivos WHERE id = $1 AND establecimiento_id = $2 AND activo = true",
-      [input.deviceId, input.establishmentId],
-    );
-    if (!device.rowCount) {
-      await client.query("ROLLBACK");
-      return null;
-    }
-
     await client.query(
       "UPDATE usuarios SET intentos_fallidos = 0, bloqueado_hasta = NULL, updated_at = now() WHERE id = $1",
       [user.id],
