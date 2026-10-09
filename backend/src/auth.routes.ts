@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import rateLimit from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 import { authenticate, login, logout } from "./auth.js";
 
 export const authRouter = Router();
