@@ -122,25 +122,34 @@ export async function login(input: {
 }
 
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
+  const header = req.header("authorization");
+  if (!header?.startsWith("Bearer ")) {
+    res.status(401).json({ error: { code: "UNAUTHENTICATED", message: "Inicia sesión para continuar." } });
+    return;
+  }
+  const token = header.slice(7).trim();
+  if (!token) {
+    res.status(401).json({ error: { code: "UNAUTHENTICATED", message: "Token inválido." } });
+    return;
+  }
+
+  let decoded: jwt.JwtPayload;
   try {
-    const header = req.header("authorization");
-    if (!header?.startsWith("Bearer ")) {
-      res.status(401).json({ error: { code: "UNAUTHENTICATED", message: "Inicia sesión para continuar." } });
-      return;
-    }
-    const token = header.slice(7).trim();
-    if (!token) {
-      res.status(401).json({ error: { code: "UNAUTHENTICATED", message: "Token inválido." } });
-      return;
-    }
-    const decoded = jwt.verify(token, jwtSecret(), {
+    const verified = jwt.verify(token, jwtSecret(), {
       issuer: JWT_ISSUER,
       audience: JWT_AUDIENCE,
     });
-    if (typeof decoded === "string" || !decoded.sub || typeof decoded.sid !== "string" || typeof decoded.eid !== "string") {
+    if (typeof verified === "string" || !verified.sub || typeof verified.sid !== "string" || typeof verified.eid !== "string") {
       res.status(401).json({ error: { code: "UNAUTHENTICATED", message: "Token inválido." } });
       return;
     }
+    decoded = verified;
+  } catch {
+    res.status(401).json({ error: { code: "UNAUTHENTICATED", message: "Token inválido o vencido." } });
+    return;
+  }
+
+  try {
     const result = await pool.query(
       `SELECT s.id AS session_id, u.id AS user_id, u.establecimiento_id, u.rol
          FROM sesiones s
@@ -164,8 +173,8 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
     };
     void pool.query("UPDATE sesiones SET fecha_ultimo_acceso = now() WHERE id = $1", [row.session_id]).catch(() => undefined);
     next();
-  } catch {
-    res.status(401).json({ error: { code: "UNAUTHENTICATED", message: "Token inválido o vencido." } });
+  } catch (error) {
+    next(error);
   }
 }
 
