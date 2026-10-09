@@ -49,7 +49,7 @@ ALTER TABLE movimientos_inventario
   REFERENCES insumos (id, establecimiento_id);
 
 -- receta_detalle does not store establishment_id, so enforce ownership by
--- resolving both parents. This also protects updates, not only inserts.
+-- resolving both parents. This protects inserts and updates.
 CREATE FUNCTION validar_receta_detalle_establecimiento()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -81,7 +81,7 @@ END;
 $$;
 
 CREATE TRIGGER trg_receta_detalle_establecimiento
-  BEFORE INSERT OR UPDATE OF receta_id, insumo_id
+  BEFORE INSERT OR UPDATE
   ON receta_detalle
   FOR EACH ROW
   EXECUTE FUNCTION validar_receta_detalle_establecimiento();
