@@ -68,3 +68,54 @@ catalogRouter.get("/categories", authenticate, requirePermission("Productos"), a
     next(error);
   }
 });
+
+
+const InsumoQuery = z.object({
+  q: z.string().trim().max(100).optional(),
+  categoryId: z.string().uuid().optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).max(1_000_000).default(0),
+});
+
+catalogRouter.get("/insumos", authenticate, requirePermission("Inventario"), async (req, res, next) => {
+  const parsed = InsumoQuery.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Filtros de insumos inválidos." } });
+    return;
+  }
+  const { q, categoryId, limit, offset } = parsed.data;
+  const search = q || null;
+  try {
+    const [items, total] = await Promise.all([
+      pool.query(
+        `SELECT i.id, i.codigo, i.nombre, i.descripcion,
+                i.categoria_id AS "categoryId", c.nombre AS "categoryName",
+                i.unidad_medida AS unit, i.stock_minimo AS "minimumStock",
+                i.costo_compra AS "purchaseCost", i.emoji, i.imagen AS image,
+                i.activo AS active, i.updated_at AS "updatedAt"
+           FROM insumos i
+           JOIN categorias c ON c.id = i.categoria_id
+          WHERE i.activo = true
+            AND ($1::text IS NULL OR i.nombre ILIKE '%' || $1 || '%' OR i.codigo ILIKE '%' || $1 || '%')
+            AND ($2::uuid IS NULL OR i.categoria_id = $2)
+          ORDER BY i.nombre, i.codigo
+          LIMIT $3 OFFSET $4`,
+        [search, categoryId ?? null, limit, offset],
+      ),
+      pool.query(
+        `SELECT count(*)::integer AS total
+           FROM insumos i
+          WHERE i.activo = true
+            AND ($1::text IS NULL OR i.nombre ILIKE '%' || $1 || '%' OR i.codigo ILIKE '%' || $1 || '%')
+            AND ($2::uuid IS NULL OR i.categoria_id = $2)`,
+        [search, categoryId ?? null],
+      ),
+    ]);
+    res.status(200).json({
+      items: items.rows,
+      pagination: { limit, offset, total: total.rows[0].total },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
