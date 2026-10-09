@@ -365,6 +365,18 @@ salesRouter.post("/", authenticate, requirePermission("Ventas"), async (req, res
     );
     const sale = insertedSale.rows[0] as { id: string; numero: string; fecha: Date; subtotal: string; igv: string; descuento: string; total: string; paymentMethod: string };
 
+    await client.query(
+      `INSERT INTO movimientos_caja
+         (caja_id, tipo, concepto, monto, metodo_pago, referencia, observacion,
+          usuario_id, dispositivo_id, idempotency_key, establecimiento_id)
+       VALUES ($1, 'INGRESO', $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      [
+        cashRegisterId, `Venta ${number}`, total, input.paymentMethod, sale.id,
+        `Ingreso asociado a la venta ${number}`, req.auth!.userId, req.auth!.deviceId,
+        randomUUID(), req.auth!.establishmentId,
+      ],
+    );
+
     for (const line of preparedLines) {
       await client.query(
         `INSERT INTO detalle_ventas
