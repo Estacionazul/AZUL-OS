@@ -29,20 +29,20 @@ catalogRouter.get("/products", authenticate, requirePermission("Productos"), asy
                 p.tipo_inventario AS "inventoryType", p.tipo_afectacion_igv AS "igvAffectation",
                 p.emoji, p.imagen AS "image", p.activo AS active, p.updated_at AS "updatedAt"
            FROM productos p
-           JOIN categorias c ON c.id = p.categoria_id
-          WHERE p.activo = true
-            AND ($1::text IS NULL OR p.nombre ILIKE '%' || $1 || '%' OR p.codigo ILIKE '%' || $1 || '%')
-            AND ($2::uuid IS NULL OR p.categoria_id = $2)
+           JOIN categorias c ON c.id = p.categoria_id AND c.establecimiento_id = p.establecimiento_id
+          WHERE p.establecimiento_id = $1 AND p.activo = true
+            AND ($2::text IS NULL OR p.nombre ILIKE '%' || $2 || '%' OR p.codigo ILIKE '%' || $2 || '%')
+            AND ($3::uuid IS NULL OR p.categoria_id = $3)
           ORDER BY p.nombre, p.codigo
-          LIMIT $3 OFFSET $4`,
+          LIMIT $4 OFFSET $5`,
         [req.auth!.establishmentId, search, categoryId ?? null, limit, offset],
       ),
       pool.query(
         `SELECT count(*)::integer AS total
            FROM productos p
-          WHERE p.activo = true
-            AND ($1::text IS NULL OR p.nombre ILIKE '%' || $1 || '%' OR p.codigo ILIKE '%' || $1 || '%')
-            AND ($2::uuid IS NULL OR p.categoria_id = $2)`,
+          WHERE p.establecimiento_id = $1 AND p.activo = true
+            AND ($2::text IS NULL OR p.nombre ILIKE '%' || $2 || '%' OR p.codigo ILIKE '%' || $2 || '%')
+            AND ($3::uuid IS NULL OR p.categoria_id = $3)`,
         [req.auth!.establishmentId, search, categoryId ?? null],
       ),
     ]);
@@ -55,13 +55,14 @@ catalogRouter.get("/products", authenticate, requirePermission("Productos"), asy
   }
 });
 
-catalogRouter.get("/categories", authenticate, requirePermission("Productos"), async (_req, res, next) => {
+catalogRouter.get("/categories", authenticate, requirePermission("Productos"), async (req, res, next) => {
   try {
     const result = await pool.query(
       `SELECT id, nombre AS name, icono AS icon, orden AS "sortOrder"
          FROM categorias
-        WHERE activo = true
+        WHERE establecimiento_id = $1 AND activo = true
         ORDER BY orden, nombre`,
+      [req.auth!.establishmentId],
     );
     res.status(200).json({ items: result.rows });
   } catch (error) {
@@ -94,21 +95,21 @@ catalogRouter.get("/insumos", authenticate, requirePermission("Inventario"), asy
                 i.costo_compra AS "purchaseCost", i.emoji, i.imagen AS image,
                 i.activo AS active, i.updated_at AS "updatedAt"
            FROM insumos i
-           JOIN categorias c ON c.id = i.categoria_id
-          WHERE i.activo = true
-            AND ($1::text IS NULL OR i.nombre ILIKE '%' || $1 || '%' OR i.codigo ILIKE '%' || $1 || '%')
-            AND ($2::uuid IS NULL OR i.categoria_id = $2)
+           JOIN categorias c ON c.id = i.categoria_id AND c.establecimiento_id = i.establecimiento_id
+          WHERE i.establecimiento_id = $1 AND i.activo = true
+            AND ($2::text IS NULL OR i.nombre ILIKE '%' || $2 || '%' OR i.codigo ILIKE '%' || $2 || '%')
+            AND ($3::uuid IS NULL OR i.categoria_id = $3)
           ORDER BY i.nombre, i.codigo
-          LIMIT $3 OFFSET $4`,
-        [search, categoryId ?? null, limit, offset],
+          LIMIT $4 OFFSET $5`,
+        [req.auth!.establishmentId, search, categoryId ?? null, limit, offset],
       ),
       pool.query(
         `SELECT count(*)::integer AS total
            FROM insumos i
-          WHERE i.activo = true
-            AND ($1::text IS NULL OR i.nombre ILIKE '%' || $1 || '%' OR i.codigo ILIKE '%' || $1 || '%')
-            AND ($2::uuid IS NULL OR i.categoria_id = $2)`,
-        [search, categoryId ?? null],
+          WHERE i.establecimiento_id = $1 AND i.activo = true
+            AND ($2::text IS NULL OR i.nombre ILIKE '%' || $2 || '%' OR i.codigo ILIKE '%' || $2 || '%')
+            AND ($3::uuid IS NULL OR i.categoria_id = $3)`,
+        [req.auth!.establishmentId, search, categoryId ?? null],
       ),
     ]);
     res.status(200).json({
@@ -155,23 +156,23 @@ catalogRouter.get("/recipes", authenticate, requirePermission("Recetas"), async 
                   '[]'::json
                 ) AS ingredients
            FROM recetas r
-           JOIN productos p ON p.id = r.producto_id
+           JOIN productos p ON p.id = r.producto_id AND p.establecimiento_id = r.establecimiento_id
            LEFT JOIN receta_detalle rd ON rd.receta_id = r.id
-           LEFT JOIN insumos i ON i.id = rd.insumo_id
-          WHERE r.activo = true AND p.activo = true
-            AND ($1::text IS NULL OR r.nombre ILIKE '%' || $1 || '%' OR p.nombre ILIKE '%' || $1 || '%' OR p.codigo ILIKE '%' || $1 || '%')
+           LEFT JOIN insumos i ON i.id = rd.insumo_id AND i.establecimiento_id = r.establecimiento_id
+          WHERE r.establecimiento_id = $1 AND r.activo = true AND p.activo = true
+            AND ($2::text IS NULL OR r.nombre ILIKE '%' || $2 || '%' OR p.nombre ILIKE '%' || $2 || '%' OR p.codigo ILIKE '%' || $2 || '%')
           GROUP BY r.id, p.id
           ORDER BY p.nombre, r.nombre
-          LIMIT $2 OFFSET $3`,
-        [search, limit, offset],
+          LIMIT $3 OFFSET $4`,
+        [req.auth!.establishmentId, search, limit, offset],
       ),
       pool.query(
         `SELECT count(*)::integer AS total
            FROM recetas r
-           JOIN productos p ON p.id = r.producto_id
-          WHERE r.activo = true AND p.activo = true
-            AND ($1::text IS NULL OR r.nombre ILIKE '%' || $1 || '%' OR p.nombre ILIKE '%' || $1 || '%' OR p.codigo ILIKE '%' || $1 || '%')`,
-        [search],
+           JOIN productos p ON p.id = r.producto_id AND p.establecimiento_id = r.establecimiento_id
+          WHERE r.establecimiento_id = $1 AND r.activo = true AND p.activo = true
+            AND ($2::text IS NULL OR r.nombre ILIKE '%' || $2 || '%' OR p.nombre ILIKE '%' || $2 || '%' OR p.codigo ILIKE '%' || $2 || '%')`,
+        [req.auth!.establishmentId, search],
       ),
     ]);
     res.status(200).json({
