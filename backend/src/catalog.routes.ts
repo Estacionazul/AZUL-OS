@@ -35,7 +35,7 @@ catalogRouter.get("/products", authenticate, requirePermission("Productos"), asy
             AND ($2::uuid IS NULL OR p.categoria_id = $2)
           ORDER BY p.nombre, p.codigo
           LIMIT $3 OFFSET $4`,
-        [search, categoryId ?? null, limit, offset],
+        [req.auth!.establishmentId, search, categoryId ?? null, limit, offset],
       ),
       pool.query(
         `SELECT count(*)::integer AS total
@@ -43,7 +43,7 @@ catalogRouter.get("/products", authenticate, requirePermission("Productos"), asy
           WHERE p.activo = true
             AND ($1::text IS NULL OR p.nombre ILIKE '%' || $1 || '%' OR p.codigo ILIKE '%' || $1 || '%')
             AND ($2::uuid IS NULL OR p.categoria_id = $2)`,
-        [search, categoryId ?? null],
+        [req.auth!.establishmentId, search, categoryId ?? null],
       ),
     ]);
     res.status(200).json({
