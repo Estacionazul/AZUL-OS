@@ -10,6 +10,10 @@ function required(name: string): string {
 }
 
 async function main(): Promise<void> {
+  if (process.env.BOOTSTRAP_CONFIRM !== "CREATE_INITIAL_CEO_AND_DEVICE") {
+    throw new Error("Bootstrap stopped. Set BOOTSTRAP_CONFIRM=CREATE_INITIAL_CEO_AND_DEVICE explicitly after verifying DATABASE_URL.");
+  }
+
   const establishmentName = required("BOOTSTRAP_ESTABLISHMENT_NAME");
   const username = required("BOOTSTRAP_USERNAME");
   const ceoName = required("BOOTSTRAP_CEO_NAME");
