@@ -9,7 +9,8 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "npm run build && node --test dist/app.test.js"
+    "test": "npm run build && node --test dist/app.test.js",
+    "bootstrap:ceo": "tsx src/scripts/bootstrap-ceo.ts"
   },
   "engines": {
     "node": ">=22"
