@@ -71,6 +71,10 @@ Estas rutas describen fases futuras; no deben considerarse disponibles:
 
 Antes de implementar las escrituras se definirán las reglas de stock negativo, unidades, precios, permisos, claves de idempotencia y reversos. No se expondrá un endpoint que permita editar directamente el saldo de inventario.
 
+## Pagos en ventas
+
+La API de ventas acepta actualmente un solo medio por venta: `Efectivo`, `Yape`, `Plin` o `Tarjeta`. `Mixto` se rechaza con `400 VALIDATION_ERROR` hasta que exista un desglose explícito por medio de pago; esto evita que el cierre de caja atribuya incorrectamente el importe completo al efectivo o lo deje sin conciliación.
+
 ## Formato de error
 
 ```json
