@@ -32,6 +32,7 @@ const stockCte = `
       FROM productos p
       JOIN categorias c ON c.id = p.categoria_id
       LEFT JOIN stock_movements sm ON sm.item_id = p.id AND sm.item_type = 'producto'
+     WHERE p.tipo_inventario = 'producto'
     UNION ALL
     SELECT 'insumo'::text AS "itemType", i.id, i.codigo AS code, i.nombre AS name,
            c.nombre AS category, i.stock_minimo AS "minimumStock",
@@ -61,7 +62,12 @@ inventoryRouter.get("/stock", authenticate, requirePermission("Inventario"), asy
       pool.query(
         `${stockCte}
          SELECT "itemType", id, code, name, category, "minimumStock", "currentStock",
-                ("currentStock" <= "minimumStock") AS "lowStock"
+                ("currentStock" <= "minimumStock") AS "lowStock",
+                CASE
+                  WHEN "currentStock" <= 0 THEN 'AGOTADO'
+                  WHEN "currentStock" <= "minimumStock" THEN 'BAJO'
+                  ELSE 'OK'
+                END AS status
            FROM items
           WHERE ${filterSql}
           ORDER BY name, code
