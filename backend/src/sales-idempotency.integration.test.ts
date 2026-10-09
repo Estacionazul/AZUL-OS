@@ -120,6 +120,17 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     assert.equal(changedRequest.status, 409, JSON.stringify(changedBody));
     assert.equal(changedBody.error?.code, "IDEMPOTENCY_CONFLICT");
 
+    // Simulate a historical sale created before request fingerprints were stored.
+    await pool.query("UPDATE ventas SET idempotency_hash = NULL WHERE id = $1", [saleId]);
+    const legacyKeyReuse = await fetch(`${baseUrl}/api/v1/sales`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ items: [{ productId, quantity: 3 }], paymentMethod: "Efectivo" }),
+    });
+    const legacyKeyBody = await legacyKeyReuse.json() as { error?: { code?: string } };
+    assert.equal(legacyKeyReuse.status, 409, JSON.stringify(legacyKeyBody));
+    assert.equal(legacyKeyBody.error?.code, "IDEMPOTENCY_CONFLICT");
+
     assert.equal(sales.rows[0].count, 1, "exactly one sale should exist");
     assert.equal(cashMovements.rows[0].count, 1, "exactly one cash movement should exist");
     assert.equal(stockMovements.rows[0].count, 1, "exactly one stock movement should exist");
