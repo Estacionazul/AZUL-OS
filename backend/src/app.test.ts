@@ -1,7 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { once } from "node:events";
-import { app } from "./app.js";
+process.env.NODE_ENV ??= "test";
+process.env.DATABASE_URL ??= "postgres://test:test@127.0.0.1:5432/test";
+process.env.JWT_SECRET ??= "x".repeat(40);
+const { app } = await import("./app.js");
 
 test("GET /health/live responds without accessing PostgreSQL", async (t) => {
   const server = app.listen(0, "127.0.0.1");
