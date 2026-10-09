@@ -3,6 +3,7 @@ import helmet from "helmet";
 import { pool } from "./db.js";
 import { config } from "./config.js";
 import { authRouter } from "./auth.routes.js";
+import { config } from "./config.js";
 import { catalogRouter } from "./catalog.routes.js";
 import { inventoryRouter } from "./inventory.routes.js";
 
@@ -24,6 +25,28 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json({ limit: "256kb" }));
+app.use((req, res, next) => {
+  const origin = req.header("origin");
+  if (origin && config.corsOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Idempotency-Key");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  }
+  if (req.method === "OPTIONS") {
+    if (origin && !config.corsOrigins.includes(origin)) {
+      res.status(403).end();
+      return;
+    }
+    res.status(204).end();
+    return;
+  }
+  if (origin && !config.corsOrigins.includes(origin)) {
+    res.status(403).json({ error: { code: "ORIGIN_NOT_ALLOWED", message: "Origen no autorizado." } });
+    return;
+  }
+  next();
+});
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/catalog", catalogRouter);
 app.use("/api/v1/inventory", inventoryRouter);
