@@ -85,10 +85,6 @@ test("sales and cash foreign keys reject cross-establishment references", { skip
     cashRegisterB = cajaB.rows[0].id as string;
 
     const sharedNumber = `CI-SAME-NUMBER-${suffix}`;
-    await pool.query(
-      "INSERT INTO ventas (numero, usuario_id, caja_id, dispositivo_id, establecimiento_id, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6)",
-      [sharedNumber, userA, cashRegisterA, deviceA, establishmentA, crypto.randomUUID()],
-    );
     const saleInB = await pool.query(
       "INSERT INTO ventas (numero, usuario_id, caja_id, dispositivo_id, establecimiento_id, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
       [sharedNumber, userB, cashRegisterB, deviceB, establishmentB, crypto.randomUUID()],
@@ -106,7 +102,7 @@ test("sales and cash foreign keys reject cross-establishment references", { skip
 
     const sale = await pool.query(
       "INSERT INTO ventas (numero, usuario_id, caja_id, dispositivo_id, establecimiento_id, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
-      [`CI-SALE-${suffix}`, userA, cashRegisterA, deviceA, establishmentA, crypto.randomUUID()],
+      [sharedNumber, userA, cashRegisterA, deviceA, establishmentA, crypto.randomUUID()],
     );
     saleA = sale.rows[0].id as string;
 
