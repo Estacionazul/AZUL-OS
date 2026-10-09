@@ -26,6 +26,7 @@ export type AuthenticatedUser = {
   userId: string;
   establishmentId: string;
   sessionId: string;
+  deviceId: string;
   role: string;
 };
 
@@ -150,7 +151,7 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
 
   try {
     const result = await pool.query(
-      `SELECT s.id AS session_id, u.id AS user_id, u.establecimiento_id, u.rol
+      `SELECT s.id AS session_id, u.id AS user_id, u.establecimiento_id, u.rol, d.id AS device_id
          FROM sesiones s
          JOIN usuarios u ON u.id = s.usuario_id
          JOIN dispositivos d ON d.id = s.dispositivo_id
@@ -170,6 +171,7 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
       userId: row.user_id,
       establishmentId: row.establecimiento_id,
       sessionId: row.session_id,
+      deviceId: row.device_id,
       role: row.rol,
     };
     void pool.query("UPDATE sesiones SET fecha_ultimo_acceso = now() WHERE id = $1", [row.session_id]).catch(() => undefined);
