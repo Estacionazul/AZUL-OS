@@ -5,6 +5,14 @@ import { authenticate, login, logout } from "./auth.js";
 
 export const authRouter = Router();
 
+authRouter.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: { code: "RATE_LIMITED", message: "Demasiados intentos. Intenta más tarde." } },
+}));
+
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
