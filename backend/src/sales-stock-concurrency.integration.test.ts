@@ -18,6 +18,7 @@ test("concurrent sales with different idempotency keys cannot oversell the same 
   let categoryId: string | undefined;
   let productId: string | undefined;
   let cashRegisterId: string | undefined;
+  let saleId: string | undefined;
   let server: ReturnType<typeof app.listen> | undefined;
 
   try {
@@ -95,10 +96,6 @@ test("concurrent sales with different idempotency keys cannot oversell the same 
     assert.equal(results.filter(result => result.status === 201).length, 1, JSON.stringify(results));
     assert.equal(results.filter(result => result.status === 409 && result.body.error?.code === "INSUFFICIENT_STOCK").length, 1, JSON.stringify(results));
 
-    const sales = await pool.query(
-      "SELECT count(*)::int AS count FROM ventas WHERE establecimiento_id = $1 AND idempotency_key = ANY($2::uuid[])",
-      [establishmentId, []],
-    );
     // Count all sales linked to the fixture product through their sale details.
     const fixtureSales = await pool.query(
       "SELECT count(DISTINCT v.id)::int AS count FROM ventas v JOIN detalle_ventas d ON d.venta_id = v.id WHERE v.establecimiento_id = $1 AND d.producto_id = $2",
@@ -108,12 +105,12 @@ test("concurrent sales with different idempotency keys cannot oversell the same 
       "SELECT COALESCE(SUM(cantidad * signo), 0)::numeric(14,4) AS current FROM movimientos_inventario WHERE establecimiento_id = $1 AND producto_id = $2",
       [establishmentId, productId],
     );
-    assert.equal(sales.rows[0].count, 0);
     assert.equal(fixtureSales.rows[0].count, 1);
     assert.equal(Number(stock.rows[0].current), 0);
 
     const sale = results.find(result => result.status === 201)?.body.sale;
     assert.ok(sale);
+    saleId = sale.id;
     const cashMovements = await pool.query(
       "SELECT count(*)::int AS count FROM movimientos_caja WHERE caja_id = $1 AND referencia = $2",
       [cashRegisterId, sale.id],
@@ -130,14 +127,14 @@ test("concurrent sales with different idempotency keys cannot oversell the same 
       server.close();
       await closed;
     }
+    if (saleId) await pool.query("DELETE FROM detalle_ventas WHERE venta_id = $1", [saleId]);
+    if (saleId) await pool.query("DELETE FROM movimientos_caja WHERE referencia = $1", [saleId]);
+    if (saleId) await pool.query("DELETE FROM movimientos_inventario WHERE referencia_id = $1", [saleId]);
+    if (saleId) await pool.query("DELETE FROM ventas WHERE id = $1", [saleId]);
     if (cashRegisterId) await pool.query("DELETE FROM movimientos_caja WHERE caja_id = $1", [cashRegisterId]);
     if (cashRegisterId) await pool.query("DELETE FROM cajas WHERE id = $1", [cashRegisterId]);
     if (productId) await pool.query("DELETE FROM movimientos_inventario WHERE producto_id = $1", [productId]);
-    if (productId) {
-      await pool.query("DELETE FROM detalle_ventas WHERE producto_id = $1 AND venta_id IN (SELECT id FROM ventas WHERE establecimiento_id = $2)", [productId, establishmentId]);
-      await pool.query("DELETE FROM ventas WHERE establecimiento_id = $1 AND id IN (SELECT venta_id FROM detalle_ventas WHERE producto_id = $2)", [establishmentId, productId]);
-      await pool.query("DELETE FROM productos WHERE id = $1", [productId]);
-    }
+    if (productId) await pool.query("DELETE FROM productos WHERE id = $1", [productId]);
     if (categoryId) await pool.query("DELETE FROM categorias WHERE id = $1", [categoryId]);
     if (userId) await pool.query("DELETE FROM sesiones WHERE usuario_id = $1", [userId]);
     if (deviceId) await pool.query("DELETE FROM dispositivos WHERE id = $1", [deviceId]);
