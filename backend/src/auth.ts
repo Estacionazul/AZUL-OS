@@ -153,10 +153,12 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
       `SELECT s.id AS session_id, u.id AS user_id, u.establecimiento_id, u.rol
          FROM sesiones s
          JOIN usuarios u ON u.id = s.usuario_id
+         JOIN dispositivos d ON d.id = s.dispositivo_id
         WHERE s.id = $1 AND s.usuario_id = $2
           AND s.token_hash = $3 AND s.estado = 'ACTIVA'
           AND s.fecha_cierre IS NULL AND s.expira_en > now()
-          AND u.activo = true AND u.establecimiento_id = $4`,
+          AND u.activo = true AND u.establecimiento_id = $4
+          AND d.activo = true AND d.establecimiento_id = u.establecimiento_id`,
       [decoded.sid, decoded.sub, sha256(token), decoded.eid],
     );
     const row = result.rows[0];
