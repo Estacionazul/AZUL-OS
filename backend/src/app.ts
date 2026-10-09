@@ -23,7 +23,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json({ limit: "256kb" }));
-app.use("/v1/auth", authRouter);
+app.use("/api/v1/auth", authRouter);
 
 app.get("/health/live", (_req, res) => {
   res.status(200).json({ status: "ok", service: "azul-os-backend" });
