@@ -17,12 +17,12 @@ const stockCte = `
   WITH stock_movements AS (
     SELECT 'producto'::text AS item_type, producto_id AS item_id, SUM(cantidad * signo)::numeric(14,4) AS stock
       FROM movimientos_inventario
-     WHERE producto_id IS NOT NULL
+     WHERE establecimiento_id = $1 AND producto_id IS NOT NULL
      GROUP BY producto_id
     UNION ALL
     SELECT 'insumo'::text AS item_type, insumo_id AS item_id, SUM(cantidad * signo)::numeric(14,4) AS stock
       FROM movimientos_inventario
-     WHERE insumo_id IS NOT NULL
+     WHERE establecimiento_id = $1 AND insumo_id IS NOT NULL
      GROUP BY insumo_id
   ),
   items AS (
@@ -30,16 +30,17 @@ const stockCte = `
            c.nombre AS category, p.stock_minimo AS "minimumStock",
            COALESCE(sm.stock, 0)::numeric(14,4) AS "currentStock", p.activo AS active
       FROM productos p
-      JOIN categorias c ON c.id = p.categoria_id
-      LEFT JOIN stock_movements sm ON sm.item_id = p.id AND sm.item_type = 'producto' AND sm.item_type = 'producto'
-     WHERE p.tipo_inventario = 'producto'
+      JOIN categorias c ON c.id = p.categoria_id AND c.establecimiento_id = p.establecimiento_id
+      LEFT JOIN stock_movements sm ON sm.item_id = p.id AND sm.item_type = 'producto'
+     WHERE p.establecimiento_id = $1 AND p.tipo_inventario = 'producto'
     UNION ALL
     SELECT 'insumo'::text AS "itemType", i.id, i.codigo AS code, i.nombre AS name,
            c.nombre AS category, i.stock_minimo AS "minimumStock",
            COALESCE(sm.stock, 0)::numeric(14,4) AS "currentStock", i.activo AS active
       FROM insumos i
-      JOIN categorias c ON c.id = i.categoria_id
-      LEFT JOIN stock_movements sm ON sm.item_id = i.id AND sm.item_type = 'insumo' AND sm.item_type = 'insumo'
+      JOIN categorias c ON c.id = i.categoria_id AND c.establecimiento_id = i.establecimiento_id
+      LEFT JOIN stock_movements sm ON sm.item_id = i.id AND sm.item_type = 'insumo'
+     WHERE i.establecimiento_id = $1
   )
 `;
 
@@ -54,9 +55,9 @@ inventoryRouter.get("/stock", authenticate, requirePermission("Inventario"), asy
   const search = q || null;
   const lowOnly = lowStockOnly === "true";
   const filterSql = `active = true
-    AND ($1::text IS NULL OR "itemType" = $1)
-    AND ($2::text IS NULL OR name ILIKE '%' || $2 || '%' OR code ILIKE '%' || $2 || '%')
-    AND (NOT $3::boolean OR "currentStock" <= "minimumStock")`;
+    AND ($2::text IS NULL OR "itemType" = $2)
+    AND ($3::text IS NULL OR name ILIKE '%' || $3 || '%' OR code ILIKE '%' || $3 || '%')
+    AND (NOT $4::boolean OR "currentStock" <= "minimumStock")`;
   try {
     const [items, total] = await Promise.all([
       pool.query(
@@ -71,15 +72,15 @@ inventoryRouter.get("/stock", authenticate, requirePermission("Inventario"), asy
            FROM items
           WHERE ${filterSql}
           ORDER BY name, code
-          LIMIT $4 OFFSET $5`,
-        [typeFilter, search, lowOnly, limit, offset],
+          LIMIT $5 OFFSET $6`,
+        [req.auth!.establishmentId, typeFilter, search, lowOnly, limit, offset],
       ),
       pool.query(
         `${stockCte}
          SELECT count(*)::integer AS total
            FROM items
           WHERE ${filterSql}`,
-        [typeFilter, search, lowOnly],
+        [req.auth!.establishmentId, typeFilter, search, lowOnly],
       ),
     ]);
     res.status(200).json({
@@ -119,24 +120,26 @@ inventoryRouter.get("/movements", authenticate, requirePermission("Inventario"),
                 m.producto_id AS "productId", m.insumo_id AS "insumoId",
                 m.usuario_id AS "userId", m.dispositivo_id AS "deviceId"
            FROM movimientos_inventario m
-          WHERE ($1::uuid IS NULL OR m.producto_id = $1)
-            AND ($2::uuid IS NULL OR m.insumo_id = $2)
-            AND ($3::uuid IS NULL OR m.producto_id = $3 OR m.insumo_id = $3)
-            AND ($4::text IS NULL OR ($4 = 'producto' AND m.producto_id IS NOT NULL)
-                                 OR ($4 = 'insumo' AND m.insumo_id IS NOT NULL))
+          WHERE m.establecimiento_id = $1
+            AND ($2::uuid IS NULL OR m.producto_id = $2)
+            AND ($3::uuid IS NULL OR m.insumo_id = $3)
+            AND ($4::uuid IS NULL OR m.producto_id = $4 OR m.insumo_id = $4)
+            AND ($5::text IS NULL OR ($5 = 'producto' AND m.producto_id IS NOT NULL)
+                                 OR ($5 = 'insumo' AND m.insumo_id IS NOT NULL))
           ORDER BY m.fecha DESC, m.id DESC
-          LIMIT $5 OFFSET $6`,
-        [productId, insumoId, anyId, typeFilter, limit, offset],
+          LIMIT $6 OFFSET $7`,
+        [req.auth!.establishmentId, productId, insumoId, anyId, typeFilter, limit, offset],
       ),
       pool.query(
         `SELECT count(*)::integer AS total
            FROM movimientos_inventario m
-          WHERE ($1::uuid IS NULL OR m.producto_id = $1)
-            AND ($2::uuid IS NULL OR m.insumo_id = $2)
-            AND ($3::uuid IS NULL OR m.producto_id = $3 OR m.insumo_id = $3)
-            AND ($4::text IS NULL OR ($4 = 'producto' AND m.producto_id IS NOT NULL)
-                                 OR ($4 = 'insumo' AND m.insumo_id IS NOT NULL))`,
-        [productId, insumoId, anyId, typeFilter],
+          WHERE m.establecimiento_id = $1
+            AND ($2::uuid IS NULL OR m.producto_id = $2)
+            AND ($3::uuid IS NULL OR m.insumo_id = $3)
+            AND ($4::uuid IS NULL OR m.producto_id = $4 OR m.insumo_id = $4)
+            AND ($5::text IS NULL OR ($5 = 'producto' AND m.producto_id IS NOT NULL)
+                                 OR ($5 = 'insumo' AND m.insumo_id IS NOT NULL))`,
+        [req.auth!.establishmentId, productId, insumoId, anyId, typeFilter],
       ),
     ]);
     res.status(200).json({
@@ -191,8 +194,8 @@ inventoryRouter.post("/movements", authenticate, requirePermission("Inventario")
 
     const prior = await client.query(
       `SELECT id, producto_id, insumo_id, tipo, cantidad, signo
-         FROM movimientos_inventario WHERE idempotency_key = $1`,
-      [idempotencyKey],
+         FROM movimientos_inventario WHERE idempotency_key = $1 AND establecimiento_id = $2`,
+      [idempotencyKey, req.auth!.establishmentId],
     );
     if (prior.rowCount) {
       const row = prior.rows[0];
@@ -211,12 +214,12 @@ inventoryRouter.post("/movements", authenticate, requirePermission("Inventario")
 
     const itemResult = input.itemType === "producto"
       ? await client.query(
-          "SELECT id, nombre, emoji, ''::text AS unidad, activo, tipo_inventario FROM productos WHERE id = $1 FOR UPDATE",
-          [input.itemId],
+          "SELECT id, nombre, emoji, ''::text AS unidad, activo, tipo_inventario FROM productos WHERE id = $1 AND establecimiento_id = $2 FOR UPDATE",
+          [input.itemId, req.auth!.establishmentId],
         )
       : await client.query(
-          "SELECT id, nombre, emoji, unidad_medida AS unidad, activo, 'insumo'::text AS tipo_inventario FROM insumos WHERE id = $1 FOR UPDATE",
-          [input.itemId],
+          "SELECT id, nombre, emoji, unidad_medida AS unidad, activo, 'insumo'::text AS tipo_inventario FROM insumos WHERE id = $1 AND establecimiento_id = $2 FOR UPDATE",
+          [input.itemId, req.auth!.establishmentId],
         );
     const item = itemResult.rows[0];
     if (!item || !item.activo) {
@@ -232,12 +235,12 @@ inventoryRouter.post("/movements", authenticate, requirePermission("Inventario")
 
     const stockResult = input.itemType === "producto"
       ? await client.query(
-          "SELECT COALESCE(SUM(cantidad * signo), 0)::numeric(14,4) AS stock FROM movimientos_inventario WHERE producto_id = $1",
-          [input.itemId],
+          "SELECT COALESCE(SUM(cantidad * signo), 0)::numeric(14,4) AS stock FROM movimientos_inventario WHERE producto_id = $1 AND establecimiento_id = $2",
+          [input.itemId, req.auth!.establishmentId],
         )
       : await client.query(
-          "SELECT COALESCE(SUM(cantidad * signo), 0)::numeric(14,4) AS stock FROM movimientos_inventario WHERE insumo_id = $1",
-          [input.itemId],
+          "SELECT COALESCE(SUM(cantidad * signo), 0)::numeric(14,4) AS stock FROM movimientos_inventario WHERE insumo_id = $1 AND establecimiento_id = $2",
+          [input.itemId, req.auth!.establishmentId],
         );
     const currentStock = Number(stockResult.rows[0].stock);
     if (currentStock + input.quantity * sign < -0.0000001) {
@@ -248,12 +251,12 @@ inventoryRouter.post("/movements", authenticate, requirePermission("Inventario")
 
     const inserted = await client.query(
       `INSERT INTO movimientos_inventario
-         (tipo, nombre_item, emoji, unidad, referencia_id, insumo_id, producto_id,
+         (establecimiento_id, tipo, nombre_item, emoji, unidad, referencia_id, insumo_id, producto_id,
           cantidad, signo, observacion, usuario_id, dispositivo_id, idempotency_key)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
        RETURNING id`,
       [
-        input.type, item.nombre, item.emoji ?? "📦", item.unidad ?? "",
+        req.auth!.establishmentId, input.type, item.nombre, item.emoji ?? "📦", item.unidad ?? "",
         input.referenceId ?? null,
         input.itemType === "insumo" ? input.itemId : null,
         input.itemType === "producto" ? input.itemId : null,
