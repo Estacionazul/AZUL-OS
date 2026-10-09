@@ -77,6 +77,22 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     });
     assert.equal(login.status, 200);
     const { token } = await login.json() as { token: string };
+    const mixedPayment = await fetch(`${baseUrl}/api/v1/sales`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+        "idempotency-key": randomUUID(),
+      },
+      body: JSON.stringify({
+        items: [{ productId, quantity: 1 }],
+        paymentMethod: "Mixto",
+      }),
+    });
+    assert.equal(mixedPayment.status, 400, "mixed payments must be rejected until payment breakdown is implemented");
+    const mixedPaymentBody = await mixedPayment.json() as { error?: { code?: string } };
+    assert.equal(mixedPaymentBody.error?.code, "VALIDATION_ERROR");
+
     const idempotencyKey = randomUUID();
     const body = JSON.stringify({
       items: [{ productId, quantity: 1 }],
