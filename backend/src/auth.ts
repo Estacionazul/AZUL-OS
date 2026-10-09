@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -90,7 +90,7 @@ export async function login(input: {
       "UPDATE usuarios SET intentos_fallidos = 0, bloqueado_hasta = NULL, updated_at = now() WHERE id = $1",
       [user.id],
     );
-    const sessionId = randomBytes(16).toString("hex");
+    const sessionId = randomUUID();
     const token = jwt.sign(
       { sub: user.id, sid: sessionId, eid: user.establecimiento_id, role: user.rol },
       jwtSecret(),
