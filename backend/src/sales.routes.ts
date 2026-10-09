@@ -359,9 +359,9 @@ salesRouter.post("/", authenticate, requirePermission("Ventas"), async (req, res
       `INSERT INTO ventas
          (numero, usuario_id, caja_id, dispositivo_id, cliente_id, fecha, tipo_documento,
           dni, ruc, nombre_cliente, razon_social, direccion_fiscal, subtotal, igv, descuento,
-          total, metodo_pago, observaciones, idempotency_key, establecimiento_id)
+          total, metodo_pago, observaciones, idempotency_key, idempotency_hash, establecimiento_id)
        VALUES ($1, $2, $3, $4, $5, now(), 'Nota de Venta',
-               $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+               $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
        RETURNING id, numero, fecha, subtotal, igv, descuento, total, metodo_pago AS "paymentMethod"`,
       [
         number, req.auth!.userId, cashRegisterId, req.auth!.deviceId, input.customerId ?? null,
