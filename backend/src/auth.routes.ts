@@ -1,8 +1,17 @@
 import { Router } from "express";
 import { z } from "zod";
+import rateLimit from "express-rate-limit";
 import { authenticate, login, logout } from "./auth.js";
 
 export const authRouter = Router();
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: { code: "LOGIN_RATE_LIMIT", message: "Demasiados intentos. Espera 15 minutos y vuelve a intentarlo." } },
+});
 
 const LoginSchema = z.object({
   establishmentId: z.string().uuid(),
@@ -11,7 +20,7 @@ const LoginSchema = z.object({
   deviceId: z.string().uuid(),
 });
 
-authRouter.post("/login", async (req, res, next) => {
+authRouter.post("/login", loginLimiter, async (req, res, next) => {
   const parsed = LoginSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({
