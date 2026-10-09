@@ -4,6 +4,7 @@ import { pool } from "./db.js";
 import { config } from "./config.js";
 import { authRouter } from "./auth.routes.js";
 import { config } from "./config.js";
+import { config } from "./config.js";
 import { catalogRouter } from "./catalog.routes.js";
 import { inventoryRouter } from "./inventory.routes.js";
 
@@ -25,6 +26,24 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json({ limit: "256kb" }));
+app.use((req, res, next) => {
+  const origin = req.header("origin");
+  res.vary("Origin");
+  if (origin && config.corsOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  }
+  if (req.method === "OPTIONS") {
+    if (origin && !config.corsOrigins.includes(origin)) {
+      res.status(403).end();
+      return;
+    }
+    res.status(204).end();
+    return;
+  }
+  next();
+});
 app.use((req, res, next) => {
   const origin = req.header("origin");
   if (origin && config.corsOrigins.includes(origin)) {
