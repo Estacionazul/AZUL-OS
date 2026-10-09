@@ -32,6 +32,9 @@ CREATE TABLE usuarios (
   UNIQUE (establecimiento_id, usuario)
 );
 
+CREATE UNIQUE INDEX ux_usuarios_establecimiento_usuario_ci
+  ON usuarios (establecimiento_id, lower(usuario));
+
 CREATE TABLE permisos_usuario (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   usuario_id uuid NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
