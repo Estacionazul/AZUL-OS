@@ -5,6 +5,7 @@ import { config } from "./config.js";
 import { authRouter } from "./auth.routes.js";
 import { catalogRouter } from "./catalog.routes.js";
 import { inventoryRouter } from "./inventory.routes.js";
+import { cashRouter } from "./cash.routes.js";
 
 export const app = express();
 app.disable("x-powered-by");
@@ -42,6 +43,7 @@ app.use(express.json({ limit: "256kb" }));
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/catalog", catalogRouter);
 app.use("/api/v1/inventory", inventoryRouter);
+app.use("/api/v1/cash", cashRouter);
 
 app.get("/health/live", (_req, res) => {
   res.status(200).json({ status: "ok", service: "azul-os-backend" });
