@@ -12,7 +12,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     res.status(401).json({ error: { code: "UNAUTHENTICATED", message: "Inicia sesión para continuar." } });
     return;
   }
-  const hash = createHash("sha256").update(match[1], "utf8").digest("hex");
+  const hash = createHash("sha256").update(match[1]!, "utf8").digest("hex");
   try {
     const result = await pool.query<{
       session_id: string; user_id: string; usuario: string; nombre: string; rol: string;
