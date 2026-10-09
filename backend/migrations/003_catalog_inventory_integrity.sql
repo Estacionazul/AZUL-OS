@@ -48,8 +48,34 @@ ALTER TABLE movimientos_inventario
   FOREIGN KEY (insumo_id, establecimiento_id)
   REFERENCES insumos (id, establecimiento_id);
 
--- receta_detalle does not store establishment_id, so enforce ownership by
--- resolving both parents. This protects inserts and updates.
+-- Make recipe details tenant-aware without requiring callers to send tenant IDs.
+-- The trigger derives ownership from the recipe; composite foreign keys then
+-- enforce that both the recipe and ingredient belong to that establishment.
+ALTER TABLE receta_detalle
+  ADD COLUMN establecimiento_id uuid REFERENCES establecimientos(id);
+
+UPDATE receta_detalle rd
+   SET establecimiento_id = r.establecimiento_id
+  FROM recetas r
+ WHERE r.id = rd.receta_id;
+
+ALTER TABLE receta_detalle
+  ALTER COLUMN establecimiento_id SET NOT NULL;
+
+CREATE INDEX ix_receta_detalle_establecimiento
+  ON receta_detalle (establecimiento_id, receta_id);
+
+ALTER TABLE receta_detalle
+  ADD CONSTRAINT fk_receta_detalle_receta_establecimiento
+  FOREIGN KEY (receta_id, establecimiento_id)
+  REFERENCES recetas (id, establecimiento_id)
+  ON DELETE CASCADE;
+
+ALTER TABLE receta_detalle
+  ADD CONSTRAINT fk_receta_detalle_insumo_establecimiento
+  FOREIGN KEY (insumo_id, establecimiento_id)
+  REFERENCES insumos (id, establecimiento_id);
+
 CREATE FUNCTION validar_receta_detalle_establecimiento()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -76,6 +102,7 @@ BEGIN
     RAISE EXCEPTION 'Recipe and ingredient must belong to the same establishment.';
   END IF;
 
+  NEW.establecimiento_id := receta_establecimiento;
   RETURN NEW;
 END;
 $$;
