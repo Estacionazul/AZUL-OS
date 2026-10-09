@@ -63,5 +63,6 @@ jobs:
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/006_orders_establishment_integrity.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/007_electronic_documents_establishment_integrity.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/008_sales_number_establishment.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/009_sales_idempotency_hash.sql
       - name: Run tests
         run: npm test
