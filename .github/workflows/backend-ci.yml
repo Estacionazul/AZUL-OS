@@ -53,6 +53,26 @@ jobs:
         run: npm run build
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Rehearse populated-database tenant migration safeguards
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "CREATE DATABASE azul_os_backfill_test"
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "CREATE DATABASE azul_os_ambiguous_test"
+          BACKFILL_DATABASE_URL="${DATABASE_URL%/*}/azul_os_backfill_test"
+          AMBIGUOUS_DATABASE_URL="${DATABASE_URL%/*}/azul_os_ambiguous_test"
+
+          psql "$BACKFILL_DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_initial.sql
+          psql "$BACKFILL_DATABASE_URL" -v ON_ERROR_STOP=1 -c "INSERT INTO establecimientos (nombre) VALUES ('CI backfill establishment'); INSERT INTO categorias (nombre) VALUES ('CI backfill category')"
+          psql "$BACKFILL_DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/002_establishment_isolation.sql
+          psql "$BACKFILL_DATABASE_URL" -v ON_ERROR_STOP=1 -c 'DO $ BEGIN IF EXISTS (SELECT 1 FROM categorias WHERE establecimiento_id IS NULL) THEN RAISE EXCEPTION '''Backfill left categories without an establishment'''; END IF; END $;'
+
+          psql "$AMBIGUOUS_DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_initial.sql
+          psql "$AMBIGUOUS_DATABASE_URL" -v ON_ERROR_STOP=1 -c "INSERT INTO establecimientos (nombre) VALUES ('CI establishment one'), ('CI establishment two'); INSERT INTO categorias (nombre) VALUES ('CI ambiguous category')"
+          if psql "$AMBIGUOUS_DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/002_establishment_isolation.sql; then
+            echo "ERROR: migration 002 must refuse to guess ownership for populated multi-establishment data" >&2
+            exit 1
+          else
+            echo "Expected refusal confirmed: migration 002 did not guess data ownership"
+          fi
       - name: Validate PostgreSQL migrations
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_initial.sql
