@@ -128,7 +128,7 @@ test("catalog endpoints reject requests without a session", async (t) => {
   t.after(() => server.close());
   const address = server.address();
   assert.ok(address && typeof address !== "string");
-  for (const path of ["/api/v1/catalog/products", "/api/v1/catalog/insumos"]) {
+  for (const path of ["/api/v1/catalog/products", "/api/v1/catalog/insumos", "/api/v1/catalog/recipes"]) {
     const response = await fetch(`http://127.0.0.1:${address.port}${path}`);
     assert.equal(response.status, 401, `${path} should require authentication`);
   }
