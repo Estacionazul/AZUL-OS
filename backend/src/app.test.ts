@@ -33,7 +33,7 @@ test("login rejects an invalid PIN before touching the database", async (t) => {
   t.after(() => server.close());
   const address = server.address();
   assert.ok(address && typeof address !== "string");
-  const response = await fetch(`http://127.0.0.1:${address.port}/api/v1/auth/login`, {
+  const response = await fetch(`http://127.0.0.1:${address.port}/v1/auth/login`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -55,7 +55,7 @@ test("protected profile route rejects missing bearer token", async (t) => {
   t.after(() => server.close());
   const address = server.address();
   assert.ok(address && typeof address !== "string");
-  const response = await fetch(`http://127.0.0.1:${address.port}/api/v1/auth/me`);
+  const response = await fetch(`http://127.0.0.1:${address.port}/v1/auth/me`);
   assert.equal(response.status, 401);
   assert.deepEqual(await response.json(), {
     error: { code: "UNAUTHENTICATED", message: "Inicia sesión para continuar." },
@@ -68,7 +68,7 @@ test("login rejects a PIN that is not exactly four digits", async (t) => {
   t.after(() => server.close());
   const address = server.address();
   assert.ok(address && typeof address !== "string");
-  const response = await fetch(`http://127.0.0.1:${address.port}/api/v1/auth/login`, {
+  const response = await fetch(`http://127.0.0.1:${address.port}/v1/auth/login`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
