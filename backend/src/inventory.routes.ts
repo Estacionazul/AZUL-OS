@@ -31,7 +31,7 @@ const stockCte = `
            COALESCE(sm.stock, 0)::numeric(14,4) AS "currentStock", p.activo AS active
       FROM productos p
       JOIN categorias c ON c.id = p.categoria_id
-      LEFT JOIN stock_movements sm ON sm.item_id = p.id AND sm.item_type = 'producto'
+      LEFT JOIN stock_movements sm ON sm.item_id = p.id AND sm.item_type = 'producto' AND sm.item_type = 'producto'
      WHERE p.tipo_inventario = 'producto'
     UNION ALL
     SELECT 'insumo'::text AS "itemType", i.id, i.codigo AS code, i.nombre AS name,
@@ -39,7 +39,7 @@ const stockCte = `
            COALESCE(sm.stock, 0)::numeric(14,4) AS "currentStock", i.activo AS active
       FROM insumos i
       JOIN categorias c ON c.id = i.categoria_id
-      LEFT JOIN stock_movements sm ON sm.item_id = i.id AND sm.item_type = 'insumo'
+      LEFT JOIN stock_movements sm ON sm.item_id = i.id AND sm.item_type = 'insumo' AND sm.item_type = 'insumo'
   )
 `;
 
