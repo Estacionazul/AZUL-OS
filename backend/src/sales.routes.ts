@@ -27,10 +27,10 @@ const SaleBody = z.object({
   fiscalAddress: z.string().trim().max(300).optional(),
   note: z.string().trim().max(500).optional(),
 }).superRefine((value, ctx) => {
-  if (value.dni && !/^\\d{8}$/.test(value.dni)) {
+  if (value.dni && !/^\d{8}$/.test(value.dni)) {
     ctx.addIssue({ code: "custom", path: ["dni"], message: "El DNI debe tener 8 dígitos." });
   }
-  if (value.ruc && !/^\\d{11}$/.test(value.ruc)) {
+  if (value.ruc && !/^\d{11}$/.test(value.ruc)) {
     ctx.addIssue({ code: "custom", path: ["ruc"], message: "El RUC debe tener 11 dígitos." });
   }
 });
