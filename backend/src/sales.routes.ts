@@ -38,8 +38,8 @@ const SaleBody = z.object({
 const money = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
 const SalesHistoryQuery = z.object({
-  from: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/).optional(),
-  to: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/).optional(),
+  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   documentType: z.string().trim().min(1).max(40).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
   offset: z.coerce.number().int().min(0).max(1000000).default(0),
