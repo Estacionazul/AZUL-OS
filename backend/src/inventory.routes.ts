@@ -147,3 +147,126 @@ inventoryRouter.get("/movements", authenticate, requirePermission("Inventario"),
     next(error);
   }
 });
+
+
+const MovementBody = z.object({
+  itemType: z.enum(["producto", "insumo"]),
+  itemId: z.string().uuid(),
+  type: z.enum(["ENTRADA", "SALIDA", "AJUSTE"]),
+  quantity: z.number().finite().positive().max(1_000_000_000)
+    .refine((value) => Number.isInteger(value * 10_000), "La cantidad admite hasta cuatro decimales."),
+  sign: z.union([z.literal(-1), z.literal(1)]).optional(),
+  referenceId: z.string().uuid().optional(),
+  note: z.string().trim().max(500).optional(),
+}).superRefine((value, ctx) => {
+  if (value.type === "AJUSTE" && value.sign === undefined) {
+    ctx.addIssue({ code: "custom", path: ["sign"], message: "Un ajuste requiere indicar si aumenta o disminuye el stock." });
+  }
+  if (value.type === "ENTRADA" && value.sign === -1) {
+    ctx.addIssue({ code: "custom", path: ["sign"], message: "Una entrada debe aumentar el stock." });
+  }
+  if (value.type === "SALIDA" && value.sign === 1) {
+    ctx.addIssue({ code: "custom", path: ["sign"], message: "Una salida debe disminuir el stock." });
+  }
+});
+
+inventoryRouter.post("/movements", authenticate, requirePermission("Inventario"), async (req, res, next) => {
+  const parsed = MovementBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Datos del movimiento inválidos." } });
+    return;
+  }
+  const idempotencyKey = req.header("idempotency-key");
+  if (!idempotencyKey || !z.string().uuid().safeParse(idempotencyKey).success) {
+    res.status(400).json({ error: { code: "IDEMPOTENCY_KEY_REQUIRED", message: "Envía una clave UUID en el encabezado Idempotency-Key." } });
+    return;
+  }
+
+  const input = parsed.data;
+  const sign = input.type === "ENTRADA" ? 1 : input.type === "SALIDA" ? -1 : input.sign!;
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [idempotencyKey]);
+
+    const prior = await client.query(
+      `SELECT id, producto_id, insumo_id, tipo, cantidad, signo
+         FROM movimientos_inventario WHERE idempotency_key = $1`,
+      [idempotencyKey],
+    );
+    if (prior.rowCount) {
+      const row = prior.rows[0];
+      const sameRequest =
+        row.producto_id === (input.itemType === "producto" ? input.itemId : null) &&
+        row.insumo_id === (input.itemType === "insumo" ? input.itemId : null) &&
+        row.tipo === input.type && Number(row.cantidad) === input.quantity && Number(row.signo) === sign;
+      await client.query("COMMIT");
+      if (!sameRequest) {
+        res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave ya se usó para un movimiento distinto." } });
+        return;
+      }
+      res.status(200).json({ id: row.id, replayed: true });
+      return;
+    }
+
+    const itemResult = input.itemType === "producto"
+      ? await client.query(
+          "SELECT id, nombre, emoji, ''::text AS unidad, activo, tipo_inventario FROM productos WHERE id = $1 FOR UPDATE",
+          [input.itemId],
+        )
+      : await client.query(
+          "SELECT id, nombre, emoji, unidad_medida AS unidad, activo, 'insumo'::text AS tipo_inventario FROM insumos WHERE id = $1 FOR UPDATE",
+          [input.itemId],
+        );
+    const item = itemResult.rows[0];
+    if (!item || !item.activo) {
+      await client.query("ROLLBACK");
+      res.status(404).json({ error: { code: "ITEM_NOT_FOUND", message: "El producto o insumo no existe o está inactivo." } });
+      return;
+    }
+    if (input.itemType === "producto" && item.tipo_inventario === "receta") {
+      await client.query("ROLLBACK");
+      res.status(409).json({ error: { code: "RECIPE_STOCK_CONTROLLED", message: "Los productos de receta no admiten movimientos manuales de stock." } });
+      return;
+    }
+
+    const stockResult = input.itemType === "producto"
+      ? await client.query(
+          "SELECT COALESCE(SUM(cantidad * signo), 0)::numeric(14,4) AS stock FROM movimientos_inventario WHERE producto_id = $1",
+          [input.itemId],
+        )
+      : await client.query(
+          "SELECT COALESCE(SUM(cantidad * signo), 0)::numeric(14,4) AS stock FROM movimientos_inventario WHERE insumo_id = $1",
+          [input.itemId],
+        );
+    const currentStock = Number(stockResult.rows[0].stock);
+    if (currentStock + input.quantity * sign < -0.0000001) {
+      await client.query("ROLLBACK");
+      res.status(409).json({ error: { code: "STOCK_INSUFFICIENTE", message: "El movimiento dejaría el stock en negativo." } });
+      return;
+    }
+
+    const inserted = await client.query(
+      `INSERT INTO movimientos_inventario
+         (tipo, nombre_item, emoji, unidad, referencia_id, insumo_id, producto_id,
+          cantidad, signo, observacion, usuario_id, dispositivo_id, idempotency_key)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+       RETURNING id`,
+      [
+        input.type, item.nombre, item.emoji ?? "📦", item.unidad ?? "",
+        input.referenceId ?? null,
+        input.itemType === "insumo" ? input.itemId : null,
+        input.itemType === "producto" ? input.itemId : null,
+        input.quantity, sign, input.note ?? null,
+        req.auth!.userId, req.auth!.deviceId, idempotencyKey,
+      ],
+    );
+    await client.query("COMMIT");
+    res.status(201).json({ id: inserted.rows[0].id, replayed: false });
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    next(error);
+  } finally {
+    client.release();
+  }
+});
