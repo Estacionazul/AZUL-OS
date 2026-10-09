@@ -129,7 +129,7 @@ test("catalog endpoints reject requests without a session", async (t) => {
   const address = server.address();
   assert.ok(address && typeof address !== "string");
   for (const path of ["/api/v1/catalog/products", "/api/v1/catalog/insumos", "/api/v1/catalog/recipes"]) {
-    const response = await fetch(`http://127.0.0.1:${address.port}${path}`);
+    const response: globalThis.Response = await fetch(`http://127.0.0.1:${address.port}${path}`);
     assert.equal(response.status, 401, `${path} should require authentication`);
   }
 });
@@ -184,7 +184,7 @@ test("inventory stock and movement endpoints require authentication", async (t) 
     ["/api/v1/inventory/movements", "GET"],
     ["/api/v1/inventory/movements", "POST"],
   ] as const) {
-    const response = await fetch(`http://127.0.0.1:${address.port}${path}`, {
+    const response: globalThis.Response = await fetch(`http://127.0.0.1:${address.port}${path}`, {
       method,
       ...(method === "POST" ? { headers: { "content-type": "application/json" }, body: "{}" } : {}),
     });
