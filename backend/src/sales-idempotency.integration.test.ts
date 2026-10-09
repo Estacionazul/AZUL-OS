@@ -111,6 +111,15 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     const sales = await pool.query("SELECT count(*)::int AS count FROM ventas WHERE idempotency_key = $1", [idempotencyKey]);
     const cashMovements = await pool.query("SELECT count(*)::int AS count FROM movimientos_caja WHERE referencia = $1", [created.body.sale.id]);
     const stockMovements = await pool.query("SELECT count(*)::int AS count FROM movimientos_inventario WHERE referencia_id = $1 AND tipo = 'VENTA'", [created.body.sale.id]);
+    const changedRequest = await fetch(`${baseUrl}/api/v1/sales`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ items: [{ productId, quantity: 2 }], paymentMethod: "Efectivo" }),
+    });
+    const changedBody = await changedRequest.json() as { error?: { code?: string } };
+    assert.equal(changedRequest.status, 409, JSON.stringify(changedBody));
+    assert.equal(changedBody.error?.code, "IDEMPOTENCY_CONFLICT");
+
     assert.equal(sales.rows[0].count, 1, "exactly one sale should exist");
     assert.equal(cashMovements.rows[0].count, 1, "exactly one cash movement should exist");
     assert.equal(stockMovements.rows[0].count, 1, "exactly one stock movement should exist");
