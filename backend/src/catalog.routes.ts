@@ -119,3 +119,66 @@ catalogRouter.get("/insumos", authenticate, requirePermission("Inventario"), asy
     next(error);
   }
 });
+
+
+const RecipeQuery = z.object({
+  q: z.string().trim().max(100).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).max(1_000_000).default(0),
+});
+
+catalogRouter.get("/recipes", authenticate, requirePermission("Recetas"), async (req, res, next) => {
+  const parsed = RecipeQuery.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Filtros de recetas inválidos." } });
+    return;
+  }
+  const { q, limit, offset } = parsed.data;
+  const search = q || null;
+  try {
+    const [items, total] = await Promise.all([
+      pool.query(
+        `SELECT r.id, r.producto_id AS "productId", p.codigo AS "productCode",
+                p.nombre AS "productName", r.nombre AS name, r.activo AS active,
+                COALESCE(
+                  json_agg(
+                    json_build_object(
+                      'id', rd.id,
+                      'insumoId', i.id,
+                      'insumoCode', i.codigo,
+                      'insumoName', i.nombre,
+                      'quantity', rd.cantidad,
+                      'unit', rd.unidad,
+                      'order', rd.orden
+                    ) ORDER BY rd.orden
+                  ) FILTER (WHERE rd.id IS NOT NULL),
+                  '[]'::json
+                ) AS ingredients
+           FROM recetas r
+           JOIN productos p ON p.id = r.producto_id
+           LEFT JOIN receta_detalle rd ON rd.receta_id = r.id
+           LEFT JOIN insumos i ON i.id = rd.insumo_id
+          WHERE r.activo = true AND p.activo = true
+            AND ($1::text IS NULL OR r.nombre ILIKE '%' || $1 || '%' OR p.nombre ILIKE '%' || $1 || '%' OR p.codigo ILIKE '%' || $1 || '%')
+          GROUP BY r.id, p.id
+          ORDER BY p.nombre, r.nombre
+          LIMIT $2 OFFSET $3`,
+        [search, limit, offset],
+      ),
+      pool.query(
+        `SELECT count(*)::integer AS total
+           FROM recetas r
+           JOIN productos p ON p.id = r.producto_id
+          WHERE r.activo = true AND p.activo = true
+            AND ($1::text IS NULL OR r.nombre ILIKE '%' || $1 || '%' OR p.nombre ILIKE '%' || $1 || '%' OR p.codigo ILIKE '%' || $1 || '%')`,
+        [search],
+      ),
+    ]);
+    res.status(200).json({
+      items: items.rows,
+      pagination: { limit, offset, total: total.rows[0].total },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
