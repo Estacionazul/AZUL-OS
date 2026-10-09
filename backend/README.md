@@ -26,6 +26,8 @@ En esta rama:
 - `GET /api/v1/inventory/stock?itemType=todos&q=&lowStockOnly=false&limit=50&offset=0`
 - `GET /api/v1/inventory/movements?itemId=&itemType=&limit=50&offset=0`
 - `GET /api/v1/catalog/insumos?q=&categoryId=&limit=50&offset=0`
+- `GET /api/v1/inventory/stock?itemType=todos&q=&lowStockOnly=false&limit=50&offset=0`
+- `GET /api/v1/inventory/movements?itemId=&itemType=&limit=50&offset=0`
 
 Las rutas protegidas requieren `Authorization: Bearer <token>`. El login requiere `establishmentId`, `username`, `pin` y `deviceId`; el usuario y el dispositivo deben existir y estar activos.
 
