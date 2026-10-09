@@ -27,9 +27,6 @@ const SaleBody = z.object({
   fiscalAddress: z.string().trim().max(300).optional(),
   note: z.string().trim().max(500).optional(),
 }).superRefine((value, ctx) => {
-  if ((value as { paymentMethod?: string }).paymentMethod === "Mixto") {
-    ctx.addIssue({ code: "custom", path: ["paymentMethod"], message: "Los pagos mixtos estarán disponibles cuando se implemente el desglose por medio de pago." });
-  }
   if (value.dni && !/^\d{8}$/.test(value.dni)) {
     ctx.addIssue({ code: "custom", path: ["dni"], message: "El DNI debe tener 8 dígitos." });
   }
