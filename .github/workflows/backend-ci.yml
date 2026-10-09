@@ -63,7 +63,11 @@ jobs:
           psql "$BACKFILL_DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_initial.sql
           psql "$BACKFILL_DATABASE_URL" -v ON_ERROR_STOP=1 -c "INSERT INTO establecimientos (nombre) VALUES ('CI backfill establishment'); INSERT INTO categorias (nombre) VALUES ('CI backfill category')"
           psql "$BACKFILL_DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/002_establishment_isolation.sql
-          psql "$BACKFILL_DATABASE_URL" -v ON_ERROR_STOP=1 -c 'DO $ BEGIN IF EXISTS (SELECT 1 FROM categorias WHERE establecimiento_id IS NULL) THEN RAISE EXCEPTION '''Backfill left categories without an establishment'''; END IF; END $;'
+          NULL_CATEGORY_OWNERSHIP="$(psql "$BACKFILL_DATABASE_URL" -v ON_ERROR_STOP=1 -Atc "SELECT count(*) FROM categorias WHERE establecimiento_id IS NULL")"
+          if [ "$NULL_CATEGORY_OWNERSHIP" -ne 0 ]; then
+            echo "ERROR: migration 002 left categories without an establishment" >&2
+            exit 1
+          fi
 
           psql "$AMBIGUOUS_DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_initial.sql
           psql "$AMBIGUOUS_DATABASE_URL" -v ON_ERROR_STOP=1 -c "INSERT INTO establecimientos (nombre) VALUES ('CI establishment one'), ('CI establishment two'); INSERT INTO categorias (nombre) VALUES ('CI ambiguous category')"
