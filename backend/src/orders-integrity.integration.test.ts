@@ -99,8 +99,16 @@ test("orders and order details reject cross-establishment users, devices and pro
       [orderA, productA, `CI-OA-${suffix}`, "Local product", establishmentA],
     );
   } finally {
-    if (orderA) await pool.query("DELETE FROM pedido_detalles WHERE pedido_id = $1", [orderA]);
-    if (orderA) await pool.query("DELETE FROM pedidos WHERE id = $1", [orderA]);
+    if (establishmentA || establishmentB) {
+      await pool.query(
+        "DELETE FROM pedido_detalles WHERE establecimiento_id = ANY($1::uuid[])",
+        [[establishmentA, establishmentB].filter((id): id is string => Boolean(id))],
+      );
+      await pool.query(
+        "DELETE FROM pedidos WHERE establecimiento_id = ANY($1::uuid[])",
+        [[establishmentA, establishmentB].filter((id): id is string => Boolean(id))],
+      );
+    }
     if (productA) await pool.query("DELETE FROM productos WHERE id = $1", [productA]);
     if (productB) await pool.query("DELETE FROM productos WHERE id = $1", [productB]);
     if (categoryA) await pool.query("DELETE FROM categorias WHERE id = $1", [categoryA]);
