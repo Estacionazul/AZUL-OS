@@ -191,3 +191,15 @@ test("inventory stock and movement endpoints require authentication", async (t) 
     assert.equal(response.status, 401, `${method} ${path} must require authentication`);
   }
 });
+
+
+test("readiness confirms PostgreSQL connectivity in CI", { skip: process.env.CI !== "true" }, async (t) => {
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server.close());
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  const response = await fetch(`http://127.0.0.1:${address.port}/health/ready`);
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { status: "ready", database: "connected" });
+});
