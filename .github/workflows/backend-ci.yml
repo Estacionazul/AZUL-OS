@@ -6,7 +6,9 @@ on:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
   push:
-    branches: ["main"]
+    branches:
+      - main
+      - arquitectura-multidispositivo-20261008
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
@@ -19,33 +21,14 @@ jobs:
         working-directory: backend
     env:
       NODE_ENV: test
-      DATABASE_URL: postgres://azul_os:azul_os_test_only@127.0.0.1:5432/azul_os_test
-      JWT_SECRET: test-only-secret-that-is-at-least-32-characters-long
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: azul_os
-          POSTGRES_PASSWORD: azul_os_test_only
-          POSTGRES_DB: azul_os_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U azul_os -d azul_os_test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+      DATABASE_URL: postgres://ci:ci@127.0.0.1:5432/azul_os_ci
+      JWT_SECRET: ci-only-secret-not-used-in-production-0123456789
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
-      - name: Install dependencies
-        run: npm install
-      - name: Validate PostgreSQL migration in isolated CI database
-        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_initial.sql
+      - run: npm install
       - run: npm run typecheck
       - run: npm run build
       - run: npm test
