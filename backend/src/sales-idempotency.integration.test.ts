@@ -1,0 +1,125 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { once } from "node:events";
+import { randomUUID } from "node:crypto";
+import bcrypt from "bcryptjs";
+
+process.env.NODE_ENV ??= "test";
+process.env.DATABASE_URL ??= "postgres://test:test@127.0.0.1:5432/test";
+process.env.JWT_SECRET ??= "x".repeat(40);
+const { app } = await import("./app.js");
+
+test("replaying an idempotent sale does not duplicate sale, cash, or stock movements", { skip: process.env.CI !== "true" }, async (t) => {
+  const { pool } = await import("./db.js");
+  const suffix = randomUUID();
+  let establishmentId: string | undefined;
+  let userId: string | undefined;
+  let deviceId: string | undefined;
+  let categoryId: string | undefined;
+  let productId: string | undefined;
+  let cashRegisterId: string | undefined;
+  let server: ReturnType<typeof app.listen> | undefined;
+
+  try {
+    const establishment = await pool.query(
+      "INSERT INTO establecimientos (nombre) VALUES ($1) RETURNING id",
+      [`CI sale idempotency ${suffix}`],
+    );
+    establishmentId = establishment.rows[0].id as string;
+
+    const user = await pool.query(
+      "INSERT INTO usuarios (establecimiento_id, usuario, nombre, pin_hash, rol) VALUES ($1, $2, $3, $4, 'CEO') RETURNING id",
+      [establishmentId, `ci-sale-${suffix}`, "CI Sale Idempotency", await bcrypt.hash("1234", 4)],
+    );
+    userId = user.rows[0].id as string;
+
+    const device = await pool.query(
+      "INSERT INTO dispositivos (establecimiento_id, nombre, plataforma) VALUES ($1, $2, 'test') RETURNING id",
+      [establishmentId, `CI sale device ${suffix}`],
+    );
+    deviceId = device.rows[0].id as string;
+
+    const category = await pool.query(
+      "INSERT INTO categorias (establecimiento_id, nombre) VALUES ($1, $2) RETURNING id",
+      [establishmentId, `CI Sale category ${suffix}`],
+    );
+    categoryId = category.rows[0].id as string;
+
+    const product = await pool.query(
+      "INSERT INTO productos (establecimiento_id, codigo, nombre, categoria_id, precio_venta, tipo_inventario, tipo_afectacion_igv) VALUES ($1, $2, $3, $4, 11.80, 'producto', '10') RETURNING id",
+      [establishmentId, `CI-SALE-${suffix}`, "CI Product", categoryId],
+    );
+    productId = product.rows[0].id as string;
+
+    const cash = await pool.query(
+      "INSERT INTO cajas (establecimiento_id, monto_inicial, usuario_apertura_id, dispositivo_apertura_id) VALUES ($1, 100, $2, $3) RETURNING id",
+      [establishmentId, userId, deviceId],
+    );
+    cashRegisterId = cash.rows[0].id as string;
+
+    await pool.query(
+      "INSERT INTO movimientos_inventario (establecimiento_id, tipo, nombre_item, unidad, producto_id, cantidad, signo, usuario_id, dispositivo_id, idempotency_key) VALUES ($1, 'INGRESO', 'CI Product', 'unid', $2, 10, 1, $3, $4, $5)",
+      [establishmentId, productId, userId, deviceId, randomUUID()],
+    );
+
+    server = app.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const address = server.address();
+    assert.ok(address && typeof address !== "string");
+    const baseUrl = `http://127.0.0.1:${address.port}`;
+
+    const username = `ci-sale-${suffix}`;
+    const login = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ establishmentId, username, pin: "1234", deviceId }),
+    });
+    assert.equal(login.status, 200);
+    const { token } = await login.json() as { token: string };
+    const idempotencyKey = randomUUID();
+    const body = JSON.stringify({
+      items: [{ productId, quantity: 1 }],
+      paymentMethod: "Efectivo",
+    });
+    const headers = {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+      "idempotency-key": idempotencyKey,
+    };
+
+    const first = await fetch(`${baseUrl}/api/v1/sales`, { method: "POST", headers, body });
+    assert.equal(first.status, 201, await first.text());
+    const firstBody = await first.json() as { sale: { id: string; total: number }; replayed: boolean };
+    assert.equal(firstBody.replayed, false);
+
+    const replay = await fetch(`${baseUrl}/api/v1/sales`, { method: "POST", headers, body });
+    assert.equal(replay.status, 200, await replay.text());
+    const replayBody = await replay.json() as { sale: { id: string; total: number }; replayed: boolean };
+    assert.equal(replayBody.replayed, true);
+    assert.equal(replayBody.sale.id, firstBody.sale.id);
+    assert.equal(replayBody.sale.total, firstBody.sale.total);
+
+    const sales = await pool.query("SELECT count(*)::int AS count FROM ventas WHERE idempotency_key = $1", [idempotencyKey]);
+    const cashMovements = await pool.query("SELECT count(*)::int AS count FROM movimientos_caja WHERE referencia = $1", [firstBody.sale.id]);
+    const stockMovements = await pool.query("SELECT count(*)::int AS count FROM movimientos_inventario WHERE referencia_id = $1 AND tipo = 'VENTA'", [firstBody.sale.id]);
+    assert.equal(sales.rows[0].count, 1, "exactly one sale should exist");
+    assert.equal(cashMovements.rows[0].count, 1, "exactly one cash movement should exist");
+    assert.equal(stockMovements.rows[0].count, 1, "exactly one stock movement should exist");
+  } finally {
+    if (server) {
+      const closed = once(server, "close");
+      server.close();
+      await closed;
+    }
+    if (cashRegisterId) await pool.query("DELETE FROM movimientos_caja WHERE caja_id = $1", [cashRegisterId]);
+    if (cashRegisterId) await pool.query("DELETE FROM cajas WHERE id = $1", [cashRegisterId]);
+    if (productId) await pool.query("DELETE FROM movimientos_inventario WHERE producto_id = $1", [productId]);
+    if (productId) await pool.query("DELETE FROM productos WHERE id = $1", [productId]);
+    if (categoryId) await pool.query("DELETE FROM categorias WHERE id = $1", [categoryId]);
+    if (userId) await pool.query("DELETE FROM sesiones WHERE usuario_id = $1", [userId]);
+    if (deviceId) await pool.query("DELETE FROM dispositivos WHERE id = $1", [deviceId]);
+    if (userId) await pool.query("DELETE FROM usuarios WHERE id = $1", [userId]);
+    if (establishmentId) await pool.query("DELETE FROM establecimientos WHERE id = $1", [establishmentId]);
+    await pool.end();
+  }
+});
