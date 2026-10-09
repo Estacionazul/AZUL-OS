@@ -16,7 +16,7 @@ Implementado en esta rama:
 
 Pendiente antes de uso operativo:
 - ejecutar y revisar el workflow CI;
-- implementar un proceso administrativo seguro para crear el primer establecimiento, CEO, usuarios y dispositivos;
+- ampliar el proceso administrativo para alta y baja de usuarios/dispositivos después del bootstrap inicial;
 - endpoints de productos, insumos, recetas e inventario;
 - ventas/caja con transacciones e idempotencia;
 - auditoría, sincronización y pruebas de integración completas;
@@ -64,7 +64,7 @@ Pendiente antes de uso operativo:
 - `GET /v1/auth/me`: requiere `Authorization: Bearer <token>`.
 - `POST /v1/auth/logout`: requiere token y revoca la sesión.
 
-No existe todavía una ruta pública para registrar usuarios o dispositivos. La creación inicial debe realizarse mediante un procedimiento administrativo controlado, que se implementará antes de conectar clientes reales.
+No existe una ruta pública para registrar usuarios o dispositivos. Para una base PostgreSQL vacía existe el comando local de un solo uso `npm run bootstrap:ceo`. Configura `BOOTSTRAP_ESTABLISHMENT_NAME`, `BOOTSTRAP_USERNAME`, `BOOTSTRAP_CEO_NAME`, `BOOTSTRAP_PIN`, `BOOTSTRAP_DEVICE_NAME` y `BOOTSTRAP_DEVICE_PLATFORM` en el entorno del proceso. El comando se niega a ejecutarse si ya existe un establecimiento y nunca imprime el PIN. Úsalo solo después de validar la migración en una base central nueva; no lo ejecutes contra producción sin revisión y respaldo.
 
 ## Principios de seguridad
 
