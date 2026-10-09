@@ -159,3 +159,16 @@ test("catalog endpoints require authentication before querying data", async (t) 
     error: { code: "UNAUTHENTICATED", message: "Inicia sesión para continuar." },
   });
 });
+
+test("inventory endpoints reject requests without a session", async (t) => {
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server.close());
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  const response = await fetch(`http://127.0.0.1:${address.port}/api/v1/inventory/stock`);
+  assert.equal(response.status, 401);
+  assert.deepEqual(await response.json(), {
+    error: { code: "UNAUTHENTICATED", message: "Inicia sesión para continuar." },
+  });
+});
