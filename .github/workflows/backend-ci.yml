@@ -6,7 +6,9 @@ on:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
   push:
-    branches: ["main"]
+    branches:
+      - main
+      - arquitectura-multidispositivo-20261008
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
@@ -17,13 +19,15 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgres://ci:ci@127.0.0.1:5432/azul_os_ci
+      JWT_SECRET: ci-only-secret-not-used-in-production-0123456789
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
       - run: npm install
       - run: npm run typecheck
       - run: npm run build
