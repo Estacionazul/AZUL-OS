@@ -127,6 +127,7 @@ test("replaying an idempotent sale does not duplicate sale, cash, or stock movem
     if (userId) await pool.query("DELETE FROM sesiones WHERE usuario_id = $1", [userId]);
     if (deviceId) await pool.query("DELETE FROM dispositivos WHERE id = $1", [deviceId]);
     if (userId) await pool.query("DELETE FROM usuarios WHERE id = $1", [userId]);
+    if (establishmentId) await pool.query("DELETE FROM correlativos WHERE establecimiento_id = $1", [establishmentId]);
     if (establishmentId) await pool.query("DELETE FROM establecimientos WHERE id = $1", [establishmentId]);
     await pool.end();
   }
