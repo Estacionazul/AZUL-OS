@@ -23,14 +23,16 @@ CREATE TABLE usuarios (
   usuario text NOT NULL,
   nombre text NOT NULL,
   pin_hash text NOT NULL,
-  rol text NOT NULL DEFAULT 'CAJERO',
+  rol text NOT NULL DEFAULT 'CAJERO' CHECK (rol IN ('CEO','CAJERO')),
   intentos_fallidos integer NOT NULL DEFAULT 0 CHECK (intentos_fallidos >= 0),
   bloqueado_hasta timestamptz,
   activo boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (establecimiento_id, usuario)
+  updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE UNIQUE INDEX ux_usuarios_establecimiento_usuario_lower
+  ON usuarios (establecimiento_id, lower(usuario));
 
 CREATE UNIQUE INDEX ux_usuarios_establecimiento_usuario_ci
   ON usuarios (establecimiento_id, lower(usuario));
