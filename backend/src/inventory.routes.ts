@@ -15,12 +15,12 @@ const StockQuery = z.object({
 
 const stockCte = `
   WITH stock_movements AS (
-    SELECT producto_id AS item_id, SUM(cantidad * signo)::numeric(14,4) AS stock
+    SELECT 'producto'::text AS item_type, producto_id AS item_id, SUM(cantidad * signo)::numeric(14,4) AS stock
       FROM movimientos_inventario
      WHERE producto_id IS NOT NULL
      GROUP BY producto_id
     UNION ALL
-    SELECT insumo_id AS item_id, SUM(cantidad * signo)::numeric(14,4) AS stock
+    SELECT 'insumo'::text AS item_type, insumo_id AS item_id, SUM(cantidad * signo)::numeric(14,4) AS stock
       FROM movimientos_inventario
      WHERE insumo_id IS NOT NULL
      GROUP BY insumo_id
@@ -31,14 +31,14 @@ const stockCte = `
            COALESCE(sm.stock, 0)::numeric(14,4) AS "currentStock", p.activo AS active
       FROM productos p
       JOIN categorias c ON c.id = p.categoria_id
-      LEFT JOIN stock_movements sm ON sm.item_id = p.id
+      LEFT JOIN stock_movements sm ON sm.item_id = p.id AND sm.item_type = 'producto'
     UNION ALL
     SELECT 'insumo'::text AS "itemType", i.id, i.codigo AS code, i.nombre AS name,
            c.nombre AS category, i.stock_minimo AS "minimumStock",
            COALESCE(sm.stock, 0)::numeric(14,4) AS "currentStock", i.activo AS active
       FROM insumos i
       JOIN categorias c ON c.id = i.categoria_id
-      LEFT JOIN stock_movements sm ON sm.item_id = i.id
+      LEFT JOIN stock_movements sm ON sm.item_id = i.id AND sm.item_type = 'insumo'
   )
 `;
 
