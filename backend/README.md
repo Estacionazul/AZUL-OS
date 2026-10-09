@@ -11,7 +11,7 @@ En esta rama:
 - PIN con hash bcrypt, bloqueo tras cinco intentos fallidos y límite de solicitudes;
 - JWT firmado, sesión almacenada como hash, expiración de 12 horas y cierre revocable;
 - autorización por rol y permisos de módulo;
-- catálogo de productos/categorías e insumos, consulta de stock y movimientos de inventario de solo lectura, con búsqueda, paginación y permisos de módulo;
+- catálogo de productos/categorías, insumos y recetas; consulta paginada de stock/Kardex y creación transaccional de movimientos con idempotencia, validación de stock y bloqueo de movimientos manuales para productos de receta;
 - migración inicial PostgreSQL y workflow CI con PostgreSQL para validar esquema, compilación y pruebas.
 
 ## Endpoints
@@ -25,10 +25,10 @@ En esta rama:
 - `GET /api/v1/catalog/categories`
 - `GET /api/v1/inventory/stock?itemType=todos&q=&lowStockOnly=false&limit=50&offset=0`
 - `GET /api/v1/inventory/movements?itemId=&itemType=&limit=50&offset=0`
+- `POST /api/v1/inventory/movements` (requiere `Idempotency-Key` con UUID)
 - `GET /api/v1/catalog/insumos?q=&categoryId=&limit=50&offset=0`
 - `GET /api/v1/catalog/recipes?q=&limit=50&offset=0`
 - `GET /api/v1/inventory/stock?itemType=todos&q=&lowStockOnly=false&limit=50&offset=0`
-- `GET /api/v1/inventory/movements?itemId=&itemType=&limit=50&offset=0`
 
 Las rutas protegidas requieren `Authorization: Bearer <token>`. El login requiere `establishmentId`, `username`, `pin` y `deviceId`; el usuario y el dispositivo deben existir y estar activos.
 
