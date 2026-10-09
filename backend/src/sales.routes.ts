@@ -37,6 +37,113 @@ const SaleBody = z.object({
 
 const money = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
+const SalesHistoryQuery = z.object({
+  from: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/).optional(),
+  to: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/).optional(),
+  documentType: z.string().trim().min(1).max(40).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).max(1000000).default(0),
+});
+
+salesRouter.get("/", authenticate, requirePermission("Ventas"), async (req, res, next) => {
+  const parsed = SalesHistoryQuery.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Filtros de historial inválidos." } });
+    return;
+  }
+  const { from, to, documentType, limit, offset } = parsed.data;
+  if (from && to && from > to) {
+    res.status(400).json({ error: { code: "INVALID_DATE_RANGE", message: "La fecha inicial no puede ser posterior a la fecha final." } });
+    return;
+  }
+  try {
+    const values = [req.auth!.establishmentId, from ?? null, to ?? null, documentType ?? null] as const;
+    const count = await pool.query(
+      `SELECT count(*)::int AS total
+         FROM ventas v
+        WHERE v.establecimiento_id = $1
+          AND ($2::date IS NULL OR v.fecha >= $2::date)
+          AND ($3::date IS NULL OR v.fecha < ($3::date + INTERVAL '1 day'))
+          AND ($4::text IS NULL OR v.tipo_documento = $4)`,
+      values,
+    );
+    const rows = await pool.query(
+      `SELECT v.id, v.numero, v.fecha, v.tipo_documento AS "documentType",
+              v.nombre_cliente AS "customerName", v.razon_social AS "businessName",
+              v.subtotal, v.igv, v.descuento AS discount, v.total,
+              v.metodo_pago AS "paymentMethod", v.observaciones AS note,
+              COALESCE((
+                SELECT json_agg(json_build_object(
+                  'type', ce.tipo, 'series', ce.serie, 'number', ce.numero,
+                  'status', ce.estado, 'sunatCode', ce.codigo_respuesta_sunat,
+                  'sunatMessage', ce.mensaje_respuesta_sunat, 'issuedAt', ce.fecha_emision
+                ) ORDER BY ce.fecha_emision DESC)
+                FROM comprobantes_electronicos ce
+                WHERE ce.venta_id = v.id AND ce.establecimiento_id = v.establecimiento_id
+              ), '[]'::json) AS documents
+         FROM ventas v
+        WHERE v.establecimiento_id = $1
+          AND ($2::date IS NULL OR v.fecha >= $2::date)
+          AND ($3::date IS NULL OR v.fecha < ($3::date + INTERVAL '1 day'))
+          AND ($4::text IS NULL OR v.tipo_documento = $4)
+        ORDER BY v.fecha DESC, v.id DESC
+        LIMIT $5 OFFSET $6`,
+      [...values, limit, offset],
+    );
+    res.json({ items: rows.rows, total: count.rows[0].total as number, limit, offset });
+  } catch (error) {
+    next(error);
+  }
+});
+
+salesRouter.get("/:id", authenticate, requirePermission("Ventas"), async (req, res, next) => {
+  const id = z.string().uuid().safeParse(req.params.id);
+  if (!id.success) {
+    res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Identificador de venta inválido." } });
+    return;
+  }
+  try {
+    const result = await pool.query(
+      `SELECT v.id, v.numero, v.fecha, v.tipo_documento AS "documentType",
+              v.dni, v.ruc, v.nombre_cliente AS "customerName",
+              v.razon_social AS "businessName", v.direccion_fiscal AS "fiscalAddress",
+              v.subtotal, v.igv, v.descuento AS discount, v.total,
+              v.metodo_pago AS "paymentMethod", v.observaciones AS note
+         FROM ventas v
+        WHERE v.id = $1 AND v.establecimiento_id = $2`,
+      [id.data, req.auth!.establishmentId],
+    );
+    if (!result.rowCount) {
+      res.status(404).json({ error: { code: "SALE_NOT_FOUND", message: "No se encontró la venta." } });
+      return;
+    }
+    const details = await pool.query(
+      `SELECT id, producto_id AS "productId", nombre_producto AS "productName",
+              cantidad AS quantity, precio_unitario AS "unitPrice", subtotal,
+              tamano AS size, tipo_leche AS "milkType", endulzante AS sweetener,
+              infusion, extra_shot AS "extraShot", observaciones AS note,
+              tipo_afectacion_igv AS "taxAffectation"
+         FROM detalle_ventas
+        WHERE venta_id = $1 AND establecimiento_id = $2
+        ORDER BY id`,
+      [id.data, req.auth!.establishmentId],
+    );
+    const documents = await pool.query(
+      `SELECT id, tipo AS type, serie AS series, numero AS number,
+              fecha_emision AS "issuedAt", estado AS status,
+              codigo_respuesta_sunat AS "sunatCode",
+              mensaje_respuesta_sunat AS "sunatMessage"
+         FROM comprobantes_electronicos
+        WHERE venta_id = $1 AND establecimiento_id = $2
+        ORDER BY fecha_emision DESC`,
+      [id.data, req.auth!.establishmentId],
+    );
+    res.json({ sale: result.rows[0], items: details.rows, documents: documents.rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
 salesRouter.post("/", authenticate, requirePermission("Ventas"), async (req, res, next) => {
   const parsed = SaleBody.safeParse(req.body);
   if (!parsed.success) {
