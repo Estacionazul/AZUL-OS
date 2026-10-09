@@ -231,3 +231,28 @@ test("unconfigured CORS origin is rejected", async (t) => {
     error: { code: "ORIGIN_NOT_ALLOWED", message: "Origen no autorizado." },
   });
 });
+
+test("CORS allows configured origin", async (t) => {
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server.close());
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  const response = await fetch(`http://127.0.0.1:${address.port}/health/live`, {
+    headers: { origin: "http://localhost:3000" },
+  });
+  assert.equal(response.headers.get("access-control-allow-origin"), "http://localhost:3000");
+});
+
+test("CORS preflight rejects unconfigured origin", async (t) => {
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server.close());
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  const response = await fetch(`http://127.0.0.1:${address.port}/v1/auth/login`, {
+    method: "OPTIONS",
+    headers: { origin: "https://untrusted.example", "access-control-request-method": "POST" },
+  });
+  assert.equal(response.status, 403);
+});
