@@ -18,6 +18,7 @@ test("replaying an idempotent sale does not duplicate sale, cash, or stock movem
   let categoryId: string | undefined;
   let productId: string | undefined;
   let cashRegisterId: string | undefined;
+  let saleId: string | undefined;
   let server: ReturnType<typeof app.listen> | undefined;
 
   try {
@@ -88,13 +89,16 @@ test("replaying an idempotent sale does not duplicate sale, cash, or stock movem
     };
 
     const first = await fetch(`${baseUrl}/api/v1/sales`, { method: "POST", headers, body });
-    assert.equal(first.status, 201, await first.text());
-    const firstBody = await first.json() as { sale: { id: string; total: number }; replayed: boolean };
+    const firstBody = await first.json() as { sale?: { id: string; total: number }; replayed?: boolean; error?: unknown };
+    assert.equal(first.status, 201, JSON.stringify(firstBody));
+    assert.ok(firstBody.sale);
+    saleId = firstBody.sale.id;
     assert.equal(firstBody.replayed, false);
 
     const replay = await fetch(`${baseUrl}/api/v1/sales`, { method: "POST", headers, body });
-    assert.equal(replay.status, 200, await replay.text());
-    const replayBody = await replay.json() as { sale: { id: string; total: number }; replayed: boolean };
+    const replayBody = await replay.json() as { sale?: { id: string; total: number }; replayed?: boolean; error?: unknown };
+    assert.equal(replay.status, 200, JSON.stringify(replayBody));
+    assert.ok(replayBody.sale);
     assert.equal(replayBody.replayed, true);
     assert.equal(replayBody.sale.id, firstBody.sale.id);
     assert.equal(replayBody.sale.total, firstBody.sale.total);
@@ -111,6 +115,10 @@ test("replaying an idempotent sale does not duplicate sale, cash, or stock movem
       server.close();
       await closed;
     }
+    if (saleId) await pool.query("DELETE FROM detalle_ventas WHERE venta_id = $1", [saleId]);
+    if (saleId) await pool.query("DELETE FROM movimientos_caja WHERE referencia = $1", [saleId]);
+    if (saleId) await pool.query("DELETE FROM movimientos_inventario WHERE referencia_id = $1", [saleId]);
+    if (saleId) await pool.query("DELETE FROM ventas WHERE id = $1", [saleId]);
     if (cashRegisterId) await pool.query("DELETE FROM movimientos_caja WHERE caja_id = $1", [cashRegisterId]);
     if (cashRegisterId) await pool.query("DELETE FROM cajas WHERE id = $1", [cashRegisterId]);
     if (productId) await pool.query("DELETE FROM movimientos_inventario WHERE producto_id = $1", [productId]);
