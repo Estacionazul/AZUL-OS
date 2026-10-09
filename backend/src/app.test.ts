@@ -297,3 +297,16 @@ test("sales endpoint requires authentication", async (t) => {
     error: { code: "UNAUTHENTICATED", message: "Inicia sesión para continuar." },
   });
 });
+
+test("sales history endpoints reject requests without a bearer token", async (t) => {
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server.close());
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  for (const path of ["/api/v1/sales", "/api/v1/sales/00000000-0000-4000-8000-000000000001"]) {
+    const response: globalThis.Response = await fetch(`http://127.0.0.1:${address.port}${path}`);
+    assert.equal(response.status, 401, `${path} should require authentication`);
+  }
+});
+
