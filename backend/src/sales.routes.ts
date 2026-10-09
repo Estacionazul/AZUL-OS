@@ -182,7 +182,12 @@ salesRouter.post("/", authenticate, requirePermission("Ventas"), async (req, res
         res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave ya se usó en otro establecimiento." } });
         return;
       }
-      if (row.idempotency_hash && row.idempotency_hash !== requestHash) {
+      if (!row.idempotency_hash) {
+        await client.query("COMMIT");
+        res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La venta existente no tiene huella de idempotencia; usa una clave nueva." } });
+        return;
+      }
+      if (row.idempotency_hash !== requestHash) {
         await client.query("COMMIT");
         res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave ya se usó con datos de venta diferentes." } });
         return;
