@@ -19,12 +19,15 @@ CREATE TABLE dispositivos (
 
 CREATE TABLE usuarios (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  establecimiento_id uuid NOT NULL REFERENCES establecimientos(id),
+  usuario text NOT NULL,
   nombre text NOT NULL,
   pin_hash text NOT NULL,
   rol text NOT NULL DEFAULT 'CAJERO',
   activo boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (establecimiento_id, usuario)
 );
 
 CREATE TABLE permisos_usuario (
@@ -305,7 +308,9 @@ CREATE TABLE sesiones (
   fecha_inicio timestamptz NOT NULL DEFAULT now(),
   fecha_ultimo_acceso timestamptz NOT NULL DEFAULT now(),
   fecha_cierre timestamptz,
-  estado text NOT NULL DEFAULT 'ACTIVA'
+  expira_en timestamptz NOT NULL,
+  estado text NOT NULL DEFAULT 'ACTIVA',
+  CHECK (estado IN ('ACTIVA','CERRADA','REVOCADA'))
 );
 
 CREATE TABLE auditoria (
