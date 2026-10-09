@@ -37,20 +37,20 @@ test("inventory movements enforce idempotency, non-negative stock and recipe res
     );
     userId = user.rows[0].id as string;
     const category = await pool.query(
-      "INSERT INTO categorias (nombre) VALUES ($1) RETURNING id",
-      [`CI inventory ${establishmentId}`],
+      "INSERT INTO categorias (establecimiento_id, nombre) VALUES ($1, $2) RETURNING id",
+      [establishmentId, `CI inventory ${establishmentId}`],
     );
     categoryId = category.rows[0].id as string;
     const product = await pool.query(
-      `INSERT INTO productos (codigo, nombre, categoria_id, tipo_inventario)
-       VALUES ($1, $2, $3, 'producto') RETURNING id`,
-      [`CI-${establishmentId.slice(0, 8)}-P`, "CI Inventory Product", categoryId],
+      `INSERT INTO productos (establecimiento_id, codigo, nombre, categoria_id, tipo_inventario)
+       VALUES ($1, $2, $3, $4, 'producto') RETURNING id`,
+      [establishmentId, `CI-${establishmentId.slice(0, 8)}-P`, "CI Inventory Product", categoryId],
     );
     productId = product.rows[0].id as string;
     const recipe = await pool.query(
-      `INSERT INTO productos (codigo, nombre, categoria_id, tipo_inventario)
-       VALUES ($1, $2, $3, 'receta') RETURNING id`,
-      [`CI-${establishmentId.slice(0, 8)}-R`, "CI Recipe Product", categoryId],
+      `INSERT INTO productos (establecimiento_id, codigo, nombre, categoria_id, tipo_inventario)
+       VALUES ($1, $2, $3, $4, 'receta') RETURNING id`,
+      [establishmentId, `CI-${establishmentId.slice(0, 8)}-R`, "CI Recipe Product", categoryId],
     );
     recipeProductId = recipe.rows[0].id as string;
 
