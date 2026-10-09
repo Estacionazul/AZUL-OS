@@ -93,8 +93,9 @@ test("cash close reconciles cash-only movements and flags mixed payments", { ski
     assert.match(closeBody.cashRegister.note, /pagos mixtos sin desglose/);
   } finally {
     if (server) {
+      const closed = once(server, "close");
       server.close();
-      await once(server, "close");
+      await closed;
     }
     if (cashRegisterId) await pool.query("DELETE FROM movimientos_caja WHERE caja_id = $1", [cashRegisterId]);
     if (cashRegisterId) await pool.query("DELETE FROM cajas WHERE id = $1", [cashRegisterId]);
