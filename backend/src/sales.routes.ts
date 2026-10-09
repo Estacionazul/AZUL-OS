@@ -17,7 +17,7 @@ const SaleBody = z.object({
     extraShot: z.boolean().default(false),
     note: z.string().trim().max(500).optional(),
   })).min(1).max(200),
-  paymentMethod: z.enum(["Efectivo", "Yape", "Plin", "Tarjeta", "Mixto"]),
+  paymentMethod: z.enum(["Efectivo", "Yape", "Plin", "Tarjeta"]),
   discount: z.number().finite().min(0).max(999999999.99).default(0),
   customerId: z.string().uuid().optional(),
   dni: z.string().trim().max(8).optional(),
@@ -27,6 +27,9 @@ const SaleBody = z.object({
   fiscalAddress: z.string().trim().max(300).optional(),
   note: z.string().trim().max(500).optional(),
 }).superRefine((value, ctx) => {
+  if ((value as { paymentMethod?: string }).paymentMethod === "Mixto") {
+    ctx.addIssue({ code: "custom", path: ["paymentMethod"], message: "Los pagos mixtos estarán disponibles cuando se implemente el desglose por medio de pago." });
+  }
   if (value.dni && !/^\d{8}$/.test(value.dni)) {
     ctx.addIssue({ code: "custom", path: ["dni"], message: "El DNI debe tener 8 dígitos." });
   }
