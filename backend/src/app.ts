@@ -1,11 +1,13 @@
 import express, { type ErrorRequestHandler } from "express";
 import helmet from "helmet";
 import { pool } from "./db.js";
+import { authRouter } from "./auth.routes.js";
 
 export const app = express();
 app.disable("x-powered-by");
 app.use(helmet());
 app.use(express.json({ limit: "256kb" }));
+app.use("/v1/auth", authRouter);
 
 app.get("/health/live", (_req, res) => {
   res.status(200).json({ status: "ok", service: "azul-os-backend" });
