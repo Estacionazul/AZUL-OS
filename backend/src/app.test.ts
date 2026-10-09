@@ -61,3 +61,25 @@ test("protected profile route rejects missing bearer token", async (t) => {
     error: { code: "UNAUTHENTICATED", message: "Inicia sesión para continuar." },
   });
 });
+
+test("login rejects a PIN that is not exactly four digits", async (t) => {
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server.close());
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  const response = await fetch(`http://127.0.0.1:${address.port}/v1/auth/login`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      establishmentId: "11111111-1111-4111-8111-111111111111",
+      username: "cajero",
+      pin: "123",
+      deviceId: "22222222-2222-4222-8222-222222222222",
+    }),
+  });
+  assert.equal(response.status, 400);
+  assert.deepEqual(await response.json(), {
+    error: { code: "VALIDATION_ERROR", message: "Datos de inicio de sesión inválidos." },
+  });
+});
