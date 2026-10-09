@@ -55,6 +55,32 @@ test("catalog codes, category names, and order numbers can be reused across esta
     assert.equal(new Set(productIds).size, 2);
     assert.equal(new Set(ingredientIds).size, 2);
     assert.equal(new Set(orderIds).size, 2);
+
+    // Keep duplicates forbidden inside one establishment.
+    const uniqueViolation = (error: unknown) =>
+      typeof error === "object" && error !== null && "code" in error &&
+      (error as { code?: string }).code === "23505";
+
+    await assert.rejects(
+      pool.query("INSERT INTO categorias (establecimiento_id, nombre) VALUES ($1, $2)", [establishmentIds[0], `Shared category ${suffix}`]),
+      uniqueViolation,
+      "a category name must remain unique within one establishment",
+    );
+    await assert.rejects(
+      pool.query("INSERT INTO productos (establecimiento_id, codigo, nombre, categoria_id) VALUES ($1, $2, 'Duplicate product', $3)", [establishmentIds[0], `SHARED-CODE-${suffix}`, categoryIds[0]]),
+      uniqueViolation,
+      "a product code must remain unique within one establishment",
+    );
+    await assert.rejects(
+      pool.query("INSERT INTO insumos (establecimiento_id, codigo, nombre, categoria_id, unidad_medida) VALUES ($1, $2, 'Duplicate ingredient', $3, 'unid')", [establishmentIds[0], `SHARED-INGREDIENT-${suffix}`, categoryIds[0]]),
+      uniqueViolation,
+      "an ingredient code must remain unique within one establishment",
+    );
+    await assert.rejects(
+      pool.query("INSERT INTO pedidos (establecimiento_id, numero, ubicacion_id, ubicacion_nombre) VALUES ($1, $2, 'duplicate-location', 'CI duplicate')", [establishmentIds[0], `P-SHARED-${suffix}`]),
+      uniqueViolation,
+      "an order number must remain unique within one establishment",
+    );
   } finally {
     if (orderIds.length) await pool.query("DELETE FROM pedidos WHERE id = ANY($1::uuid[])", [orderIds]);
     if (productIds.length) await pool.query("DELETE FROM productos WHERE id = ANY($1::uuid[])", [productIds]);
