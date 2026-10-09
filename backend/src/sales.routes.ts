@@ -57,7 +57,7 @@ salesRouter.get("/", authenticate, requirePermission("Ventas"), async (req, res,
     return;
   }
   try {
-    const values = [req.auth!.establishmentId, from ?? null, to ?? null, documentType ?? null] as const;
+    const values: (string | null)[] = [req.auth!.establishmentId, from ?? null, to ?? null, documentType ?? null];
     const count = await pool.query(
       `SELECT count(*)::int AS total
          FROM ventas v
@@ -90,7 +90,7 @@ salesRouter.get("/", authenticate, requirePermission("Ventas"), async (req, res,
         LIMIT $5 OFFSET $6`,
       [...values, limit, offset],
     );
-    res.json({ items: rows.rows, total: count.rows[0].total as number, limit, offset });
+    res.json({ items: rows.rows, total: Number(count.rows[0]?.total ?? 0), limit, offset });
   } catch (error) {
     next(error);
   }
