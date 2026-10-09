@@ -11,12 +11,16 @@ on:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
 
-permissions:
-  contents: read
-
 jobs:
   backend:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgres://azul_os:azul_os_test_only@127.0.0.1:5432/azul_os_test
+      JWT_SECRET: test-only-secret-that-is-at-least-32-characters-long
     services:
       postgres:
         image: postgres:16
@@ -31,25 +35,17 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    defaults:
-      run:
-        working-directory: backend
-    env:
-      NODE_ENV: test
-      DATABASE_URL: postgres://azul_os:azul_os_test_only@127.0.0.1:5432/azul_os_test
-      JWT_SECRET: test-only-secret-that-is-at-least-32-characters-long
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
       - name: Install dependencies
         run: npm install
-      - name: Type-check
-        run: npm run typecheck
-      - name: Compile
-        run: npm run build
-      - name: Validate PostgreSQL migration
+      - name: Validate PostgreSQL migration in isolated CI database
         run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_initial.sql
-      - name: Run tests
-        run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
