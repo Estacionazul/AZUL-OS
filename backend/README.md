@@ -1,61 +1,78 @@
 # AZUL OS Backend
 
-API central en desarrollo para compartir la operación de Estación Azul entre Windows, Redmi y tablet.
+Backend central en TypeScript, Express y PostgreSQL para preparar la operación multidispositivo de Estación Azul.
 
-## Estado actual
+## Estado de implementación
 
-Implementado en la rama de desarrollo:
-- servidor Express con TypeScript estricto;
-- validación de variables de entorno;
-- pool de conexiones PostgreSQL;
-- endpoints `GET /health/live` y `GET /health/ready`;
-- login por usuario + PIN de cuatro dígitos, con hash bcrypt verificado;
-- bloqueo temporal tras cinco intentos incorrectos;
-- sesiones de 12 horas almacenadas como hash de token, con validación en servidor y cierre de sesión;
-- middleware de permisos por módulo y excepción para el rol `CEO`;
-- migración SQL inicial separada en `migrations/001_initial.sql`;
-- pruebas automatizadas iniciales y workflow de CI.
+Implementado en esta rama:
+- configuración obligatoria y validada por entorno;
+- endpoints de salud `GET /health/live` y `GET /health/ready`;
+- inicio de sesión por establecimiento, usuario, PIN de 4 dígitos y dispositivo previamente registrado;
+- PIN almacenado como hash bcrypt (nunca en texto plano);
+- bloqueo temporal después de 5 intentos fallidos y límite de solicitudes de login por IP;
+- tokens firmados con JWT, sesiones almacenadas como hash, expiración de 12 horas y cierre de sesión revocable;
+- autorización por rol y permiso de módulo como middleware reutilizable;
+- primera migración PostgreSQL y workflow CI para compilar, probar y validar la migración contra PostgreSQL.
 
-**No está listo para producción.** Aún no se han ejecutado las pruebas en un entorno controlado con Node.js/PostgreSQL ni se ha verificado la migración contra PostgreSQL real. No hay endpoints empresariales ni conexión Flutter implementados.
+Pendiente antes de uso operativo:
+- ejecutar y revisar el workflow CI;
+- implementar un proceso administrativo seguro para crear el primer establecimiento, CEO, usuarios y dispositivos;
+- endpoints de productos, insumos, recetas e inventario;
+- ventas/caja con transacciones e idempotencia;
+- auditoría, sincronización y pruebas de integración completas;
+- despliegue HTTPS y configuración de secretos en el entorno del servidor;
+- integración cliente Flutter y pruebas específicas por plataforma.
+
+**Este backend no está listo para producción ni conectado a la aplicación Flutter.** No ejecutar la migración contra la base SQLite actual ni contra datos reales de SUNAT.
 
 ## Requisitos
 
 - Node.js 22 o superior
-- PostgreSQL
-- Extensión PostgreSQL `pgcrypto`
+- PostgreSQL 16 o compatible con `pgcrypto`
 
-## Preparación local
+## Desarrollo local
 
-1. Copia `.env.example` a `.env`.
-2. Crea una base de datos exclusiva de desarrollo; no uses la base SQLite de producción.
-3. Configura `DATABASE_URL`.
-4. Genera un secreto propio para JWT de al menos 32 caracteres, por ejemplo con `openssl rand -base64 48`, y reemplaza el valor de ejemplo `JWT_SECRET`.
-5. Instala dependencias con `npm install`.
-6. Ejecuta `npm run typecheck`, `npm run build` y `npm test`.
+1. Entrar a esta carpeta.
+2. Copiar `.env.example` a `.env`.
+3. Crear una base PostgreSQL exclusiva para desarrollo.
+4. Configurar `DATABASE_URL` y generar un `JWT_SECRET` aleatorio de al menos 32 caracteres. No usar el valor de ejemplo.
+5. Instalar dependencias:
 
-## Endpoints disponibles
+   `npm install`
 
-- `GET /health/live`: confirma que el proceso responde.
-- `GET /health/ready`: confirma conexión a PostgreSQL.
-- `POST /v1/auth/login`: requiere `establishmentId`, `username`, PIN de cuatro dígitos y `deviceId`.
-- `GET /v1/auth/me`: devuelve el usuario de la sesión autenticada.
-- `POST /v1/auth/logout`: revoca la sesión activa.
+6. Validar primero la migración en la base vacía de desarrollo:
 
-El inicio de sesión solo funciona si el usuario y el dispositivo ya existen en PostgreSQL, el PIN está almacenado como hash bcrypt y el dispositivo pertenece al establecimiento. Aún no existe un proceso de alta inicial de CEO ni de migración de usuarios desde SQLite.
+   `psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_initial.sql`
 
-## Seguridad y límites
+   En PowerShell, usa la variable de entorno configurada en esa terminal y ejecuta `psql $env:DATABASE_URL -v ON_ERROR_STOP=1 -f migrations/001_initial.sql`.
 
-- No subas `.env`, secretos, contraseñas ni certificados.
-- No distribuyas el certificado SUNAT a los dispositivos.
-- No expongas PostgreSQL directamente a internet.
-- El backend aún no está desplegado ni conectado a Flutter.
-- No ejecutar la migración inicial en producción; primero necesita revisión, pruebas de integración y una estrategia de migraciones versionadas.
-- Los permisos se validan en servidor, pero todavía deben aplicarse a cada endpoint empresarial cuando se implementen.
+7. Arrancar el servidor:
 
-## Próxima fase
+   `npm run dev`
 
-1. Crear una inicialización segura del primer usuario CEO y del dispositivo autorizado.
-2. Probar migración, autenticación, bloqueo, cierre de sesión y permisos con PostgreSQL real.
-3. Implementar catálogo de productos e insumos con autorización.
-4. Implementar inventario y ventas con transacciones e idempotencia.
-5. Preparar sincronización Flutter sin afectar el funcionamiento local existente.
+8. Ejecutar verificaciones:
+
+   `npm run typecheck`
+
+   `npm run build`
+
+   `npm test`
+
+## Endpoints de autenticación actuales
+
+- `POST /v1/auth/login`: recibe `establishmentId`, `username`, `pin` (exactamente cuatro dígitos) y `deviceId`. Tanto el establecimiento como el usuario y el dispositivo deben existir y estar activos.
+- `GET /v1/auth/me`: requiere `Authorization: Bearer <token>`.
+- `POST /v1/auth/logout`: requiere token y revoca la sesión.
+
+No existe todavía una ruta pública para registrar usuarios o dispositivos. La creación inicial debe realizarse mediante un procedimiento administrativo controlado, que se implementará antes de conectar clientes reales.
+
+## Principios de seguridad
+
+- Nunca guardar ni registrar PIN en texto plano.
+- No incluir secretos, contraseñas ni certificados en Git.
+- El JWT requiere un secreto privado fuerte y no debe reutilizarse entre entornos.
+- Usar HTTPS en redes externas y no exponer PostgreSQL a internet.
+- El limitador de login actual usa memoria local; una instalación con varias réplicas necesitará un almacén compartido y configuración de proxy de confianza revisada.
+- El certificado SUNAT no se distribuye a los clientes.
+- Las migraciones se validan primero contra una base de pruebas; no se ejecutan automáticamente al iniciar el servidor.
+- La SQLite/Drift de Windows sigue siendo la base operativa actual hasta completar la migración multidispositivo de forma controlada.
