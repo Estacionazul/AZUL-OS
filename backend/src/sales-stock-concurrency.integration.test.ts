@@ -93,6 +93,8 @@ test("concurrent sales with different idempotency keys cannot oversell the same 
       body: await response.json() as { sale?: { id: string }; error?: { code?: string } },
     })));
 
+    const successfulSale = results.find(result => result.status === 201)?.body.sale;
+    if (successfulSale) saleId = successfulSale.id;
     assert.equal(results.filter(result => result.status === 201).length, 1, JSON.stringify(results));
     assert.equal(results.filter(result => result.status === 409 && result.body.error?.code === "INSUFFICIENT_STOCK").length, 1, JSON.stringify(results));
 
@@ -108,9 +110,8 @@ test("concurrent sales with different idempotency keys cannot oversell the same 
     assert.equal(fixtureSales.rows[0].count, 1);
     assert.equal(Number(stock.rows[0].current), 0);
 
-    const sale = results.find(result => result.status === 201)?.body.sale;
+    const sale = successfulSale;
     assert.ok(sale);
-    saleId = sale.id;
     const cashMovements = await pool.query(
       "SELECT count(*)::int AS count FROM movimientos_caja WHERE caja_id = $1 AND referencia = $2",
       [cashRegisterId, sale.id],
