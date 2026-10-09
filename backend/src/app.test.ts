@@ -269,7 +269,7 @@ test("cash register endpoints require authentication", async (t) => {
     ["/api/v1/cash/open", "POST"],
     ["/api/v1/cash/close", "POST"],
   ] as const) {
-    const response = await fetch(`http://127.0.0.1:${address.port}${path}`, {
+    const response: globalThis.Response = await fetch(`http://127.0.0.1:${address.port}${path}`, {
       method,
       ...(method === "POST" ? { headers: { "content-type": "application/json" }, body: "{}" } : {}),
     });
