@@ -18,7 +18,9 @@ test("sales and cash foreign keys reject cross-establishment references", { skip
   let productA: string | undefined;
   let productB: string | undefined;
   let cashRegisterA: string | undefined;
+  let cashRegisterB: string | undefined;
   let saleA: string | undefined;
+  let saleB: string | undefined;
 
   try {
     const a = await pool.query("INSERT INTO establecimientos (nombre) VALUES ($1) RETURNING id", [`CI sales A ${suffix}`]);
@@ -76,6 +78,23 @@ test("sales and cash foreign keys reject cross-establishment references", { skip
     );
     cashRegisterA = caja.rows[0].id as string;
 
+    const cajaB = await pool.query(
+      "INSERT INTO cajas (establecimiento_id, usuario_apertura_id, dispositivo_apertura_id) VALUES ($1, $2, $3) RETURNING id",
+      [establishmentB, userB, deviceB],
+    );
+    cashRegisterB = cajaB.rows[0].id as string;
+
+    const sharedNumber = `CI-SAME-NUMBER-${suffix}`;
+    await pool.query(
+      "INSERT INTO ventas (numero, usuario_id, caja_id, dispositivo_id, establecimiento_id, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6)",
+      [sharedNumber, userA, cashRegisterA, deviceA, establishmentA, crypto.randomUUID()],
+    );
+    const saleInB = await pool.query(
+      "INSERT INTO ventas (numero, usuario_id, caja_id, dispositivo_id, establecimiento_id, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+      [sharedNumber, userB, cashRegisterB, deviceB, establishmentB, crypto.randomUUID()],
+    );
+    saleB = saleInB.rows[0].id as string;
+
     await assert.rejects(
       pool.query(
         "INSERT INTO ventas (numero, usuario_id, caja_id, dispositivo_id, establecimiento_id, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6)",
@@ -121,9 +140,13 @@ test("sales and cash foreign keys reject cross-establishment references", { skip
     assert.ok(productA);
   } finally {
     if (saleA) await pool.query("DELETE FROM detalle_ventas WHERE venta_id = $1", [saleA]);
+    if (saleB) await pool.query("DELETE FROM detalle_ventas WHERE venta_id = $1", [saleB]);
     if (saleA) await pool.query("DELETE FROM ventas WHERE id = $1", [saleA]);
+    if (saleB) await pool.query("DELETE FROM ventas WHERE id = $1", [saleB]);
     if (cashRegisterA) await pool.query("DELETE FROM movimientos_caja WHERE caja_id = $1", [cashRegisterA]);
+    if (cashRegisterB) await pool.query("DELETE FROM movimientos_caja WHERE caja_id = $1", [cashRegisterB]);
     if (cashRegisterA) await pool.query("DELETE FROM cajas WHERE id = $1", [cashRegisterA]);
+    if (cashRegisterB) await pool.query("DELETE FROM cajas WHERE id = $1", [cashRegisterB]);
     if (productA) await pool.query("DELETE FROM productos WHERE id = $1", [productA]);
     if (productB) await pool.query("DELETE FROM productos WHERE id = $1", [productB]);
     if (categoryA) await pool.query("DELETE FROM categorias WHERE id = $1", [categoryA]);
