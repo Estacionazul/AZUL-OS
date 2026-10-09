@@ -18,9 +18,9 @@ En esta rama:
 
 - `GET /health/live`
 - `GET /health/ready`
-- `POST /api/v1/auth/login`
-- `GET /api/v1/auth/me`
-- `POST /api/v1/auth/logout`
+- `POST /api/api/v1/auth/login`
+- `GET /api/api/v1/auth/me`
+- `POST /api/api/v1/auth/logout`
 - `GET /api/v1/catalog/products?q=&categoryId=&limit=50&offset=0`
 - `GET /api/v1/catalog/categories`
 
