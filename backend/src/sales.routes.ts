@@ -37,9 +37,16 @@ const SaleBody = z.object({
 
 const money = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
+const isoDate = z.string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Usa el formato AAAA-MM-DD.")
+  .refine((value) => {
+    const date = new Date(`${value}T00:00:00.000Z`);
+    return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+  }, "La fecha no existe en el calendario.");
+
 const SalesHistoryQuery = z.object({
-  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  from: isoDate.optional(),
+  to: isoDate.optional(),
   documentType: z.string().trim().min(1).max(40).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
   offset: z.coerce.number().int().min(0).max(1000000).default(0),
