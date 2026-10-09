@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { Router } from "express";
 import { z } from "zod";
 import { pool } from "./db.js";
@@ -164,23 +164,30 @@ salesRouter.post("/", authenticate, requirePermission("Ventas"), async (req, res
   }
 
   const input = parsed.data;
+  const requestHash = createHash("sha256").update(JSON.stringify(input)).digest("hex");
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [idempotencyKey]);
 
     const prior = await client.query(
-      `SELECT id, numero, total, establecimiento_id
+      `SELECT id, numero, total, establecimiento_id, idempotency_hash
          FROM ventas WHERE idempotency_key = $1`,
       [idempotencyKey],
     );
     if (prior.rowCount) {
       const row = prior.rows[0];
-      await client.query("COMMIT");
       if (row.establecimiento_id !== req.auth!.establishmentId) {
+        await client.query("COMMIT");
         res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave ya se usó en otro establecimiento." } });
         return;
       }
+      if (row.idempotency_hash && row.idempotency_hash !== requestHash) {
+        await client.query("COMMIT");
+        res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave ya se usó con datos de venta diferentes." } });
+        return;
+      }
+      await client.query("COMMIT");
       res.status(200).json({
         sale: { id: row.id, number: row.numero, total: Number(row.total) },
         replayed: true,
@@ -360,7 +367,7 @@ salesRouter.post("/", authenticate, requirePermission("Ventas"), async (req, res
         number, req.auth!.userId, cashRegisterId, req.auth!.deviceId, input.customerId ?? null,
         input.dni ?? null, input.ruc ?? null, input.customerName ?? null, input.businessName ?? null,
         input.fiscalAddress ?? null, subtotal, igv, input.discount, total, input.paymentMethod,
-        input.note ?? null, idempotencyKey, req.auth!.establishmentId,
+        input.note ?? null, idempotencyKey, requestHash, req.auth!.establishmentId,
       ],
     );
     const sale = insertedSale.rows[0] as { id: string; numero: string; fecha: Date; subtotal: string; igv: string; descuento: string; total: string; paymentMethod: string };
