@@ -341,3 +341,19 @@ CREATE TABLE sync_cursors (
 CREATE UNIQUE INDEX ux_caja_abierta_establecimiento
   ON cajas(establecimiento_id)
   WHERE estado = 'ABIERTA';
+
+CREATE INDEX ix_movimientos_inventario_producto_fecha
+  ON movimientos_inventario (producto_id, fecha DESC)
+  WHERE producto_id IS NOT NULL;
+
+CREATE INDEX ix_movimientos_inventario_insumo_fecha
+  ON movimientos_inventario (insumo_id, fecha DESC)
+  WHERE insumo_id IS NOT NULL;
+
+CREATE INDEX ix_productos_categoria_nombre_activo
+  ON productos (categoria_id, nombre)
+  WHERE activo = true AND tipo_inventario = 'producto';
+
+CREATE INDEX ix_insumos_categoria_nombre_activo
+  ON insumos (categoria_id, nombre)
+  WHERE activo = true;
