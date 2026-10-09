@@ -256,3 +256,26 @@ test("CORS preflight rejects unconfigured origin", async (t) => {
   });
   assert.equal(response.status, 403);
 });
+
+
+test("cash register endpoints require authentication", async (t) => {
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server.close());
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  for (const [path, method] of [
+    ["/api/v1/cash/current", "GET"],
+    ["/api/v1/cash/open", "POST"],
+    ["/api/v1/cash/close", "POST"],
+  ] as const) {
+    const response = await fetch(`http://127.0.0.1:${address.port}${path}`, {
+      method,
+      ...(method === "POST" ? { headers: { "content-type": "application/json" }, body: "{}" } : {}),
+    });
+    assert.equal(response.status, 401, `${method} ${path} must require authentication`);
+    assert.deepEqual(await response.json(), {
+      error: { code: "UNAUTHENTICATED", message: "Inicia sesión para continuar." },
+    });
+  }
+});
