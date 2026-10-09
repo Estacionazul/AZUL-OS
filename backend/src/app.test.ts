@@ -172,3 +172,22 @@ test("inventory endpoints reject requests without a session", async (t) => {
     error: { code: "UNAUTHENTICATED", message: "Inicia sesión para continuar." },
   });
 });
+
+test("inventory stock and movement endpoints require authentication", async (t) => {
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server.close());
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  for (const [path, method] of [
+    ["/api/v1/inventory/stock", "GET"],
+    ["/api/v1/inventory/movements", "GET"],
+    ["/api/v1/inventory/movements", "POST"],
+  ] as const) {
+    const response = await fetch(`http://127.0.0.1:${address.port}${path}`, {
+      method,
+      ...(method === "POST" ? { headers: { "content-type": "application/json" }, body: "{}" } : {}),
+    });
+    assert.equal(response.status, 401, `${method} ${path} must require authentication`);
+  }
+});
