@@ -178,29 +178,31 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
   }
 }
 
-export async function requirePermission(moduleName: string, req: Request, res: Response, next: NextFunction) {
-  if (!req.auth) {
-    res.status(401).json({ error: { code: "UNAUTHENTICATED", message: "Inicia sesión para continuar." } });
-    return;
-  }
-  if (req.auth.role === "CEO") {
-    next();
-    return;
-  }
-  try {
-    const result = await pool.query(
-      `SELECT 1 FROM permisos_usuario
-        WHERE usuario_id = $1 AND modulo = $2 AND permitido = true`,
-      [req.auth.userId, moduleName],
-    );
-    if (!result.rowCount) {
-      res.status(403).json({ error: { code: "FORBIDDEN", message: "No tienes permiso para este módulo." } });
+export function requirePermission(moduleName: string) {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (!req.auth) {
+      res.status(401).json({ error: { code: "UNAUTHENTICATED", message: "Inicia sesión para continuar." } });
       return;
     }
-    next();
-  } catch (error) {
-    next(error);
-  }
+    if (req.auth.role === "CEO") {
+      next();
+      return;
+    }
+    try {
+      const result = await pool.query(
+        `SELECT 1 FROM permisos_usuario
+          WHERE usuario_id = $1 AND modulo = $2 AND permitido = true`,
+        [req.auth.userId, moduleName],
+      );
+      if (!result.rowCount) {
+        res.status(403).json({ error: { code: "FORBIDDEN", message: "No tienes permiso para este módulo." } });
+        return;
+      }
+      next();
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export async function logout(req: Request): Promise<void> {
