@@ -36,7 +36,7 @@ test("login rejects an invalid PIN before touching the database", async (t) => {
   t.after(() => server.close());
   const address = server.address();
   assert.ok(address && typeof address !== "string");
-  const response = await fetch(`http://127.0.0.1:${address.port}/api/api/v1/auth/login`, {
+  const response = await fetch(`http://127.0.0.1:${address.port}/api/v1/auth/login`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
