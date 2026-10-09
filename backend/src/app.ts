@@ -1,13 +1,28 @@
 import express, { type ErrorRequestHandler } from "express";
 import helmet from "helmet";
 import { pool } from "./db.js";
+import { config } from "./config.js";
 import { authRouter } from "./auth.routes.js";
 
 export const app = express();
 app.disable("x-powered-by");
 app.use(helmet());
+app.use((req, res, next) => {
+  const origin = req.header("origin");
+  res.vary("Origin");
+  if (origin && config.corsOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Idempotency-Key");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  }
+  if (req.method === "OPTIONS") {
+    res.status(origin && !config.corsOrigins.includes(origin) ? 403 : 204).end();
+    return;
+  }
+  next();
+});
 app.use(express.json({ limit: "256kb" }));
-app.use("/api/v1/auth", authRouter);
+app.use("/v1/auth", authRouter);
 
 app.get("/health/live", (_req, res) => {
   res.status(200).json({ status: "ok", service: "azul-os-backend" });
