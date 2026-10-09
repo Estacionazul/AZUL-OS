@@ -120,3 +120,16 @@ test("CORS rejects preflight requests from unlisted origins", async (t) => {
   });
   assert.equal(response.status, 403);
 });
+
+
+test("catalog endpoints reject requests without a session", async (t) => {
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server.close());
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  for (const path of ["/api/v1/catalog/products", "/api/v1/catalog/insumos"]) {
+    const response = await fetch(`http://127.0.0.1:${address.port}${path}`);
+    assert.equal(response.status, 401, `${path} should require authentication`);
+  }
+});
