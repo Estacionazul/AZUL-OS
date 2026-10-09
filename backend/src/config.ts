@@ -6,6 +6,7 @@ const EnvSchema = z.object({
   HOST: z.string().default("127.0.0.1"),
   PORT: z.coerce.number().int().min(1).max(65535).default(8080),
   DATABASE_URL: z.string().min(1),
+  JWT_SECRET: z.string().min(32).refine((value) => !value.startsWith("REPLACE_WITH_"), "Replace the JWT secret placeholder before starting the API"),
   CORS_ORIGINS: z.string().default("http://localhost:3000"),
 });
 
