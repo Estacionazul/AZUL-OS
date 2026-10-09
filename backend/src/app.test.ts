@@ -203,3 +203,31 @@ test("readiness confirms PostgreSQL connectivity in CI", { skip: process.env.CI 
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { status: "ready", database: "connected" });
 });
+
+test("configured CORS origin is allowed", async (t) => {
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server.close());
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  const response = await fetch(`http://127.0.0.1:${address.port}/health/live`, {
+    headers: { origin: "http://localhost:3000" },
+  });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("access-control-allow-origin"), "http://localhost:3000");
+});
+
+test("unconfigured CORS origin is rejected", async (t) => {
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server.close());
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  const response = await fetch(`http://127.0.0.1:${address.port}/health/live`, {
+    headers: { origin: "https://not-approved.example" },
+  });
+  assert.equal(response.status, 403);
+  assert.deepEqual(await response.json(), {
+    error: { code: "ORIGIN_NOT_ALLOWED", message: "Origen no autorizado." },
+  });
+});
