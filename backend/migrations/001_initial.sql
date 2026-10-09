@@ -23,7 +23,7 @@ CREATE TABLE usuarios (
   usuario text NOT NULL,
   nombre text NOT NULL,
   pin_hash text NOT NULL,
-  rol text NOT NULL DEFAULT 'CAJERO' CHECK (rol IN ('CEO','CAJERO')),
+  rol text NOT NULL DEFAULT 'CAJERO',
   intentos_fallidos integer NOT NULL DEFAULT 0 CHECK (intentos_fallidos >= 0),
   bloqueado_hasta timestamptz,
   activo boolean NOT NULL DEFAULT true,
