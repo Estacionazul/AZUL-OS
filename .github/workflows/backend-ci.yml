@@ -53,9 +53,10 @@ jobs:
         run: npm run build
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
-      - name: Validate PostgreSQL migration
+      - name: Validate PostgreSQL migrations
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_initial.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/002_establishment_isolation.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/003_catalog_inventory_integrity.sql
       - name: Run tests
         run: npm test
