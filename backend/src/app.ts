@@ -9,9 +9,11 @@ import { inventoryRouter } from "./inventory.routes.js";
 export const app = express();
 app.disable("x-powered-by");
 app.use(helmet());
+
 app.use((req, res, next) => {
   const origin = req.header("origin");
   res.vary("Origin");
+
   if (origin && !config.corsOrigins.includes(origin)) {
     if (req.method === "OPTIONS") {
       res.status(403).end();
@@ -22,17 +24,20 @@ app.use((req, res, next) => {
     }
     return;
   }
+
   if (origin) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Idempotency-Key");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
   }
+
   if (req.method === "OPTIONS") {
     res.status(204).end();
     return;
   }
   next();
 });
+
 app.use(express.json({ limit: "256kb" }));
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/catalog", catalogRouter);
