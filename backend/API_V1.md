@@ -2,7 +2,7 @@
 
 ## Estado
 
-Este documento separa las rutas implementadas en la rama de desarrollo de las rutas previstas. El backend aún no está conectado a Flutter ni debe usarse en producción.
+Este documento separa las rutas implementadas en la rama de desarrollo de las rutas previstas. Flutter ya incluye un cliente API y una pantalla para configurar/probar la conexión, pero los flujos de negocio siguen operando con SQLite local y todavía no están conectados al backend. No usar en producción.
 
 Base local: `http://127.0.0.1:8080`. En cualquier despliegue accesible desde una red, usar HTTPS.
 
@@ -48,6 +48,19 @@ Estas rutas requieren sesión activa con rol `CEO`. El acceso se valida en el ba
 - `GET /api/v1/admin/users`: lista usuarios del establecimiento y permisos por módulo.
 - `POST /api/v1/admin/users`: crea un cajero con PIN de cuatro dígitos y permisos explícitos. El PIN se guarda con hash y nunca se devuelve.
 - `PATCH /api/v1/admin/users/:id`: permite cambiar nombre, activar/desactivar cajero, restablecer PIN o reemplazar permisos. Desactivar usuario o cambiar PIN revoca sus sesiones activas. Esta ruta no permite desactivar el CEO.
+
+### Administración de catálogo (solo CEO)
+
+Estas rutas requieren sesión activa con rol `CEO`. Los códigos y categorías se validan dentro del establecimiento; las desactivaciones son lógicas para conservar referencias históricas.
+
+- `POST /api/v1/admin/catalog/categories`: crea categoría.
+- `PATCH /api/v1/admin/catalog/categories/:id`: modifica nombre, icono, orden o estado activo.
+- `POST /api/v1/admin/catalog/products`: crea producto, precio, costo, categoría, tipo de inventario y afectación IGV.
+- `PATCH /api/v1/admin/catalog/products/:id`: modifica campos del producto o lo desactiva con `active: false`.
+- `POST /api/v1/admin/catalog/insumos`: crea insumo y unidad de medida.
+- `PATCH /api/v1/admin/catalog/insumos/:id`: modifica campos del insumo o lo desactiva con `active: false`.
+
+Las rutas de escritura devuelven `409` si el código/nombre ya existe en el establecimiento y `404` si la categoría indicada no pertenece a ese establecimiento o no está activa.
 
 ### Catálogos de solo lectura
 
