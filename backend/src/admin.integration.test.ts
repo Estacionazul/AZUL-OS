@@ -18,6 +18,9 @@ test("CEO can register devices and cashier users; non-CEO cannot access administ
   let deviceId: string | undefined;
   let createdDeviceId: string | undefined;
   let createdUserId: string | undefined;
+  let createdCategoryId: string | undefined;
+  let createdProductId: string | undefined;
+  let createdInsumoId: string | undefined;
   let server: ReturnType<typeof app.listen> | undefined;
 
   try {
@@ -72,6 +75,51 @@ test("CEO can register devices and cashier users; non-CEO cannot access administ
     assert.equal((await forbidden.json() as { error: { code: string } }).error.code, "CEO_REQUIRED");
 
     const ceoToken = await token(`ci-ceo-${suffix}`, "6842");
+    const selfDisable = await fetch(`${baseUrl}/api/v1/admin/devices/${deviceId}`, {
+      method: "PATCH",
+      headers: { authorization: `Bearer ${ceoToken}`, "content-type": "application/json" },
+      body: JSON.stringify({ active: false }),
+    });
+    assert.equal(selfDisable.status, 409);
+    assert.equal((await selfDisable.json() as { error: { code: string } }).error.code, "CURRENT_DEVICE_DEACTIVATION_BLOCKED");
+
+    const category = await fetch(`${baseUrl}/api/v1/admin/catalog/categories`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${ceoToken}`, "content-type": "application/json" },
+      body: JSON.stringify({ name: `CI category ${suffix}`, icon: "📦", sortOrder: 5 }),
+    });
+    assert.equal(category.status, 201);
+    createdCategoryId = (await category.json() as { category: { id: string } }).category.id;
+
+    const product = await fetch(`${baseUrl}/api/v1/admin/catalog/products`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${ceoToken}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        code: `CI-P-${suffix}`, name: "CI Test Product", categoryId: createdCategoryId,
+        salePrice: 8.5, cost: 2.25, minimumStock: 0, inventoryType: "producto",
+      }),
+    });
+    assert.equal(product.status, 201);
+    createdProductId = (await product.json() as { product: { id: string } }).product.id;
+
+    const insumo = await fetch(`${baseUrl}/api/v1/admin/catalog/insumos`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${ceoToken}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        code: `CI-I-${suffix}`, name: "CI Test Ingredient", categoryId: createdCategoryId, unit: "unid",
+      }),
+    });
+    assert.equal(insumo.status, 201);
+    createdInsumoId = (await insumo.json() as { insumo: { id: string } }).insumo.id;
+
+    const productUpdate = await fetch(`${baseUrl}/api/v1/admin/catalog/products/${createdProductId}`, {
+      method: "PATCH",
+      headers: { authorization: `Bearer ${ceoToken}`, "content-type": "application/json" },
+      body: JSON.stringify({ active: false }),
+    });
+    assert.equal(productUpdate.status, 200);
+    assert.equal((await productUpdate.json() as { product: { active: boolean } }).product.active, false);
+
     const createdDevice = await fetch(`${baseUrl}/api/v1/admin/devices`, {
       method: "POST",
       headers: { authorization: `Bearer ${ceoToken}`, "content-type": "application/json" },
@@ -103,6 +151,9 @@ test("CEO can register devices and cashier users; non-CEO cannot access administ
     assert.equal((await disabled.json() as { device: { active: boolean } }).device.active, false);
   } finally {
     if (server) await new Promise<void>((resolve) => server!.close(() => resolve()));
+    if (createdProductId) await pool.query("DELETE FROM productos WHERE id = $1", [createdProductId]);
+    if (createdInsumoId) await pool.query("DELETE FROM insumos WHERE id = $1", [createdInsumoId]);
+    if (createdCategoryId) await pool.query("DELETE FROM categorias WHERE id = $1", [createdCategoryId]);
     if (createdUserId) await pool.query("DELETE FROM sesiones WHERE usuario_id = $1", [createdUserId]);
     if (createdUserId) await pool.query("DELETE FROM permisos_usuario WHERE usuario_id = $1", [createdUserId]);
     if (createdUserId) await pool.query("DELETE FROM usuarios WHERE id = $1", [createdUserId]);
