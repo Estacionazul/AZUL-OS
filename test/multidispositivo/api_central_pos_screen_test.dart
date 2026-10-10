@@ -184,7 +184,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('V000001'), findsOneWidget);
     await tester.tap(find.textContaining('V000001'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('Americano central'), findsWidgets);
     expect(find.text('Desglose de pagos'), findsOneWidget);
   });
