@@ -130,7 +130,7 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     ]);
     const results = await Promise.all(responses.map(async (response) => ({
       status: response.status,
-      body: await response.json() as { sale?: { id: string; total: number }; replayed?: boolean; error?: unknown },
+      body: await response.json() as { sale?: { id: string; number: string; total: number }; replayed?: boolean; error?: unknown },
     })));
     const created = results.find((result) => result.status === 201);
     const replay = results.find((result) => result.status === 200);
@@ -143,6 +143,13 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     assert.equal(replay.body.replayed, true);
     assert.equal(replay.body.sale.id, created.body.sale.id);
     assert.equal(replay.body.sale.total, created.body.sale.total);
+
+    const detailResponse = await fetch(`${baseUrl}/api/v1/sales/${saleId}`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    assert.equal(detailResponse.status, 200);
+    const detailBody = await detailResponse.json() as { sale: { number: string } };
+    assert.equal(detailBody.sale.number, created.body.sale.number);
 
     const sales = await pool.query("SELECT count(*)::int AS count FROM ventas WHERE idempotency_key = $1", [idempotencyKey]);
     const cashMovements = await pool.query("SELECT count(*)::int AS count FROM movimientos_caja WHERE referencia = $1", [created.body.sale.id]);
