@@ -21,6 +21,7 @@ test("CEO can register devices and cashier users; non-CEO cannot access administ
   let createdCategoryId: string | undefined;
   let createdProductId: string | undefined;
   let createdInsumoId: string | undefined;
+  let createdRecipeId: string | undefined;
   let server: ReturnType<typeof app.listen> | undefined;
 
   try {
@@ -112,6 +113,30 @@ test("CEO can register devices and cashier users; non-CEO cannot access administ
     assert.equal(insumo.status, 201);
     createdInsumoId = (await insumo.json() as { insumo: { id: string } }).insumo.id;
 
+    const recipe = await fetch(`${baseUrl}/api/v1/admin/catalog/recipes`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${ceoToken}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        productId: createdProductId, name: "CI Test Recipe",
+        ingredients: [{ insumoId: createdInsumoId, quantity: 1.5, unit: "unid" }],
+      }),
+    });
+    assert.equal(recipe.status, 201);
+    createdRecipeId = (await recipe.json() as { recipe: { id: string } }).recipe.id;
+
+    const recipeUpdate = await fetch(`${baseUrl}/api/v1/admin/catalog/recipes/${createdRecipeId}`, {
+      method: "PATCH",
+      headers: { authorization: `Bearer ${ceoToken}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        name: "CI Updated Recipe",
+        ingredients: [{ insumoId: createdInsumoId, quantity: 2, unit: "unid" }],
+      }),
+    });
+    assert.equal(recipeUpdate.status, 200);
+    const recipeBody = await recipeUpdate.json() as { recipe: { name: string; ingredients: { quantity: number }[] } };
+    assert.equal(recipeBody.recipe.name, "CI Updated Recipe");
+    assert.equal(Number(recipeBody.recipe.ingredients[0].quantity), 2);
+
     const productUpdate = await fetch(`${baseUrl}/api/v1/admin/catalog/products/${createdProductId}`, {
       method: "PATCH",
       headers: { authorization: `Bearer ${ceoToken}`, "content-type": "application/json" },
@@ -151,6 +176,7 @@ test("CEO can register devices and cashier users; non-CEO cannot access administ
     assert.equal((await disabled.json() as { device: { active: boolean } }).device.active, false);
   } finally {
     if (server) await new Promise<void>((resolve) => server!.close(() => resolve()));
+    if (createdRecipeId) await pool.query("DELETE FROM recetas WHERE id = $1", [createdRecipeId]);
     if (createdProductId) await pool.query("DELETE FROM productos WHERE id = $1", [createdProductId]);
     if (createdInsumoId) await pool.query("DELETE FROM insumos WHERE id = $1", [createdInsumoId]);
     if (createdCategoryId) await pool.query("DELETE FROM categorias WHERE id = $1", [createdCategoryId]);
