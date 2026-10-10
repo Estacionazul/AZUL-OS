@@ -252,3 +252,174 @@ catalogAdminRouter.patch("/insumos/:id", async (req, res, next) => {
     next(error);
   }
 });
+
+
+const RecipeIngredient = z.object({
+  insumoId: z.string().uuid(),
+  quantity: z.number().finite().positive().max(1_000_000_000)
+    .refine((value) => Number.isInteger(value * 10_000), "La cantidad admite hasta cuatro decimales."),
+  unit: z.string().trim().min(1).max(40).default("unid"),
+  order: z.number().int().min(0).max(100000).optional(),
+});
+const RecipeBody = z.object({
+  productId: z.string().uuid(),
+  name: z.string().trim().min(1).max(200),
+  ingredients: z.array(RecipeIngredient).min(1).max(200),
+}).superRefine((value, ctx) => {
+  const ids = value.ingredients.map((ingredient) => ingredient.insumoId);
+  if (new Set(ids).size !== ids.length) {
+    ctx.addIssue({ code: "custom", path: ["ingredients"], message: "No repitas un mismo insumo en la receta." });
+  }
+});
+const RecipeUpdate = z.object({
+  name: z.string().trim().min(1).max(200).optional(),
+  active: z.boolean().optional(),
+  ingredients: z.array(RecipeIngredient).min(1).max(200).optional(),
+}).strict().superRefine((value, ctx) => {
+  if (Object.keys(value).length === 0) {
+    ctx.addIssue({ code: "custom", message: "Indica al menos un cambio." });
+  }
+  if (value.ingredients) {
+    const ids = value.ingredients.map((ingredient) => ingredient.insumoId);
+    if (new Set(ids).size !== ids.length) {
+      ctx.addIssue({ code: "custom", path: ["ingredients"], message: "No repitas un mismo insumo en la receta." });
+    }
+  }
+});
+
+async function validateRecipeIngredients(
+  client: import("pg").PoolClient,
+  establishmentId: string,
+  ingredients: z.infer<typeof RecipeIngredient>[],
+): Promise<boolean> {
+  const ids = ingredients.map((ingredient) => ingredient.insumoId);
+  const found = await client.query(
+    "SELECT id FROM insumos WHERE establecimiento_id = $1 AND activo = true AND id = ANY($2::uuid[])",
+    [establishmentId, ids],
+  );
+  return found.rowCount === new Set(ids).size;
+}
+
+async function insertRecipeIngredients(
+  client: import("pg").PoolClient,
+  recipeId: string,
+  ingredients: z.infer<typeof RecipeIngredient>[],
+): Promise<void> {
+  for (let index = 0; index < ingredients.length; index++) {
+    const ingredient = ingredients[index];
+    await client.query(
+      \`INSERT INTO receta_detalle (id, receta_id, insumo_id, cantidad, unidad, orden)
+       VALUES ($1, $2, $3, $4, $5, $6)\`,
+      [randomUUID(), recipeId, ingredient.insumoId, ingredient.quantity, ingredient.unit, ingredient.order ?? index],
+    );
+  }
+}
+
+catalogAdminRouter.post("/recipes", async (req, res, next) => {
+  const parsed = RecipeBody.safeParse(req.body);
+  if (!parsed.success) return validationError(res, "Datos de receta inválidos.");
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const product = await client.query(
+      "SELECT id FROM productos WHERE id = $1 AND establecimiento_id = $2 AND activo = true FOR UPDATE",
+      [parsed.data.productId, req.auth!.establishmentId],
+    );
+    if (!product.rowCount) {
+      await client.query("ROLLBACK");
+      res.status(404).json({ error: { code: "PRODUCT_NOT_FOUND", message: "No se encontró un producto activo del establecimiento." } });
+      return;
+    }
+    if (!await validateRecipeIngredients(client, req.auth!.establishmentId, parsed.data.ingredients)) {
+      await client.query("ROLLBACK");
+      res.status(404).json({ error: { code: "INGREDIENT_NOT_FOUND", message: "Uno o más insumos no existen, están inactivos o pertenecen a otro establecimiento." } });
+      return;
+    }
+    const recipeId = randomUUID();
+    await client.query(
+      "UPDATE productos SET tipo_inventario = 'receta', updated_at = now() WHERE id = $1 AND establecimiento_id = $2",
+      [parsed.data.productId, req.auth!.establishmentId],
+    );
+    await client.query(
+      "INSERT INTO recetas (id, establecimiento_id, producto_id, nombre) VALUES ($1, $2, $3, $4)",
+      [recipeId, req.auth!.establishmentId, parsed.data.productId, parsed.data.name],
+    );
+    await insertRecipeIngredients(client, recipeId, parsed.data.ingredients);
+    await client.query("COMMIT");
+    res.status(201).json({ recipe: { id: recipeId, productId: parsed.data.productId, name: parsed.data.name, active: true, ingredients: parsed.data.ingredients } });
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    if (isDuplicate(error)) {
+      res.status(409).json({ error: { code: "RECIPE_ALREADY_EXISTS", message: "Este producto ya tiene una receta registrada." } });
+      return;
+    }
+    next(error);
+  } finally {
+    client.release();
+  }
+});
+
+catalogAdminRouter.patch("/recipes/:id", async (req, res, next) => {
+  const id = z.string().uuid().safeParse(req.params.id);
+  const parsed = RecipeUpdate.safeParse(req.body);
+  if (!id.success || !parsed.success) return validationError(res, "Identificador o cambios de receta inválidos.");
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const existing = await client.query(
+      "SELECT id, producto_id AS product_id FROM recetas WHERE id = $1 AND establecimiento_id = $2 FOR UPDATE",
+      [id.data, req.auth!.establishmentId],
+    );
+    if (!existing.rowCount) {
+      await client.query("ROLLBACK");
+      res.status(404).json({ error: { code: "RECIPE_NOT_FOUND", message: "No se encontró la receta." } });
+      return;
+    }
+    if (parsed.data.ingredients && !await validateRecipeIngredients(client, req.auth!.establishmentId, parsed.data.ingredients)) {
+      await client.query("ROLLBACK");
+      res.status(404).json({ error: { code: "INGREDIENT_NOT_FOUND", message: "Uno o más insumos no existen, están inactivos o pertenecen a otro establecimiento." } });
+      return;
+    }
+    const updates: string[] = [];
+    const values: unknown[] = [id.data, req.auth!.establishmentId];
+    if (parsed.data.name !== undefined) {
+      values.push(parsed.data.name);
+      updates.push(\`nombre = $\${values.length}\`);
+    }
+    if (parsed.data.active !== undefined) {
+      values.push(parsed.data.active);
+      updates.push(\`activo = $\${values.length}\`);
+    }
+    if (updates.length) {
+      updates.push("updated_at = now()");
+      await client.query(
+        \`UPDATE recetas SET \${updates.join(", ")} WHERE id = $1 AND establecimiento_id = $2\`,
+        values,
+      );
+    }
+    if (parsed.data.ingredients) {
+      await client.query("DELETE FROM receta_detalle WHERE receta_id = $1 AND establecimiento_id = $2", [id.data, req.auth!.establishmentId]);
+      await insertRecipeIngredients(client, id.data, parsed.data.ingredients);
+    }
+    const recipe = await client.query(
+      "SELECT id, producto_id AS \\"productId\\", nombre AS name, activo AS active FROM recetas WHERE id = $1 AND establecimiento_id = $2",
+      [id.data, req.auth!.establishmentId],
+    );
+    const ingredients = await client.query(
+      \`SELECT rd.id, rd.insumo_id AS "insumoId", i.codigo AS "insumoCode",
+              i.nombre AS "insumoName", rd.cantidad AS quantity, rd.unidad AS unit, rd.orden AS "order"
+         FROM receta_detalle rd
+         JOIN insumos i ON i.id = rd.insumo_id AND i.establecimiento_id = rd.establecimiento_id
+        WHERE rd.receta_id = $1 AND rd.establecimiento_id = $2
+        ORDER BY rd.orden\`,
+      [id.data, req.auth!.establishmentId],
+    );
+    await client.query("COMMIT");
+    res.status(200).json({ recipe: { ...recipe.rows[0], ingredients: ingredients.rows } });
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    next(error);
+  } finally {
+    client.release();
+  }
+});
