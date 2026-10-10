@@ -254,7 +254,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   Future<void> _refresh() async {
     setState(() {
       _loading = true;
-      _error = null;
+      if (!_recoveryBlocked) _error = null;
     });
     try {
       final api = context.read<AzulApiClient>();
@@ -290,6 +290,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   }
 
   Future<void> _openCash() async {
+    if (_recoveryBlocked) return;
     final amount = double.tryParse(_openingAmount.text.trim());
     if (amount == null || !amount.isFinite || amount < 0 || (amount * 100).roundToDouble() != amount * 100) {
       setState(() => _error = 'Ingresa un monto inicial válido con máximo dos decimales.');
@@ -308,6 +309,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   }
 
   Future<void> _closeCash() async {
+    if (_recoveryBlocked) return;
     final amount = double.tryParse(_closingAmount.text.trim());
     if (amount == null || !amount.isFinite || amount < 0 || (amount * 100).roundToDouble() != amount * 100) {
       setState(() => _error = 'Ingresa el efectivo contado con máximo dos decimales.');
@@ -600,7 +602,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                     ),
                   ),
                   FilledButton(
-                    onPressed: _working ? null : _openCash,
+                    onPressed: _working || _recoveryBlocked ? null : _openCash,
                     child: const Text('Abrir caja'),
                   ),
                 ],
@@ -622,7 +624,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                     ),
                   ),
                   OutlinedButton(
-                    onPressed: _working || _pendingSaleKey != null ? null : _closeCash,
+                    onPressed: _working || _recoveryBlocked || _pendingSaleKey != null ? null : _closeCash,
                     child: const Text('Cerrar caja'),
                   ),
                 ],
