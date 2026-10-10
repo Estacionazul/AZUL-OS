@@ -19,6 +19,7 @@ class _ApiConnectionScreenState extends State<ApiConnectionScreen> {
   bool _saving = false;
   String? _status;
   bool _success = false;
+  bool _allowLocalHttp = false;
 
   @override
   void initState() {
@@ -59,6 +60,7 @@ class _ApiConnectionScreenState extends State<ApiConnectionScreen> {
         baseUrl: _urlController.text,
         establishmentId: _establishmentController.text.trim(),
         deviceId: _deviceController.text.trim(),
+        allowInsecureHttp: _allowLocalHttp,
       );
       final health = await api.checkHealth();
       if (!mounted) return;
@@ -137,6 +139,14 @@ class _ApiConnectionScreenState extends State<ApiConnectionScreen> {
                               controller: _deviceController,
                               decoration: const InputDecoration(labelText: 'UUID de este dispositivo'),
                               validator: (value) => _required(value, 'el UUID del dispositivo'),
+                            ),
+                            CheckboxListTile(
+                              contentPadding: EdgeInsets.zero,
+                              value: _allowLocalHttp,
+                              onChanged: _saving ? null : (value) => setState(() => _allowLocalHttp = value ?? false),
+                              title: const Text('Permitir HTTP solo para pruebas locales'),
+                              subtitle: const Text('Solo acepta localhost, 127.0.0.1 o el emulador Android 10.0.2.2.'),
+                              controlAffinity: ListTileControlAffinity.leading,
                             ),
                             const SizedBox(height: 20),
                             FilledButton.icon(
