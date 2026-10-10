@@ -91,5 +91,6 @@ jobs:
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/010_tenant_scoped_catalog_uniqueness.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/011_customers_active_uniqueness.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/012_sale_payment_breakdown.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/013_cash_close_idempotency.sql
       - name: Run tests
         run: npm test
