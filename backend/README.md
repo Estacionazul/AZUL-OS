@@ -4,34 +4,35 @@ Backend central en TypeScript, Express y PostgreSQL para preparar la operación 
 
 ## Estado de implementación
 
+Esta es una rama de desarrollo. Las rutas listadas aquí tienen pruebas automatizadas en CI, pero eso no significa que el backend esté listo para producción ni conectado a la aplicación Flutter.
+
 En esta rama:
-- configuración obligatoria por entorno y pool PostgreSQL;
+- configuración por entorno y pool PostgreSQL;
 - health checks: `GET /health/live` y `GET /health/ready`;
 - login por establecimiento, usuario, PIN de cuatro dígitos y dispositivo registrado;
-- PIN con hash bcrypt, bloqueo tras cinco intentos fallidos y limitación de solicitudes;
+- PIN con hash bcrypt, bloqueo temporal tras intentos fallidos y limitación de solicitudes;
 - JWT firmado, sesión almacenada como hash, expiración de 12 horas y cierre revocable;
 - autorización por rol y permisos de módulo;
-- catálogo de productos/categorías e insumos, consulta de recetas y stock, y movimientos de inventario transaccionales e idempotentes;
+- consultas de productos, categorías, insumos, recetas y stock;
+- movimientos de inventario transaccionales e idempotentes, con protección contra stock negativo;
+- apertura, consulta y cierre de caja;
+- registro e historial de ventas transaccionales, con control de establecimiento, stock, correlativo e idempotencia;
 - bootstrap controlado para el primer CEO y dispositivo;
 - runner de migraciones PostgreSQL versionadas con bloqueo advisory;
-- workflow CI con PostgreSQL para validar esquema, compilación y pruebas.
+- workflow CI con PostgreSQL para validar migraciones, compilación y pruebas de integración.
 
-## Endpoints
+## Endpoints implementados
 
-- `GET /health/live`
-- `GET /health/ready`
-- `POST /api/v1/auth/login`
-- `GET /api/v1/auth/me`
-- `POST /api/v1/auth/logout`
-- `GET /api/v1/catalog/products?q=&categoryId=&limit=50&offset=0`
-- `GET /api/v1/catalog/categories`
-- `GET /api/v1/catalog/insumos?q=&categoryId=&limit=50&offset=0`
-- `GET /api/v1/catalog/recipes?q=&limit=50&offset=0`
-- `GET /api/v1/inventory/stock?itemType=todos&q=&lowStockOnly=false&limit=50&offset=0`
-- `GET /api/v1/inventory/movements?itemId=&itemType=&limit=50&offset=0`
-- `POST /api/v1/inventory/movements`
+- Salud: `GET /health/live`, `GET /health/ready`
+- Autenticación: `POST /api/v1/auth/login`, `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`
+- Catálogo: `GET /api/v1/catalog/products`, `GET /api/v1/catalog/categories`, `GET /api/v1/catalog/insumos`, `GET /api/v1/catalog/recipes`
+- Inventario: `GET /api/v1/inventory/stock`, `GET /api/v1/inventory/movements`, `POST /api/v1/inventory/movements`
+- Caja: `GET /api/v1/cash/current`, `POST /api/v1/cash/open`, `POST /api/v1/cash/close`
+- Ventas: `GET /api/v1/sales`, `GET /api/v1/sales/:id`, `POST /api/v1/sales`
 
-Las rutas protegidas requieren `Authorization: Bearer <token>`. Los movimientos requieren una clave UUID en `Idempotency-Key`. Las entradas/salidas no pueden dejar el stock negativo y los productos de receta no admiten movimientos manuales.
+Las rutas protegidas requieren `Authorization: Bearer <token>` y permisos del módulo correspondiente. Las escrituras de inventario y ventas requieren `Idempotency-Key` con UUID. La API de ventas admite actualmente un único medio de pago por venta: `Efectivo`, `Yape`, `Plin` o `Tarjeta`; `Mixto` se rechaza hasta implementar su desglose.
+
+Consulta [API_V1.md](./API_V1.md) para los parámetros, contratos y limitaciones de cada endpoint.
 
 ## Desarrollo local
 
@@ -50,11 +51,12 @@ Requisitos: Node.js 22+ y PostgreSQL 16 o compatible con `pgcrypto`. Utiliza una
 
 ## Pendiente antes de producción
 
-- Confirmar el resultado del workflow CI y las pruebas de integración en GitHub Actions.
-- Revisar el DDL y el login contra PostgreSQL real.
-- Completar alta/baja administrativa de dispositivos y usuarios.
-- Añadir operaciones transaccionales para recetas, caja y ventas, y el flujo de sincronización.
-- Conectar Flutter y probar cada plataforma.
-- Desplegar con HTTPS, secretos administrados y PostgreSQL no expuesto a internet.
+- completar altas, ediciones y bajas administrativas de productos, insumos, categorías, recetas, clientes, usuarios y dispositivos;
+- implementar pedidos/comandas, desglose de pagos mixtos y movimientos manuales de caja;
+- implementar en el backend la emisión, firma, envío, consulta y reconciliación de comprobantes SUNAT;
+- diseñar y probar sincronización incremental y resolución de conflictos;
+- integrar Flutter y validar los flujos completos en Windows, Android y tabletas;
+- revisar aceptación funcional y seguridad en un entorno de staging;
+- desplegar con HTTPS, secretos administrados, PostgreSQL no expuesto a internet, respaldos y monitoreo.
 
-No conectar aún este backend a la aplicación de producción. No ejecutar la migración sobre SQLite ni sobre datos reales de SUNAT. El certificado SUNAT no debe distribuirse a los dispositivos.
+Los workflows de CI han pasado para los últimos commits de esta rama; las pruebas automatizadas no sustituyen la integración y aceptación en dispositivos reales. El backend no debe conectarse aún a la aplicación de producción. No ejecutar migraciones sobre SQLite ni modificar las ventas, notas, boletas o facturas históricas. El certificado SUNAT no debe distribuirse a los dispositivos.
