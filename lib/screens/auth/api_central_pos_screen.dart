@@ -29,6 +29,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   final _mixedAmount1 = TextEditingController();
   final _mixedAmount2 = TextEditingController();
   String? _pendingSaleKey;
+  bool _pendingSaleRejected = false;
 
   @override
   void initState() {
@@ -47,6 +48,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
           final payments = body['payments'];
           setState(() {
             _pendingSaleKey = key;
+            _pendingSaleRejected = false;
             _cart.clear();
             if (items is List) {
               for (final item in items.whereType<Map<String, dynamic>>()) {
@@ -159,7 +161,15 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
         ),
       );
     } catch (e) {
-      if (mounted) setState(() => _error = _friendlyError(e));
+      if (mounted) {
+        setState(() {
+          _error = _friendlyError(e);
+          _pendingSaleRejected = _pendingSaleKey != null &&
+              e is AzulApiException &&
+              (e.statusCode == 400 ||
+               (e.statusCode == 409 && e.code != 'IDEMPOTENCY_CONFLICT'));
+        });
+      }
     } finally {
       if (mounted) setState(() => _working = false);
     }
@@ -374,6 +384,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
     };
     await _runOperation(() async {
       final api = context.read<AzulApiClient>();
+      _pendingSaleRejected = false;
       await api.savePendingCentralSale(idempotencyKey: key, body: requestBody);
       final result = await api.postJson(
         '/api/v1/sales',
@@ -390,12 +401,36 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       setState(() {
         _cart.clear();
         _pendingSaleKey = null;
+        _pendingSaleRejected = false;
         _mixedPayment = false;
         _mixedAmount1.clear();
         _mixedAmount2.clear();
         _notice = 'Venta central ${number} registrada por ${_money(total)}.';
       });
       await _refresh();
+    });
+  }
+
+  Future<void> _discardRejectedSale() async {
+    if (_pendingSaleKey == null || !_pendingSaleRejected) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Descartar intento rechazado'),
+        content: const Text('El servidor rechazó la solicitud sin registrar la venta. Se eliminará la solicitud pendiente para que puedas corregir el carrito. ¿Continuar?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Volver')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Descartar intento')),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await context.read<AzulApiClient>().clearPendingCentralSale();
+    setState(() {
+      _pendingSaleKey = null;
+      _pendingSaleRejected = false;
+      _error = null;
+      _notice = 'Intento rechazado descartado. Corrige el carrito antes de cobrar nuevamente.';
     });
   }
 
@@ -473,6 +508,15 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (_error != null) _banner(_error!, isError: true),
+                      if (_pendingSaleKey != null && _pendingSaleRejected)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: OutlinedButton.icon(
+                            onPressed: _working ? null : _discardRejectedSale,
+                            icon: const Icon(Icons.restart_alt),
+                            label: const Text('Descartar intento rechazado y corregir carrito'),
+                          ),
+                        ),
                       if (_notice != null) _banner(_notice!),
                       _cashPanel(),
                     ],
