@@ -407,7 +407,7 @@ salesRouter.post("/", authenticate, requirePermission("Ventas"), async (req, res
       [
         number, req.auth!.userId, cashRegisterId, req.auth!.deviceId, input.customerId ?? null,
         input.dni ?? null, input.ruc ?? null, input.customerName ?? null, input.businessName ?? null,
-        input.fiscalAddress ?? null, subtotal, igv, input.discount, total, input.paymentMethod,
+        input.fiscalAddress ?? null, subtotal, igv, input.discount, total, paymentMethod,
         input.note ?? null, idempotencyKey, requestHash, req.auth!.establishmentId,
       ],
     );
