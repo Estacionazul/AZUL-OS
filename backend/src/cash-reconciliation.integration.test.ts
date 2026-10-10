@@ -75,6 +75,7 @@ test("cash close reconciles cash-only movements and flags mixed payments", { ski
       headers: {
         authorization: `Bearer ${loginBody.token}`,
         "content-type": "application/json",
+        "Idempotency-Key": randomUUID(),
       },
       body: JSON.stringify({ closingAmount: 120, note: "CI close" }),
     });
