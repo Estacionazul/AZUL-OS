@@ -193,7 +193,8 @@ inventoryRouter.post("/movements", authenticate, requirePermission("Inventario")
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [idempotencyKey]);
 
     const prior = await client.query(
-      `SELECT id, establecimiento_id, producto_id, insumo_id, tipo, cantidad, signo
+      `SELECT id, establecimiento_id, producto_id, insumo_id, tipo, cantidad, signo,
+              referencia_id, observacion
          FROM movimientos_inventario WHERE idempotency_key = $1`,
       [idempotencyKey],
     );
@@ -203,7 +204,11 @@ inventoryRouter.post("/movements", authenticate, requirePermission("Inventario")
         row.establecimiento_id === req.auth!.establishmentId &&
         row.producto_id === (input.itemType === "producto" ? input.itemId : null) &&
         row.insumo_id === (input.itemType === "insumo" ? input.itemId : null) &&
-        row.tipo === input.type && Number(row.cantidad) === input.quantity && Number(row.signo) === sign;
+        row.tipo === input.type &&
+        Number(row.cantidad) === input.quantity &&
+        Number(row.signo) === sign &&
+        row.referencia_id === (input.referenceId ?? null) &&
+        row.observacion === (input.note ?? null);
       await client.query("COMMIT");
       if (!sameRequest) {
         res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave ya se usó para un movimiento distinto." } });
