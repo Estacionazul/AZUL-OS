@@ -30,6 +30,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   final _mixedAmount2 = TextEditingController();
   String? _pendingSaleKey;
   bool _pendingSaleRejected = false;
+  bool _recoveryBlocked = false;
 
   @override
   void initState() {
@@ -77,7 +78,12 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
         }
       }
     } catch (e) {
-      if (mounted) setState(() => _error = _friendlyError(e));
+      if (mounted) {
+        setState(() {
+          _error = _friendlyError(e);
+          _recoveryBlocked = true;
+        });
+      }
     }
     await _refresh();
   }
@@ -341,6 +347,10 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       setState(() => _error = 'Abre una caja central antes de cobrar.');
       return;
     }
+    if (_recoveryBlocked) {
+      setState(() => _error = 'Hay una operación pendiente que no se pudo verificar. Consulta el historial y no registres otro cobro.');
+      return;
+    }
     if (_cart.isEmpty || _total <= 0) {
       setState(() => _error = 'Agrega productos con importe mayor que cero a la venta.');
       return;
@@ -402,6 +412,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
         _cart.clear();
         _pendingSaleKey = null;
         _pendingSaleRejected = false;
+        _recoveryBlocked = false;
         _mixedPayment = false;
         _mixedAmount1.clear();
         _mixedAmount2.clear();
@@ -647,7 +658,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                         subtitle: Text('${_text(product['code'])} · ${_money(product['salePrice'])}'),
                         trailing: IconButton(
                           tooltip: 'Agregar al carrito',
-                          onPressed: _working || _pendingSaleKey != null || _cash == null || id.isEmpty
+                          onPressed: _working || _recoveryBlocked || _pendingSaleKey != null || _cash == null || id.isEmpty
                               ? null
                               : () => setState(() => _cart[id] = quantity + 1),
                           icon: const Icon(Icons.add_shopping_cart),
@@ -782,7 +793,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
             ],
             const SizedBox(height: 10),
             FilledButton.icon(
-              onPressed: _working || _cash == null || _cart.isEmpty ? null : _checkout,
+              onPressed: _working || _recoveryBlocked || _cash == null || _cart.isEmpty ? null : _checkout,
               icon: _working
                   ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                   : const Icon(Icons.point_of_sale),
