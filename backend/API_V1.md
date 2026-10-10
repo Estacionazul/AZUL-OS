@@ -2,7 +2,7 @@
 
 ## Estado
 
-Este documento separa las rutas implementadas en la rama de desarrollo de las rutas previstas. Flutter incluye un cliente API, configuración de conexión, autenticación central y una vista de catálogo de solo lectura. Las ventas, caja, inventario y demás flujos operativos todavía siguen usando SQLite local y no deben considerarse centralizados. No usar en producción.
+Este documento separa las rutas implementadas en la rama de desarrollo de las rutas previstas. Flutter incluye cliente API, configuración y autenticación central, catálogo central de solo lectura, caja y ventas centrales con pagos mixtos, historial/detalle de ventas e inventario central con movimientos idempotentes. Estas pantallas centrales son un flujo aislado de desarrollo: no sincronizan ni migran el SQLite local, no emiten comprobantes SUNAT y no están aprobadas para producción.
 
 Base local: `http://127.0.0.1:8080`. En cualquier despliegue accesible desde una red, usar HTTPS.
 
@@ -104,7 +104,7 @@ Estas rutas requieren autenticación y permiso `Caja`:
 - `GET /api/v1/cash/movements?type=&from=&to=&limit=50&offset=0`: historial paginado de ingresos y egresos del establecimiento.
 - `POST /api/v1/cash/movements`: registra ingreso/egreso manual con importe, medio de pago, concepto y clave `Idempotency-Key` UUID. Requiere caja abierta; repetir la misma clave y datos devuelve la operación previa, y reutilizarla con datos distintos devuelve conflicto. Solo los movimientos en efectivo afectan el efectivo esperado al cierre.
 
-Todavía no existe una ruta API independiente para registrar movimientos manuales de caja (por ejemplo, gastos o ingresos distintos de ventas).
+La API permite registrar movimientos manuales de caja (por ejemplo, gastos o ingresos distintos de ventas); la interfaz Flutter para ese flujo aún está pendiente.
 
 ### Ventas
 
@@ -123,8 +123,8 @@ Estas funciones aún no deben considerarse disponibles:
 - completar las reglas de negocio y operaciones de consulta individual para catálogos, recetas y clientes;
 - pedidos y comandas;
 - emisión, firma, envío, consulta y reconciliación de comprobantes SUNAT desde el backend;
-- sincronización incremental y resolución de conflictos entre dispositivos;
-- conectar los flujos de negocio de Flutter al backend (la pantalla actual solo configura y prueba la conexión) y validar ventas/caja/inventario en Windows, Android y tabletas;
+- sincronización incremental de los datos locales y resolución de conflictos entre dispositivos; preservación y conciliación de históricos, correlativos y comprobantes SUNAT;
+- completar pruebas de aceptación de ventas, caja, pagos mixtos, historial e inventario en Windows, Android y tabletas; revisar permisos, recuperación ante fallos de red y la conciliación de caja;
 - despliegue seguro con HTTPS, secretos administrados, respaldos y monitoreo.
 
 No existe un endpoint que permita editar directamente el saldo de inventario. Este backend sigue siendo una rama de desarrollo y no debe conectarse a la operación de producción hasta completar la integración y las pruebas de aceptación.
