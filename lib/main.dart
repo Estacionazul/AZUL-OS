@@ -4,6 +4,7 @@ import 'facturacion/firma/certificado_service.dart';
 import 'facturacion/firma/firma_digital_service.dart';
 import 'facturacion/sunat/sunat_service.dart';
 import 'package:provider/provider.dart';
+import 'multidispositivo/azul_api_client.dart';
 
 import 'core/theme/app_theme.dart';
 import 'database/app_database.dart';
@@ -101,6 +102,11 @@ class AzulOSApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider.value(value: database),
+
+        Provider<AzulApiClient>(
+          create: (_) => AzulApiClient(),
+          dispose: (_, client) => client.dispose(),
+        ),
 
         Provider(create: (_) => ProductoRepository(database)),
 
