@@ -29,7 +29,7 @@ En esta rama:
 - Autenticación: `POST /api/v1/auth/login`, `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`
 - Catálogo: `GET /api/v1/catalog/products`, `GET /api/v1/catalog/categories`, `GET /api/v1/catalog/insumos`, `GET /api/v1/catalog/recipes`
 - Inventario: `GET /api/v1/inventory/stock`, `GET /api/v1/inventory/movements`, `POST /api/v1/inventory/movements`
-- Caja: `GET /api/v1/cash/current`, `POST /api/v1/cash/open`, `POST /api/v1/cash/close`
+- Caja: `GET /api/v1/cash/current`, `POST /api/v1/cash/open`, `POST /api/v1/cash/close`, `GET/POST /api/v1/cash/movements`
 - Ventas: `GET /api/v1/sales`, `GET /api/v1/sales/:id`, `POST /api/v1/sales`\n- Administración CEO: `GET/POST /api/v1/admin/devices`, `PATCH /api/v1/admin/devices/:id`, `GET/POST /api/v1/admin/users`, `PATCH /api/v1/admin/users/:id`
 - Catálogo administrativo CEO: `POST/PATCH /api/v1/admin/catalog/categories`, `POST/PATCH /api/v1/admin/catalog/products`, `POST/PATCH /api/v1/admin/catalog/insumos`, `POST/PATCH /api/v1/admin/catalog/recipes`
 - Clientes: `GET/POST /api/v1/customers`, `PATCH /api/v1/customers/:id`
@@ -55,7 +55,7 @@ Requisitos: Node.js 22+ y PostgreSQL 16 o compatible con `pgcrypto`. Utiliza una
 
 ## Pendiente antes de producción
 
-- completar pedidos/comandas, pagos mixtos y movimientos manuales de caja;
+- completar pedidos/comandas y pagos mixtos con desglose por medio de pago;
 - implementar pedidos/comandas, desglose de pagos mixtos y movimientos manuales de caja;
 - implementar en el backend la emisión, firma, envío, consulta y reconciliación de comprobantes SUNAT;
 - diseñar y probar sincronización incremental y resolución de conflictos;
