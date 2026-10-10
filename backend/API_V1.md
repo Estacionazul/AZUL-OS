@@ -114,7 +114,7 @@ Estas rutas requieren autenticación y permiso `Ventas`:
 - `GET /api/v1/sales/:id`: detalle y comprobantes de una venta del establecimiento.
 - `POST /api/v1/sales`: registra una venta transaccional con detalles, movimientos de inventario, movimiento de caja y correlativo. Requiere `Idempotency-Key` con UUID. El backend rechaza productos/clientes de otro establecimiento y stock insuficiente.
 
-La API de ventas admite un único medio de pago por venta: `Efectivo`, `Yape`, `Plin` o `Tarjeta`. `Mixto` se rechaza hasta implementar desglose por medio de pago.
+La API admite pago simple (`paymentMethod`: `Efectivo`, `Yape`, `Plin` o `Tarjeta`) o pago mixto (`paymentMethod: "Mixto"` y `payments`: lista de al menos dos medios distintos). La suma de `payments[].amount` debe coincidir exactamente con el total calculado; cada importe debe ser positivo y admitir hasta dos decimales. La API registra el desglose y distribuye los movimientos de caja por cada medio.
 
 ## Pendiente antes de producción
 
@@ -122,7 +122,7 @@ Estas funciones aún no deben considerarse disponibles:
 
 - altas, ediciones, bajas y administración completa de productos, insumos, categorías, recetas y clientes;
 - pedidos y comandas;
-- desglose de pagos mixtos y operaciones manuales de caja;
+- pedidos y comandas;
 - emisión, firma, envío, consulta y reconciliación de comprobantes SUNAT desde el backend;
 - sincronización incremental, resolución de conflictos y gestión administrativa de dispositivos/usuarios;
 - integración con Flutter y validación en Windows, Android y tabletas;
@@ -132,7 +132,19 @@ No existe un endpoint que permita editar directamente el saldo de inventario. Es
 
 ## Pagos en ventas
 
-La API de ventas acepta actualmente un solo medio por venta: `Efectivo`, `Yape`, `Plin` o `Tarjeta`. `Mixto` se rechaza con `400 VALIDATION_ERROR` hasta que exista un desglose explícito por medio de pago; esto evita que el cierre de caja atribuya incorrectamente el importe completo al efectivo o lo deje sin conciliación.
+Para pago simple envía `paymentMethod` con `Efectivo`, `Yape`, `Plin` o `Tarjeta`. Para pago mixto envía `paymentMethod: "Mixto"` y `payments`, por ejemplo:
+
+```json
+{
+  "paymentMethod": "Mixto",
+  "payments": [
+    { "method": "Efectivo", "amount": 5.80 },
+    { "method": "Yape", "amount": 6.00 }
+  ]
+}
+```
+
+El servidor compara la suma con el total calculado antes de registrar la venta. Guarda cada medio en `pagos_venta` y registra movimientos de caja separados; por ello el cierre solo suma al efectivo el componente `Efectivo`. Reutiliza la misma clave `Idempotency-Key` cuando reintentes la misma solicitud.
 
 ## Formato de error
 
