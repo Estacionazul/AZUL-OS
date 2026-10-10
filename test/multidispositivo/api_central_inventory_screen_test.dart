@@ -11,6 +11,23 @@ class _FakeInventoryApi extends AzulApiClient {
   Map<String, Object?>? movementBody;
   String? movementKey;
   int stockRequests = 0;
+  Map<String, dynamic>? pendingMovement;
+
+  @override
+  Future<void> savePendingCentralInventoryMovement({
+    required String idempotencyKey,
+    required Map<String, Object?> body,
+  }) async {
+    pendingMovement = <String, dynamic>{'idempotencyKey': idempotencyKey, 'body': body};
+  }
+
+  @override
+  Future<Map<String, dynamic>?> readPendingCentralInventoryMovement() async => null;
+
+  @override
+  Future<void> clearPendingCentralInventoryMovement() async {
+    pendingMovement = null;
+  }
 
   @override
   Future<Map<String, dynamic>> getJson(
@@ -83,6 +100,7 @@ void main() {
     expect(api.movementBody?['type'], 'ENTRADA');
     expect(api.movementBody?['quantity'], 1.0);
     expect(api.movementKey, isNotNull);
+    expect(api.pendingMovement, isNull);
     expect(find.textContaining('Movimiento central registrado'), findsOneWidget);
     expect(api.stockRequests, greaterThanOrEqualTo(2));
   });
