@@ -60,7 +60,7 @@ class _FakePosApiClient extends AzulApiClient {
       return <String, dynamic>{
         'sale': <String, dynamic>{
           'id': 'sale-id',
-          'numero': 'V000001',
+          'number': 'V000001',
           'total': 8.0,
           'paymentMethod': 'Efectivo',
           'customerName': null,
@@ -192,6 +192,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
     await tester.pump(const Duration(milliseconds: 350));
     expect(find.text('Americano central'), findsWidgets);
+    expect(find.text('Venta V000001'), findsOneWidget);
     expect(find.text('Desglose de pagos'), findsOneWidget);
   });
 
