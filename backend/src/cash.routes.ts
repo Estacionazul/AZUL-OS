@@ -5,13 +5,15 @@ import { authenticate, requirePermission } from "./auth.js";
 
 export const cashRouter = Router();
 
+const hasAtMostTwoDecimals = (value: number) => /^\d+(?:\.\d{1,2})?$/.test(value.toString());
+
 const OpenCashBody = z.object({
-  openingAmount: z.number().finite().min(0).max(999_999_999.99),
+  openingAmount: z.number().finite().min(0).max(999_999_999.99).refine(hasAtMostTwoDecimals, "El monto admite hasta dos decimales."),
   note: z.string().trim().max(500).optional(),
 });
 
 const CloseCashBody = z.object({
-  closingAmount: z.number().finite().min(0).max(999_999_999.99),
+  closingAmount: z.number().finite().min(0).max(999_999_999.99).refine(hasAtMostTwoDecimals, "El monto admite hasta dos decimales."),
   note: z.string().trim().max(500).optional(),
 });
 
@@ -156,7 +158,7 @@ const CashMovementBody = z.object({
   type: z.enum(["INGRESO", "EGRESO"]),
   concept: z.string().trim().min(2).max(160),
   amount: z.number().finite().positive().max(999999999.99)
-    .refine((value) => Number.isInteger(value * 100), "El importe admite hasta dos decimales."),
+    .refine(hasAtMostTwoDecimals, "El importe admite hasta dos decimales."),
   paymentMethod: z.enum(["Efectivo", "Yape", "Plin", "Tarjeta"]),
   reference: z.string().trim().max(200).optional(),
   note: z.string().trim().max(500).optional(),
