@@ -73,6 +73,10 @@ class _FakePosApiClient extends AzulApiClient {
 
 void main() {
   testWidgets('central POS opens central cash and registers a server sale', (tester) async {
+    tester.view.physicalSize = const Size(1400, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final api = _FakePosApiClient();
     addTearDown(api.dispose);
 
