@@ -17,6 +17,7 @@ test("CEO can register devices and cashier users; non-CEO cannot access administ
   let cashierId: string | undefined;
   let deviceId: string | undefined;
   let createdDeviceId: string | undefined;
+  let createdUserId: string | undefined;
   let server: ReturnType<typeof app.listen> | undefined;
 
   try {
@@ -87,7 +88,8 @@ test("CEO can register devices and cashier users; non-CEO cannot access administ
       body: JSON.stringify({ username: `ci-new-${suffix}`, name: "New Cashier", pin: "8274", permissions: ["Caja", "Ventas"] }),
     });
     assert.equal(createdUser.status, 201);
-    const userBody = await createdUser.json() as { user: { role: string; permissions: Record<string, boolean> } };
+    const userBody = await createdUser.json() as { user: { id: string; role: string; permissions: Record<string, boolean> } };
+    createdUserId = userBody.user.id;
     assert.equal(userBody.user.role, "CAJERO");
     assert.equal(userBody.user.permissions.Caja, true);
     assert.equal(userBody.user.permissions.Productos, false);
@@ -101,6 +103,9 @@ test("CEO can register devices and cashier users; non-CEO cannot access administ
     assert.equal((await disabled.json() as { device: { active: boolean } }).device.active, false);
   } finally {
     if (server) await new Promise<void>((resolve) => server!.close(() => resolve()));
+    if (createdUserId) await pool.query("DELETE FROM sesiones WHERE usuario_id = $1", [createdUserId]);
+    if (createdUserId) await pool.query("DELETE FROM permisos_usuario WHERE usuario_id = $1", [createdUserId]);
+    if (createdUserId) await pool.query("DELETE FROM usuarios WHERE id = $1", [createdUserId]);
     if (createdDeviceId) await pool.query("DELETE FROM dispositivos WHERE id = $1", [createdDeviceId]);
     if (cashierId) await pool.query("DELETE FROM sesiones WHERE usuario_id = $1", [cashierId]);
     if (ceoId) await pool.query("DELETE FROM sesiones WHERE usuario_id = $1", [ceoId]);
