@@ -88,7 +88,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Leche fresca'), findsOneWidget);
-    expect(find.text('10'), findsOneWidget);
+    expect(find.text('Stock 10'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Registrar movimiento'));
     await tester.pumpAndSettle();
