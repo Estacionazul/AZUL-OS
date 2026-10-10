@@ -729,8 +729,9 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                     ),
             ),
             const Divider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              runSpacing: 8,
               children: [
                 const Text('Total estimado', style: TextStyle(fontWeight: FontWeight.bold)),
                 Text(_money(_total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
