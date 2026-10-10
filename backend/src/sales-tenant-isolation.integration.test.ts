@@ -140,6 +140,7 @@ test("sales history and detail never disclose another establishment's sale", { s
     if (ids.saleB) await pool.query("DELETE FROM movimientos_caja WHERE referencia = $1", [ids.saleB]);
     if (ids.saleB) await pool.query("DELETE FROM movimientos_inventario WHERE referencia_id = $1", [ids.saleB]);
     if (ids.saleB) await pool.query("DELETE FROM comprobantes_electronicos WHERE venta_id = $1", [ids.saleB]);
+    if (ids.saleB) await pool.query("DELETE FROM pagos_venta WHERE venta_id = $1", [ids.saleB]);
     if (ids.saleB) await pool.query("DELETE FROM ventas WHERE id = $1", [ids.saleB]);
     for (const cashId of [ids.cashA, ids.cashB]) {
       if (cashId) await pool.query("DELETE FROM movimientos_caja WHERE caja_id = $1", [cashId]);
