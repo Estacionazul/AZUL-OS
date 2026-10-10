@@ -74,7 +74,7 @@ class _ApiConnectionScreenState extends State<ApiConnectionScreen> {
       if (!mounted) return;
       setState(() {
         _success = false;
-        _status = 'API \${error.statusCode}: \${error.message}';
+        _status = 'API ${error.statusCode}: ${error.message}';
       });
     } catch (error) {
       if (!mounted) return;
