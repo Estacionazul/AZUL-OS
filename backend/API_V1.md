@@ -2,7 +2,7 @@
 
 ## Estado
 
-Este documento separa las rutas implementadas en la rama de desarrollo de las rutas previstas. Flutter ya incluye un cliente API y una pantalla para configurar/probar la conexión, pero los flujos de negocio siguen operando con SQLite local y todavía no están conectados al backend. No usar en producción.
+Este documento separa las rutas implementadas en la rama de desarrollo de las rutas previstas. Flutter incluye un cliente API, configuración de conexión, autenticación central y una vista de catálogo de solo lectura. Las ventas, caja, inventario y demás flujos operativos todavía siguen usando SQLite local y no deben considerarse centralizados. No usar en producción.
 
 Base local: `http://127.0.0.1:8080`. En cualquier despliegue accesible desde una red, usar HTTPS.
 
