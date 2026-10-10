@@ -150,3 +150,145 @@ cashRouter.post("/close", authenticate, requirePermission("Caja"), async (req, r
     client.release();
   }
 });
+
+
+const CashMovementBody = z.object({
+  type: z.enum(["INGRESO", "EGRESO"]),
+  concept: z.string().trim().min(2).max(160),
+  amount: z.number().finite().positive().max(999999999.99)
+    .refine((value) => Number.isInteger(value * 100), "El importe admite hasta dos decimales."),
+  paymentMethod: z.enum(["Efectivo", "Yape", "Plin", "Tarjeta"]),
+  reference: z.string().trim().max(200).optional(),
+  note: z.string().trim().max(500).optional(),
+}).strict();
+
+const CashMovementQuery = z.object({
+  type: z.enum(["INGRESO", "EGRESO"]).optional(),
+  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).max(1000000).default(0),
+});
+
+cashRouter.get("/movements", authenticate, requirePermission("Caja"), async (req, res, next) => {
+  const parsed = CashMovementQuery.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Filtros de movimientos de caja inválidos." } });
+    return;
+  }
+  const { type, from, to, limit, offset } = parsed.data;
+  if (from && to && from > to) {
+    res.status(400).json({ error: { code: "INVALID_DATE_RANGE", message: "La fecha inicial no puede ser posterior a la fecha final." } });
+    return;
+  }
+  try {
+    const values = [req.auth!.establishmentId, type ?? null, from ?? null, to ?? null];
+    const [items, count] = await Promise.all([
+      pool.query(
+        `SELECT m.id, m.caja_id AS "cashRegisterId", m.fecha AS date, m.tipo AS type,
+                m.concepto AS concept, m.monto AS amount, m.metodo_pago AS "paymentMethod",
+                m.referencia AS reference, m.observacion AS note,
+                m.usuario_id AS "userId", m.dispositivo_id AS "deviceId"
+           FROM movimientos_caja m
+          WHERE m.establecimiento_id = $1
+            AND ($2::text IS NULL OR m.tipo = $2)
+            AND ($3::date IS NULL OR m.fecha >= $3::date)
+            AND ($4::date IS NULL OR m.fecha < ($4::date + INTERVAL '1 day'))
+          ORDER BY m.fecha DESC, m.id DESC
+          LIMIT $5 OFFSET $6`,
+        [...values, limit, offset],
+      ),
+      pool.query(
+        `SELECT count(*)::integer AS total FROM movimientos_caja m
+          WHERE m.establecimiento_id = $1
+            AND ($2::text IS NULL OR m.tipo = $2)
+            AND ($3::date IS NULL OR m.fecha >= $3::date)
+            AND ($4::date IS NULL OR m.fecha < ($4::date + INTERVAL '1 day'))`,
+        values,
+      ),
+    ]);
+    res.status(200).json({ items: items.rows, pagination: { limit, offset, total: count.rows[0].total } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+cashRouter.post("/movements", authenticate, requirePermission("Caja"), async (req, res, next) => {
+  const parsed = CashMovementBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Datos del movimiento de caja inválidos." } });
+    return;
+  }
+  const key = req.header("idempotency-key");
+  if (!key || !z.string().uuid().safeParse(key).success) {
+    res.status(400).json({ error: { code: "IDEMPOTENCY_KEY_REQUIRED", message: "Envía una clave UUID en Idempotency-Key." } });
+    return;
+  }
+
+  const input = parsed.data;
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const prior = await client.query(
+      `SELECT id, caja_id, tipo, concepto, monto, metodo_pago, referencia, observacion,
+              usuario_id, dispositivo_id
+         FROM movimientos_caja
+        WHERE idempotency_key = $1 AND establecimiento_id = $2
+        FOR UPDATE`,
+      [key, req.auth!.establishmentId],
+    );
+    if (prior.rowCount) {
+      const row = prior.rows[0];
+      const same = row.tipo === input.type
+        && row.concepto === input.concept
+        && Number(row.monto) === input.amount
+        && row.metodo_pago === input.paymentMethod
+        && (row.referencia ?? null) === (input.reference ?? null)
+        && (row.observacion ?? null) === (input.note ?? null)
+        && row.usuario_id === req.auth!.userId
+        && row.dispositivo_id === req.auth!.deviceId;
+      await client.query("COMMIT");
+      if (!same) {
+        res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave de idempotencia ya se usó con otros datos." } });
+        return;
+      }
+      res.status(200).json({ movement: { id: row.id, cashRegisterId: row.caja_id, type: row.tipo, concept: row.concepto, amount: Number(row.monto), paymentMethod: row.metodo_pago, reference: row.referencia, note: row.observacion }, replayed: true });
+      return;
+    }
+
+    const cash = await client.query(
+      `SELECT id FROM cajas
+        WHERE establecimiento_id = $1 AND estado = 'ABIERTA'
+        ORDER BY fecha_apertura DESC LIMIT 1 FOR UPDATE`,
+      [req.auth!.establishmentId],
+    );
+    if (!cash.rowCount) {
+      await client.query("ROLLBACK");
+      res.status(409).json({ error: { code: "NO_OPEN_CASH_REGISTER", message: "Abre una caja antes de registrar movimientos." } });
+      return;
+    }
+    const inserted = await client.query(
+      `INSERT INTO movimientos_caja
+         (caja_id, tipo, concepto, monto, metodo_pago, referencia, observacion,
+          usuario_id, dispositivo_id, idempotency_key, establecimiento_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       RETURNING id, caja_id AS "cashRegisterId", tipo AS type, concepto AS concept,
+                 monto AS amount, metodo_pago AS "paymentMethod", referencia AS reference,
+                 observacion AS note, fecha AS date`,
+      [cash.rows[0].id, input.type, input.concept, input.amount, input.paymentMethod,
+       input.reference ?? null, input.note ?? null, req.auth!.userId, req.auth!.deviceId,
+       key, req.auth!.establishmentId],
+    );
+    await client.query("COMMIT");
+    res.status(201).json({ movement: inserted.rows[0], replayed: false });
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "23505") {
+      res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave de idempotencia ya fue utilizada." } });
+      return;
+    }
+    next(error);
+  } finally {
+    client.release();
+  }
+});
