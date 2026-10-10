@@ -193,6 +193,7 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     if (mixedSaleId) await pool.query("DELETE FROM movimientos_inventario WHERE referencia_id = $1", [mixedSaleId]);
     if (mixedSaleId) await pool.query("DELETE FROM ventas WHERE id = $1", [mixedSaleId]);
     if (saleId) await pool.query("DELETE FROM detalle_ventas WHERE venta_id = $1", [saleId]);
+    if (saleId) await pool.query("DELETE FROM pagos_venta WHERE venta_id = $1", [saleId]);
     if (saleId) await pool.query("DELETE FROM movimientos_caja WHERE referencia = $1", [saleId]);
     if (saleId) await pool.query("DELETE FROM movimientos_inventario WHERE referencia_id = $1", [saleId]);
     if (saleId) await pool.query("DELETE FROM ventas WHERE id = $1", [saleId]);
