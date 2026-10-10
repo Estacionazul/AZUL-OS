@@ -305,13 +305,14 @@ async function insertRecipeIngredients(
   recipeId: string,
   ingredients: z.infer<typeof RecipeIngredient>[],
 ): Promise<void> {
-  for (let index = 0; index < ingredients.length; index++) {
-    const ingredient = ingredients[index];
+  let index = 0;
+  for (const ingredient of ingredients) {
     await client.query(
       `INSERT INTO receta_detalle (id, receta_id, insumo_id, cantidad, unidad, orden)
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [randomUUID(), recipeId, ingredient.insumoId, ingredient.quantity, ingredient.unit, ingredient.order ?? index],
     );
+    index++;
   }
 }
 
