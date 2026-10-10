@@ -57,7 +57,7 @@ test("manual cash movements are tenant-scoped, idempotent and reconcile cash onl
     cashRegisterId = (await opened.json() as { cashRegister: { id: string } }).cashRegister.id;
 
     const key = randomUUID();
-    const body = { type: "INGRESO", concept: "CI cash income", amount: 25, paymentMethod: "Efectivo" };
+    const body = { type: "INGRESO", concept: "CI cash income", amount: 1.15, paymentMethod: "Efectivo" };
     const first = await fetch(`${baseUrl}/api/v1/cash/movements`, {
       method: "POST", headers: { ...headers, "Idempotency-Key": key }, body: JSON.stringify(body),
     });
@@ -71,7 +71,7 @@ test("manual cash movements are tenant-scoped, idempotent and reconcile cash onl
     const conflict = await fetch(`${baseUrl}/api/v1/cash/movements`, {
       method: "POST",
       headers: { ...headers, "Idempotency-Key": key },
-      body: JSON.stringify({ ...body, amount: 26 }),
+      body: JSON.stringify({ ...body, amount: 1.16 }),
     });
     assert.equal(conflict.status, 409);
     assert.equal((await conflict.json() as { error: { code: string } }).error.code, "IDEMPOTENCY_CONFLICT");
@@ -83,16 +83,23 @@ test("manual cash movements are tenant-scoped, idempotent and reconcile cash onl
     });
     assert.equal(nonCash.status, 201);
 
+    const invalidPrecision = await fetch(`${baseUrl}/api/v1/cash/movements`, {
+      method: "POST",
+      headers: { ...headers, "Idempotency-Key": randomUUID() },
+      body: JSON.stringify({ type: "INGRESO", concept: "CI invalid precision", amount: 1.151, paymentMethod: "Efectivo" }),
+    });
+    assert.equal(invalidPrecision.status, 400);
+
     const history = await fetch(`${baseUrl}/api/v1/cash/movements?limit=50`, { headers });
     assert.equal(history.status, 200);
     assert.equal((await history.json() as { pagination: { total: number } }).pagination.total, 2);
 
     const closed = await fetch(`${baseUrl}/api/v1/cash/close`, {
-      method: "POST", headers, body: JSON.stringify({ closingAmount: 125, note: "CI cash close" }),
+      method: "POST", headers, body: JSON.stringify({ closingAmount: 101.15, note: "CI cash close" }),
     });
     assert.equal(closed.status, 200);
     const closeBody = await closed.json() as { reconciliation: { expectedCash: number; difference: number; mixedPaymentsToReview: number } };
-    assert.equal(closeBody.reconciliation.expectedCash, 125);
+    assert.equal(closeBody.reconciliation.expectedCash, 101.15);
     assert.equal(closeBody.reconciliation.difference, 0);
     assert.equal(closeBody.reconciliation.mixedPaymentsToReview, 0);
   } finally {
