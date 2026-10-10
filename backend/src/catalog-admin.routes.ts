@@ -64,7 +64,6 @@ catalogAdminRouter.patch("/categories/:id", async (req, res, next) => {
     values.push(value);
     sets.push(`${columns[key]} = $${values.length}`);
   }
-  sets.push("updated_at = now()");
   try {
     const result = await pool.query(
       `UPDATE categorias SET ${sets.join(", ")}
