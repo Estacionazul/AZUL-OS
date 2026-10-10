@@ -94,14 +94,27 @@ test("manual cash movements are tenant-scoped, idempotent and reconcile cash onl
     assert.equal(history.status, 200);
     assert.equal((await history.json() as { pagination: { total: number } }).pagination.total, 2);
 
+    const closeKey = randomUUID();
     const closed = await fetch(`${baseUrl}/api/v1/cash/close`, {
-      method: "POST", headers, body: JSON.stringify({ closingAmount: 101.15, note: "CI cash close" }),
+      method: "POST", headers: { ...headers, "Idempotency-Key": closeKey }, body: JSON.stringify({ closingAmount: 101.15, note: "CI cash close" }),
     });
     assert.equal(closed.status, 200);
     const closeBody = await closed.json() as { reconciliation: { expectedCash: number; difference: number; mixedPaymentsToReview: number } };
     assert.equal(closeBody.reconciliation.expectedCash, 101.15);
     assert.equal(closeBody.reconciliation.difference, 0);
     assert.equal(closeBody.reconciliation.mixedPaymentsToReview, 0);
+
+    const replayClose = await fetch(`${baseUrl}/api/v1/cash/close`, {
+      method: "POST", headers: { ...headers, "Idempotency-Key": closeKey }, body: JSON.stringify({ closingAmount: 101.15, note: "CI cash close" }),
+    });
+    assert.equal(replayClose.status, 200);
+    assert.equal((await replayClose.json() as { replayed: boolean }).replayed, true);
+
+    const conflictClose = await fetch(`${baseUrl}/api/v1/cash/close`, {
+      method: "POST", headers: { ...headers, "Idempotency-Key": closeKey }, body: JSON.stringify({ closingAmount: 101.16, note: "CI cash close" }),
+    });
+    assert.equal(conflictClose.status, 409);
+    assert.equal((await conflictClose.json() as { error: { code: string } }).error.code, "IDEMPOTENCY_CONFLICT");
   } finally {
     if (server) {
       const closed = once(server, "close");
