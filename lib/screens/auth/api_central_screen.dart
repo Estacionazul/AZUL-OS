@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../multidispositivo/azul_api_client.dart';
+import 'api_central_pos_screen.dart';
 
 class ApiCentralScreen extends StatefulWidget {
   const ApiCentralScreen({super.key});
@@ -311,6 +312,21 @@ class _ApiCentralScreenState extends State<ApiCentralScreen> {
                 ),
               ),
             ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton.icon(
+              onPressed: _working ? null : () {
+                Navigator.of(context).push(MaterialPageRoute<void>(
+                  builder: (_) => const ApiCentralPosScreen(),
+                ));
+              },
+              icon: const Icon(Icons.point_of_sale_rounded),
+              label: const Text('ABRIR VENTAS Y CAJA CENTRAL'),
+            ),
           ),
         ),
         if (_error != null) Padding(
