@@ -211,12 +211,6 @@ cashRouter.post("/open", authenticate, requirePermission("Caja"), async (req, re
 });
 
 
-finally {
-    client.release();
-  }
-});
-
-
 const CashMovementBody = z.object({
   type: z.enum(["INGRESO", "EGRESO"]),
   concept: z.string().trim().min(2).max(160),
