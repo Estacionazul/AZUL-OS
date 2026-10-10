@@ -82,7 +82,7 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
   Future<void> _loadStock() async {
     setState(() {
       _loading = true;
-      _error = null;
+      if (!_recoveryBlocked) _error = null;
     });
     try {
       final response = await context.read<AzulApiClient>().getJson(
