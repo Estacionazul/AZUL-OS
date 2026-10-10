@@ -161,6 +161,7 @@ test("concurrent recipe sales sharing one ingredient cannot oversell ingredient 
       const saleIds = fixtureSales.rows.map(row => row.id as string);
       if (saleIds.length) {
         await pool.query("DELETE FROM detalle_ventas WHERE venta_id = ANY($1::uuid[])", [saleIds]);
+        await pool.query("DELETE FROM pagos_venta WHERE venta_id = ANY($1::uuid[])", [saleIds]);
         await pool.query("DELETE FROM movimientos_caja WHERE referencia = ANY($1::text[])", [saleIds]);
         await pool.query("DELETE FROM movimientos_inventario WHERE referencia_id = ANY($1::uuid[])", [saleIds]);
         await pool.query("DELETE FROM ventas WHERE id = ANY($1::uuid[])", [saleIds]);
