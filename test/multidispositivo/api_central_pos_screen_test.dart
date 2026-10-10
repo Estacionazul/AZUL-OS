@@ -104,5 +104,40 @@ void main() {
     expect(api.lastSaleBody?['items'], isA<List<Object?>>());
     expect(api.lastIdempotencyKey, isNotNull);
     expect(find.textContaining('V000001'), findsOneWidget);
+
+  testWidgets('central POS validates and sends mixed payment breakdown', (tester) async {
+    tester.view.physicalSize = const Size(1400, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final api = _FakePosApiClient();
+    addTearDown(api.dispose);
+
+    await tester.pumpWidget(
+      Provider<AzulApiClient>.value(
+        value: api,
+        child: const MaterialApp(home: ApiCentralPosScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Abrir caja'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Agregar al carrito'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('REGISTRAR VENTA CENTRAL'));
+    await tester.pumpAndSettle();
+
+    expect(api.lastSaleBody?['paymentMethod'], 'Mixto');
+    final payments = api.lastSaleBody?['payments'] as List<Object?>;
+    expect(payments, hasLength(2));
+    final paid = payments.cast<Map<String, Object?>>().fold<double>(
+      0,
+      (sum, payment) => sum + (payment['amount'] as num).toDouble(),
+    );
+    expect(paid, 8.0);
+    expect(find.textContaining('V000001'), findsOneWidget);
   });
+
 }
