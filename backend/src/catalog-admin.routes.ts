@@ -308,8 +308,8 @@ async function insertRecipeIngredients(
   for (let index = 0; index < ingredients.length; index++) {
     const ingredient = ingredients[index];
     await client.query(
-      \`INSERT INTO receta_detalle (id, receta_id, insumo_id, cantidad, unidad, orden)
-       VALUES ($1, $2, $3, $4, $5, $6)\`,
+      `INSERT INTO receta_detalle (id, receta_id, insumo_id, cantidad, unidad, orden)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
       [randomUUID(), recipeId, ingredient.insumoId, ingredient.quantity, ingredient.unit, ingredient.order ?? index],
     );
   }
@@ -384,16 +384,16 @@ catalogAdminRouter.patch("/recipes/:id", async (req, res, next) => {
     const values: unknown[] = [id.data, req.auth!.establishmentId];
     if (parsed.data.name !== undefined) {
       values.push(parsed.data.name);
-      updates.push(\`nombre = $\${values.length}\`);
+      updates.push(`nombre = $${values.length}`);
     }
     if (parsed.data.active !== undefined) {
       values.push(parsed.data.active);
-      updates.push(\`activo = $\${values.length}\`);
+      updates.push(`activo = $${values.length}`);
     }
     if (updates.length) {
       updates.push("updated_at = now()");
       await client.query(
-        \`UPDATE recetas SET \${updates.join(", ")} WHERE id = $1 AND establecimiento_id = $2\`,
+        `UPDATE recetas SET ${updates.join(", ")} WHERE id = $1 AND establecimiento_id = $2`,
         values,
       );
     }
@@ -406,12 +406,12 @@ catalogAdminRouter.patch("/recipes/:id", async (req, res, next) => {
       [id.data, req.auth!.establishmentId],
     );
     const ingredients = await client.query(
-      \`SELECT rd.id, rd.insumo_id AS "insumoId", i.codigo AS "insumoCode",
+      `SELECT rd.id, rd.insumo_id AS "insumoId", i.codigo AS "insumoCode",
               i.nombre AS "insumoName", rd.cantidad AS quantity, rd.unidad AS unit, rd.orden AS "order"
          FROM receta_detalle rd
          JOIN insumos i ON i.id = rd.insumo_id AND i.establecimiento_id = rd.establecimiento_id
         WHERE rd.receta_id = $1 AND rd.establecimiento_id = $2
-        ORDER BY rd.orden\`,
+        ORDER BY rd.orden`,
       [id.data, req.auth!.establishmentId],
     );
     await client.query("COMMIT");
