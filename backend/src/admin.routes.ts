@@ -84,6 +84,10 @@ adminRouter.patch("/devices/:id", async (req, res, next) => {
     res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Identificador o cambio de dispositivo inválido." } });
     return;
   }
+  if (!parsed.data.active && id.data === req.auth!.deviceId) {
+    res.status(409).json({ error: { code: "CURRENT_DEVICE_DEACTIVATION_BLOCKED", message: "No puedes desactivar el dispositivo de tu sesión actual." } });
+    return;
+  }
   try {
     const result = await pool.query(
       `UPDATE dispositivos SET activo = $3
