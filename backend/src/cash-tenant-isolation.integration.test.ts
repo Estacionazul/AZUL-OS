@@ -75,7 +75,7 @@ test("cash register current/open/close operations are isolated by establishment"
     assert.equal((await currentAInitially.json() as { cashRegister: unknown }).cashRegister, null);
 
     const closeForeign = await fetch(`${baseUrl}/api/v1/cash/close`, {
-      method: "POST", headers: headers(tokenA), body: JSON.stringify({ closingAmount: 80 }),
+      method: "POST", headers: { ...headers(tokenA), "Idempotency-Key": randomUUID() }, body: JSON.stringify({ closingAmount: 80 }),
     });
     assert.equal(closeForeign.status, 409);
     assert.equal((await closeForeign.json() as { error: { code: string } }).error.code, "NO_OPEN_CASH_REGISTER");
@@ -93,7 +93,7 @@ test("cash register current/open/close operations are isolated by establishment"
     assert.equal((await currentA.json() as { cashRegister: { id: string } }).cashRegister.id, ids.cashA);
 
     const closeA = await fetch(`${baseUrl}/api/v1/cash/close`, {
-      method: "POST", headers: headers(tokenA), body: JSON.stringify({ closingAmount: 25 }),
+      method: "POST", headers: { ...headers(tokenA), "Idempotency-Key": randomUUID() }, body: JSON.stringify({ closingAmount: 25 }),
     });
     assert.equal(closeA.status, 200);
 
