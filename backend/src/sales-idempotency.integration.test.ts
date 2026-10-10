@@ -19,6 +19,7 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
   let productId: string | undefined;
   let cashRegisterId: string | undefined;
   let saleId: string | undefined;
+  let mixedSaleId: string | undefined;
   let server: ReturnType<typeof app.listen> | undefined;
 
   try {
@@ -87,11 +88,30 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
       body: JSON.stringify({
         items: [{ productId, quantity: 1 }],
         paymentMethod: "Mixto",
+        payments: [
+          { method: "Efectivo", amount: 5.8 },
+          { method: "Yape", amount: 6 },
+        ],
       }),
     });
-    assert.equal(mixedPayment.status, 400, "mixed payments must be rejected until payment breakdown is implemented");
-    const mixedPaymentBody = await mixedPayment.json() as { error?: { code?: string } };
-    assert.equal(mixedPaymentBody.error?.code, "VALIDATION_ERROR");
+    assert.equal(mixedPayment.status, 201);
+    const mixedBody = await mixedPayment.json() as { sale: { id: string; total: number; paymentMethod: string } };
+    mixedSaleId = mixedBody.sale.id;
+    assert.equal(mixedBody.sale.total, 11.8);
+    assert.equal(mixedBody.sale.paymentMethod, "Mixto");
+    const mixedTenders = await pool.query(
+      "SELECT metodo_pago, monto FROM pagos_venta WHERE venta_id = $1 AND establecimiento_id = $2 ORDER BY metodo_pago",
+      [mixedSaleId, establishmentId],
+    );
+    assert.deepEqual(mixedTenders.rows.map((row) => [row.metodo_pago, Number(row.monto)]), [
+      ["Efectivo", 5.8],
+      ["Yape", 6],
+    ]);
+    const mixedCashMovements = await pool.query(
+      "SELECT metodo_pago, monto FROM movimientos_caja WHERE referencia = $1 ORDER BY metodo_pago",
+      [mixedSaleId],
+    );
+    assert.equal(mixedCashMovements.rowCount, 2);
 
     const idempotencyKey = randomUUID();
     const body = JSON.stringify({
@@ -150,12 +170,28 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     assert.equal(sales.rows[0].count, 1, "exactly one sale should exist");
     assert.equal(cashMovements.rows[0].count, 1, "exactly one cash movement should exist");
     assert.equal(stockMovements.rows[0].count, 1, "exactly one stock movement should exist");
+
+    const close = await fetch(`${baseUrl}/api/v1/cash/close`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({ closingAmount: 127.6 }),
+    });
+    assert.equal(close.status, 200);
+    const closeBody = await close.json() as { reconciliation: { expectedCash: number; difference: number; mixedPaymentsToReview: number } };
+    assert.equal(closeBody.reconciliation.expectedCash, 127.6);
+    assert.equal(closeBody.reconciliation.difference, 0);
+    assert.equal(closeBody.reconciliation.mixedPaymentsToReview, 0);
   } finally {
     if (server) {
       const closed = once(server, "close");
       server.close();
       await closed;
     }
+    if (mixedSaleId) await pool.query("DELETE FROM detalle_ventas WHERE venta_id = $1", [mixedSaleId]);
+    if (mixedSaleId) await pool.query("DELETE FROM pagos_venta WHERE venta_id = $1", [mixedSaleId]);
+    if (mixedSaleId) await pool.query("DELETE FROM movimientos_caja WHERE referencia = $1", [mixedSaleId]);
+    if (mixedSaleId) await pool.query("DELETE FROM movimientos_inventario WHERE referencia_id = $1", [mixedSaleId]);
+    if (mixedSaleId) await pool.query("DELETE FROM ventas WHERE id = $1", [mixedSaleId]);
     if (saleId) await pool.query("DELETE FROM detalle_ventas WHERE venta_id = $1", [saleId]);
     if (saleId) await pool.query("DELETE FROM movimientos_caja WHERE referencia = $1", [saleId]);
     if (saleId) await pool.query("DELETE FROM movimientos_inventario WHERE referencia_id = $1", [saleId]);
