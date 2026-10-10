@@ -20,11 +20,40 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
   String? _notice;
   List<Map<String, dynamic>> _items = [];
   int _total = 0;
+  String? _pendingMovementKey;
+  Map<String, Object?>? _pendingMovementBody;
+  bool _pendingMovementRejected = false;
+  bool _recoveryBlocked = false;
 
   @override
   void initState() {
     super.initState();
-    _loadStock();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    try {
+      final pending = await context.read<AzulApiClient>().readPendingCentralInventoryMovement();
+      if (pending != null && mounted) {
+        final key = pending['idempotencyKey'];
+        final body = pending['body'];
+        if (key is String && body is Map<String, dynamic>) {
+          setState(() {
+            _pendingMovementKey = key;
+            _pendingMovementBody = Map<String, Object?>.from(body);
+            _notice = 'Se recuperó un movimiento de inventario pendiente. Reintenta la misma solicitud antes de registrar otra.';
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = _friendlyError(e);
+          _recoveryBlocked = true;
+        });
+      }
+    }
+    await _loadStock();
   }
 
   @override
@@ -179,22 +208,74 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
     if (input == null || !mounted) return;
 
     final key = AzulApiClient.newIdempotencyKey();
+    final body = <String, Object?>{
+      'itemType': item['itemType'],
+      'itemId': item['id'],
+      'type': input['type'],
+      'quantity': input['quantity'],
+      if (input['sign'] != null) 'sign': input['sign'],
+      if ((input['note'] as String).isNotEmpty) 'note': input['note'],
+    };
+    try {
+      await context.read<AzulApiClient>().savePendingCentralInventoryMovement(
+        idempotencyKey: key,
+        body: body,
+      );
+      if (!mounted) return;
+      setState(() {
+        _pendingMovementKey = key;
+        _pendingMovementBody = body;
+        _pendingMovementRejected = false;
+      });
+      await _submitPendingMovement();
+    } catch (e) {
+      if (mounted) setState(() => _error = _friendlyError(e));
+    }
+  }
+
+  Future<void> _submitPendingMovement() async {
+    final key = _pendingMovementKey;
+    final body = _pendingMovementBody;
+    if (key == null || body == null || _recoveryBlocked) return;
     await _runOperation(() async {
-      final body = <String, Object?>{
-        'itemType': item['itemType'],
-        'itemId': item['id'],
-        'type': input['type'],
-        'quantity': input['quantity'],
-        if (input['sign'] != null) 'sign': input['sign'],
-        if ((input['note'] as String).isNotEmpty) 'note': input['note'],
-      };
-      await context.read<AzulApiClient>().postJson(
+      final api = context.read<AzulApiClient>();
+      await api.postJson(
         '/api/v1/inventory/movements',
         body: body,
         idempotencyKey: key,
       );
-      setState(() => _notice = 'Movimiento central registrado para ${_text(item['name'])}.');
+      await api.clearPendingCentralInventoryMovement();
+      setState(() {
+        _pendingMovementKey = null;
+        _pendingMovementBody = null;
+        _pendingMovementRejected = false;
+        _notice = 'Movimiento central registrado correctamente.';
+      });
       await _loadStock();
+    });
+  }
+
+  Future<void> _discardRejectedMovement() async {
+    if (_pendingMovementKey == null || !_pendingMovementRejected) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Descartar movimiento rechazado'),
+        content: const Text('El servidor rechazó el movimiento sin aplicarlo. Se eliminará la solicitud pendiente para permitir corregirla. ¿Continuar?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Volver')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Descartar')),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await context.read<AzulApiClient>().clearPendingCentralInventoryMovement();
+    setState(() {
+      _pendingMovementKey = null;
+      _pendingMovementBody = null;
+      _pendingMovementRejected = false;
+      _error = null;
+      _notice = 'Intento rechazado descartado. Puedes corregir el movimiento.';
     });
   }
 
@@ -207,7 +288,15 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
     try {
       await operation();
     } catch (e) {
-      if (mounted) setState(() => _error = _friendlyError(e));
+      if (mounted) {
+        setState(() {
+          _error = _friendlyError(e);
+          _pendingMovementRejected = _pendingMovementKey != null &&
+              e is AzulApiException &&
+              (e.statusCode == 400 ||
+               (e.statusCode == 409 && e.code != 'IDEMPOTENCY_CONFLICT'));
+        });
+      }
     } finally {
       if (mounted) setState(() => _working = false);
     }
@@ -255,6 +344,28 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
             ),
           ),
           if (_error != null) _banner(_error!, isError: true),
+          if (_pendingMovementKey != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  FilledButton.icon(
+                    onPressed: _working || _recoveryBlocked ? null : _submitPendingMovement,
+                    icon: const Icon(Icons.replay),
+                    label: const Text('Reintentar movimiento pendiente'),
+                  ),
+                  if (_pendingMovementRejected)
+                    OutlinedButton(
+                      onPressed: _working ? null : _discardRejectedMovement,
+                      child: const Text('Descartar intento rechazado'),
+                    ),
+                ],
+              ),
+            ),
+          if (_recoveryBlocked)
+            _banner('Se bloqueó el registro de movimientos porque no se pudo verificar la operación pendiente. Revisa el historial central antes de continuar.', isError: true),
           if (_notice != null) _banner(_notice!),
           Padding(
             padding: const EdgeInsets.all(16),
@@ -354,7 +465,7 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
                                     Text(_text(item['status']), style: const TextStyle(fontSize: 12)),
                                     IconButton(
                                       tooltip: 'Registrar movimiento',
-                                      onPressed: _working ? null : () => _registerMovement(item),
+                                      onPressed: _working || _recoveryBlocked || _pendingMovementKey != null ? null : () => _registerMovement(item),
                                       icon: const Icon(Icons.add_circle_outline),
                                     ),
                                   ],
