@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../multidispositivo/azul_api_client.dart';
+import 'api_central_screen.dart';
 
 class ApiConnectionScreen extends StatefulWidget {
   const ApiConnectionScreen({super.key});
@@ -167,6 +168,20 @@ class _ApiConnectionScreenState extends State<ApiConnectionScreen> {
                                 child: Text(_status!, style: TextStyle(
                                   color: _success ? Colors.green.shade800 : Theme.of(context).colorScheme.onErrorContainer,
                                 )),
+                              ),
+                            ],
+                            if (_success) ...[
+                              const SizedBox(height: 12),
+                              FilledButton.icon(
+                                onPressed: _saving
+                                    ? null
+                                    : () => Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (_) => const ApiCentralScreen(),
+                                          ),
+                                        ),
+                                icon: const Icon(Icons.cloud_sync_rounded),
+                                label: const Text('INGRESAR AL SERVIDOR CENTRAL'),
                               ),
                             ],
                             const SizedBox(height: 16),
