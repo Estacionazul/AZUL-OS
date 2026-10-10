@@ -33,7 +33,51 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   @override
   void initState() {
     super.initState();
-    _refresh();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    try {
+      final pending = await context.read<AzulApiClient>().readPendingCentralSale();
+      if (pending != null && mounted) {
+        final body = pending['body'];
+        final key = pending['idempotencyKey'];
+        if (body is Map<String, dynamic> && key is String) {
+          final items = body['items'];
+          final payments = body['payments'];
+          setState(() {
+            _pendingSaleKey = key;
+            _cart.clear();
+            if (items is List) {
+              for (final item in items.whereType<Map<String, dynamic>>()) {
+                final productId = item['productId']?.toString();
+                final quantity = item['quantity'];
+                if (productId != null && quantity is num && quantity > 0) {
+                  _cart[productId] = quantity.toInt();
+                }
+              }
+            }
+            _mixedPayment = body['paymentMethod'] == 'Mixto';
+            if (!_mixedPayment && body['paymentMethod'] is String) {
+              _paymentMethod = body['paymentMethod'] as String;
+            }
+            if (_mixedPayment && payments is List) {
+              final entries = payments.whereType<Map<String, dynamic>>().toList();
+              if (entries.length >= 2) {
+                _mixedMethod1 = entries[0]['method']?.toString() ?? 'Efectivo';
+                _mixedMethod2 = entries[1]['method']?.toString() ?? 'Yape';
+                _mixedAmount1.text = _number(entries[0]['amount']).toStringAsFixed(2);
+                _mixedAmount2.text = _number(entries[1]['amount']).toStringAsFixed(2);
+              }
+            }
+            _notice = 'Se recuperó una venta central pendiente. Reintenta con la misma solicitud o consulta el historial antes de iniciar otra venta.';
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = _friendlyError(e));
+    }
+    await _refresh();
   }
 
   @override
@@ -322,16 +366,19 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       ];
     }
     final key = _pendingSaleKey ??= AzulApiClient.newIdempotencyKey();
+    final requestBody = <String, Object?>{
+      'items': items,
+      if (_mixedPayment) 'paymentMethod': 'Mixto' else 'paymentMethod': _paymentMethod,
+      if (payments != null) 'payments': payments,
+      'discount': 0,
+    };
     await _runOperation(() async {
-      final result = await context.read<AzulApiClient>().postJson(
+      final api = context.read<AzulApiClient>();
+      await api.savePendingCentralSale(idempotencyKey: key, body: requestBody);
+      final result = await api.postJson(
         '/api/v1/sales',
         idempotencyKey: key,
-        body: {
-          'items': items,
-          if (_mixedPayment) 'paymentMethod': 'Mixto' else 'paymentMethod': _paymentMethod,
-          if (payments != null) 'payments': payments,
-          'discount': 0,
-        },
+        body: requestBody,
       );
       final sale = result['sale'];
       if (sale is! Map<String, dynamic>) {
@@ -339,9 +386,13 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       }
       final number = _text(sale['number']);
       final total = sale['total'];
+      await api.clearPendingCentralSale();
       setState(() {
         _cart.clear();
         _pendingSaleKey = null;
+        _mixedPayment = false;
+        _mixedAmount1.clear();
+        _mixedAmount2.clear();
         _notice = 'Venta central ${number} registrada por ${_money(total)}.';
       });
       await _refresh();
