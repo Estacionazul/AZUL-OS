@@ -137,6 +137,8 @@ test("sales and cash foreign keys reject cross-establishment references", { skip
   } finally {
     if (saleA) await pool.query("DELETE FROM detalle_ventas WHERE venta_id = $1", [saleA]);
     if (saleB) await pool.query("DELETE FROM detalle_ventas WHERE venta_id = $1", [saleB]);
+    if (saleA) await pool.query("DELETE FROM pagos_venta WHERE venta_id = $1", [saleA]);
+    if (saleB) await pool.query("DELETE FROM pagos_venta WHERE venta_id = $1", [saleB]);
     if (saleA) await pool.query("DELETE FROM ventas WHERE id = $1", [saleA]);
     if (saleB) await pool.query("DELETE FROM ventas WHERE id = $1", [saleB]);
     if (cashRegisterA) await pool.query("DELETE FROM movimientos_caja WHERE caja_id = $1", [cashRegisterA]);
