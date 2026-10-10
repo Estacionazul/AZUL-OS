@@ -286,8 +286,8 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       setState(() => _error = 'Abre una caja central antes de cobrar.');
       return;
     }
-    if (_cart.isEmpty) {
-      setState(() => _error = 'Agrega al menos un producto a la venta.');
+    if (_cart.isEmpty || _total <= 0) {
+      setState(() => _error = 'Agrega productos con importe mayor que cero a la venta.');
       return;
     }
     final items = _cart.entries.map((entry) => <String, Object?>{
@@ -622,8 +622,9 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                   _mixedPayment = value;
                   _error = null;
                   if (value) {
-                    _mixedAmount1.text = _money(_total).replaceFirst('S/ ', '');
-                    _mixedAmount2.text = '0.00';
+                    final firstAmount = ((_total * 100) / 2).round() / 100;
+                    _mixedAmount1.text = (_total / 2).toStringAsFixed(2);
+                    _mixedAmount2.text = (_total - firstAmount).toStringAsFixed(2);
                   }
                 });
               },
@@ -668,6 +669,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                 controller: _mixedAmount2,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(labelText: 'Importe $_mixedMethod2', isDense: true),
+                enabled: !_working && _pendingSaleKey == null,
                 onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: 4),
