@@ -94,9 +94,7 @@ cashRouter.post("/open", authenticate, requirePermission("Caja"), async (req, re
               cierre_request_hash AS "requestHash",
               cierre_efectivo_esperado AS "expectedCash",
               cierre_diferencia AS difference,
-              cierre_pagos_mixtos AS "mixedPaymentsToReview",
-              usuario_cierre_id AS "closedByUserId",
-              dispositivo_cierre_id AS "closedByDeviceId"
+              cierre_pagos_mixtos AS "mixedPaymentsToReview"
          FROM cajas
         WHERE establecimiento_id = $1 AND cierre_idempotency_key = $2
         FOR UPDATE`,
@@ -167,7 +165,7 @@ cashRouter.post("/open", authenticate, requirePermission("Caja"), async (req, re
       cashRegister.note,
       note,
       mixedPayments > 0 ? `Atención: hay S/ ${mixedPayments.toFixed(2)} en pagos mixtos sin desglose; verificar manualmente.` : null,
-    ].filter((value): value is string => Boolean(value)).join("\\n") || null;
+    ].filter((value): value is string => Boolean(value)).join("\n") || null;
 
     const updated = await client.query(
       `UPDATE cajas
