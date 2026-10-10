@@ -79,3 +79,62 @@ No borrar la solicitud pendiente para “desbloquear” el dispositivo hasta rec
 ## Criterio para continuar
 
 La siguiente etapa solo puede declararse aceptada cuando G1–G6 estén documentadas y verdes en el mismo candidato, los totales de staging estén conciliados y no existan defectos críticos o altos abiertos. La aprobación de G7 será independiente; hasta entonces no se conecta la operación real al backend ni se ejecutan migraciones productivas.
+
+
+## Preparar staging aislado en Windows (PowerShell)
+
+El repositorio incluye `docker-compose.staging.yml` y `staging.env.example`. Esta pila usa una base PostgreSQL exclusiva, una red Docker propia y publica la API únicamente en `127.0.0.1:18080`; PostgreSQL no publica puertos al equipo anfitrión. No apunta a SQLite ni a una base externa.
+
+### A. Preparar secretos locales
+
+Desde PowerShell, entra a `backend` y crea el archivo local ignorado por Git:
+
+```powershell
+Copy-Item .\staging.env.example .\.env.staging
+node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'))"
+node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'))"
+notepad .\.env.staging
+```
+
+Usa la primera cadena aleatoria como `STAGING_DB_PASSWORD` y la segunda como `STAGING_JWT_SECRET`. En el mismo archivo establece un PIN de CEO de staging de cuatro dígitos que no sea obvio y cambia `BOOTSTRAP_CONFIRM` a `CREATE_INITIAL_CEO_AND_DEVICE`. No reutilices secretos ni PIN de producción y no compartas el archivo. Las contraseñas generadas en formato base64url evitan caracteres problemáticos en la URL de conexión.
+
+### B. Validar configuración antes de levantar contenedores
+
+```powershell
+docker compose --env-file .env.staging -f docker-compose.staging.yml config --quiet
+```
+
+Si este comando falla, detente y corrige la configuración antes de continuar. Nunca sustituyas las variables por credenciales de producción.
+
+### C. Crear únicamente la base de staging
+
+```powershell
+docker compose --env-file .env.staging -f docker-compose.staging.yml up -d db
+docker compose --env-file .env.staging -f docker-compose.staging.yml --profile tools run --rm -e MIGRATIONS_CONFIRM=APPLY_AZUL_MIGRATIONS migrate
+docker compose --env-file .env.staging -f docker-compose.staging.yml --profile tools run --rm bootstrap
+docker compose --env-file .env.staging -f docker-compose.staging.yml up -d --build backend
+Invoke-RestMethod http://127.0.0.1:18080/health/live
+Invoke-RestMethod http://127.0.0.1:18080/health/ready
+```
+
+Las migraciones y el bootstrap se ejecutan como tareas puntuales contra el servicio PostgreSQL llamado `db` de esta composición. Si cualquiera de esas tareas falla, no sigas a la siguiente; conserva el error y revisa solo esta pila de staging. No cambies la URL de conexión para apuntar a una base existente.
+
+### D. Aceptación funcional
+
+- Configura un cliente de pruebas con URL `http://127.0.0.1:18080` solo para esta prueba local; el cliente debe habilitar explícitamente HTTP únicamente para loopback. No configures una IP de red ni una URL pública con HTTP.
+- Inicia sesión con el CEO de staging y registra usuarios/dispositivos ficticios de prueba.
+- Ejecuta los casos G2–G6 de este plan con productos y cantidades ficticias; conserva los resultados y compara historial, pagos, movimientos de inventario y conciliación de caja.
+- Para probar Android/tableta en la misma red se requiere HTTPS y una configuración de staging dedicada; no abras este puerto HTTP en la LAN.
+- No conectes la aplicación productiva ni importes datos reales en esta base.
+
+Para apagar los contenedores al terminar, sin borrar el volumen de pruebas:
+
+```powershell
+docker compose --env-file .env.staging -f docker-compose.staging.yml down
+```
+
+No ejecutes `down -v` salvo que se haya verificado expresamente que el proyecto seleccionado es esta pila desechable y se autorice eliminar todos sus datos de prueba.
+
+### Alcance real de CI
+
+El workflow valida tipos, compilación, migraciones y pruebas de backend, y ahora valida la sintaxis de Compose y construye la imagen del backend de staging sin levantar una instancia accesible. Esto **no sustituye** ejecutar la aceptación funcional anterior ni demuestra que Windows, Android y la tableta estén conciliados entre sí.
