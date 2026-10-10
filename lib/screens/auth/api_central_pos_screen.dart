@@ -99,8 +99,8 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                       final sale = items[index];
                       if (sale is! Map<String, dynamic>) return const SizedBox.shrink();
                       return ListTile(
-                        title: Text('${_text(sale['number'])} · ${_money(sale['total'])}'),
-                        subtitle: Text('${_text(sale['documentType'])} · ${_text(sale['customerName'], 'Cliente general')}\n${_text(sale['paymentMethod'])} · ${_text(sale['date'])}'),
+                        title: Text('${_text(sale['numero'])} · ${_money(sale['total'])}'),
+                        subtitle: Text('${_text(sale['documentType'])} · ${_text(sale['customerName'], 'Cliente general')}\n${_text(sale['paymentMethod'])} · ${_text(sale['fecha'])}'),
                         isThreeLine: true,
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => _showSaleDetail(dialogContext, _text(sale['id'], '')),
