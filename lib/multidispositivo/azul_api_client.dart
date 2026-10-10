@@ -36,6 +36,7 @@ class AzulApiClient {
   static const _deviceKey = 'azul.api.device_id';
   static const _tokenKey = 'azul.api.access_token';
   static const _pendingCentralSaleKey = 'azul.api.pending_central_sale';
+  static const _pendingCentralInventoryKey = 'azul.api.pending_central_inventory_movement';
 
   final FlutterSecureStorage _storage;
   final HttpClient _http;
@@ -173,6 +174,53 @@ class AzulApiClient {
 
   Future<void> clearPendingCentralSale() =>
       _storage.delete(key: _pendingCentralSaleKey);
+
+  Future<void> savePendingCentralInventoryMovement({
+    required String idempotencyKey,
+    required Map<String, Object?> body,
+  }) async {
+    await _storage.write(
+      key: _pendingCentralInventoryKey,
+      value: jsonEncode(<String, Object?>{
+        'idempotencyKey': idempotencyKey,
+        'body': body,
+        'baseUrl': await _storage.read(key: _baseUrlKey),
+        'establishmentId': await _storage.read(key: _establishmentKey),
+        'deviceId': await _storage.read(key: _deviceKey),
+      }),
+    );
+  }
+
+  Future<Map<String, dynamic>?> readPendingCentralInventoryMovement() async {
+    final raw = await _storage.read(key: _pendingCentralInventoryKey);
+    if (raw == null || raw.trim().isEmpty) return null;
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(raw);
+    } on FormatException {
+      throw const FormatException(
+        'El movimiento de inventario central pendiente está dañado. No registres otro movimiento hasta revisar el historial.',
+      );
+    }
+    if (decoded is Map<String, dynamic> &&
+        decoded['idempotencyKey'] is String &&
+        decoded['body'] is Map<String, dynamic>) {
+      if (decoded['baseUrl'] != await _storage.read(key: _baseUrlKey) ||
+          decoded['establishmentId'] != await _storage.read(key: _establishmentKey) ||
+          decoded['deviceId'] != await _storage.read(key: _deviceKey)) {
+        throw const FormatException(
+          'Hay un movimiento pendiente asociado a otra API, establecimiento o dispositivo. Verifica el historial del servidor original antes de registrar más movimientos.',
+        );
+      }
+      return decoded;
+    }
+    throw const FormatException(
+      'El movimiento de inventario central pendiente está dañado. No registres otro movimiento hasta revisar el historial.',
+    );
+  }
+
+  Future<void> clearPendingCentralInventoryMovement() =>
+      _storage.delete(key: _pendingCentralInventoryKey);
 
   Future<Map<String, dynamic>> getJson(
     String path, {
