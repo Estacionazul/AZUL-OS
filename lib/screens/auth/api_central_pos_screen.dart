@@ -22,6 +22,11 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   List<Map<String, dynamic>> _products = [];
   final Map<String, int> _cart = <String, int>{};
   String _paymentMethod = 'Efectivo';
+  bool _mixedPayment = false;
+  String _mixedMethod1 = 'Efectivo';
+  String _mixedMethod2 = 'Yape';
+  final _mixedAmount1 = TextEditingController();
+  final _mixedAmount2 = TextEditingController();
   String? _pendingSaleKey;
 
   @override
@@ -35,6 +40,8 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
     _openingAmount.dispose();
     _closingAmount.dispose();
     _search.dispose();
+    _mixedAmount1.dispose();
+    _mixedAmount2.dispose();
     super.dispose();
   }
 
@@ -57,6 +64,131 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
         0,
         (sum, p) => sum + _number(p['salePrice']) * (_cart[p['id'].toString()] ?? 0),
       );
+
+  static const _paymentMethods = <String>['Efectivo', 'Yape', 'Plin', 'Tarjeta'];
+
+  Future<void> _showSalesHistory() async {
+    setState(() {
+      _working = true;
+      _error = null;
+      _notice = null;
+    });
+    try {
+      final response = await context.read<AzulApiClient>().getJson(
+        '/api/v1/sales',
+        query: const {'limit': '50', 'offset': '0'},
+      );
+      final items = response['items'];
+      if (items is! List) {
+        throw const FormatException('La API devolvió un historial de ventas inválido.');
+      }
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Historial de ventas centrales'),
+          content: SizedBox(
+            width: 720,
+            height: 520,
+            child: items.isEmpty
+                ? const Center(child: Text('Todavía no hay ventas centrales.'))
+                : ListView.separated(
+                    itemCount: items.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final sale = items[index];
+                      if (sale is! Map<String, dynamic>) return const SizedBox.shrink();
+                      return ListTile(
+                        title: Text('${_text(sale['number'])} · ${_money(sale['total'])}'),
+                        subtitle: Text('${_text(sale['documentType'])} · ${_text(sale['customerName'], 'Cliente general')}\n${_text(sale['paymentMethod'])} · ${_text(sale['date'])}'),
+                        isThreeLine: true,
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => _showSaleDetail(dialogContext, _text(sale['id'], '')),
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cerrar')),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (mounted) setState(() => _error = _friendlyError(e));
+    } finally {
+      if (mounted) setState(() => _working = false);
+    }
+  }
+
+  Future<void> _showSaleDetail(BuildContext dialogContext, String saleId) async {
+    if (saleId.isEmpty) return;
+    try {
+      final response = await context.read<AzulApiClient>().getJson('/api/v1/sales/$saleId');
+      final sale = response['sale'];
+      final items = response['items'];
+      final payments = response['payments'];
+      final documents = response['documents'];
+      if (sale is! Map<String, dynamic> || items is! List) {
+        throw const FormatException('La API devolvió un detalle de venta inválido.');
+      }
+      if (!mounted) return;
+      await showDialog<void>(
+        context: dialogContext,
+        builder: (detailContext) => AlertDialog(
+          title: Text('Venta ${_text(sale['number'])}'),
+          content: SizedBox(
+            width: 560,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Total: ${_money(sale['total'])}', style: Theme.of(detailContext).textTheme.titleLarge),
+                  Text('Cliente: ${_text(sale['customerName'], 'Cliente general')}'),
+                  Text('Medio de pago: ${_text(sale['paymentMethod'])}'),
+                  const Divider(),
+                  const Text('Productos', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ...items.whereType<Map<String, dynamic>>().map((item) => ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(_text(item['productName'])),
+                    subtitle: Text('${_number(item['quantity']).toStringAsFixed(0)} × ${_money(item['unitPrice'])}'),
+                    trailing: Text(_money(item['subtotal'])),
+                  )),
+                  const Divider(),
+                  const Text('Desglose de pagos', style: TextStyle(fontWeight: FontWeight.bold)),
+                  if (payments is List && payments.isNotEmpty)
+                    ...payments.whereType<Map<String, dynamic>>().map((payment) => ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(_text(payment['method'])),
+                      trailing: Text(_money(payment['amount'])),
+                    ))
+                  else
+                    const Text('No hay desglose disponible.'),
+                  if (documents is List && documents.isNotEmpty) ...[
+                    const Divider(),
+                    const Text('Documentos electrónicos', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ...documents.whereType<Map<String, dynamic>>().map((document) => ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text('${_text(document['type'])} ${_text(document['series'])}-${_text(document['number'])}'),
+                      subtitle: Text('${_text(document['status'])} · ${_text(document['sunatMessage'], 'Sin mensaje SUNAT')}'),
+                    )),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(detailContext), child: const Text('Cerrar detalle')),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (mounted) setState(() => _error = _friendlyError(e));
+    }
+  }
 
   Future<void> _refresh() async {
     setState(() {
@@ -163,6 +295,31 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       'quantity': entry.value,
       'extraShot': false,
     }).toList(growable: false);
+    List<Map<String, Object?>>? payments;
+    if (_mixedPayment) {
+      final amount1 = double.tryParse(_mixedAmount1.text.trim());
+      final amount2 = double.tryParse(_mixedAmount2.text.trim());
+      if (amount1 == null || amount2 == null ||
+          !amount1.isFinite || !amount2.isFinite ||
+          amount1 <= 0 || amount2 <= 0 ||
+          (amount1 * 100).roundToDouble() != amount1 * 100 ||
+          (amount2 * 100).roundToDouble() != amount2 * 100) {
+        setState(() => _error = 'En el pago mixto, ambos importes deben ser positivos y tener máximo dos decimales.');
+        return;
+      }
+      if (_mixedMethod1 == _mixedMethod2) {
+        setState(() => _error = 'Selecciona dos medios de pago diferentes.');
+        return;
+      }
+      if (((amount1 + amount2) * 100).round() != (_total * 100).round()) {
+        setState(() => _error = 'El pago mixto debe sumar exactamente ${_money(_total)}.');
+        return;
+      }
+      payments = [
+        <String, Object?>{'method': _mixedMethod1, 'amount': amount1},
+        <String, Object?>{'method': _mixedMethod2, 'amount': amount2},
+      ];
+    }
     final key = _pendingSaleKey ??= AzulApiClient.newIdempotencyKey();
     await _runOperation(() async {
       final result = await context.read<AzulApiClient>().postJson(
@@ -170,7 +327,8 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
         idempotencyKey: key,
         body: {
           'items': items,
-          'paymentMethod': _paymentMethod,
+          if (_mixedPayment) 'paymentMethod': 'Mixto' else 'paymentMethod': _paymentMethod,
+          if (payments != null) 'payments': payments,
           'discount': 0,
         },
       );
@@ -232,6 +390,11 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       appBar: AppBar(
         title: const Text('AZUL OS · Caja y ventas centrales'),
         actions: [
+          IconButton(
+            tooltip: 'Historial de ventas centrales',
+            onPressed: _working ? null : _showSalesHistory,
+            icon: const Icon(Icons.receipt_long),
+          ),
           IconButton(
             tooltip: 'Actualizar estado central',
             onPressed: _working ? null : _refresh,
@@ -449,19 +612,66 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
               ],
             ),
             const SizedBox(height: 10),
-            DropdownButtonFormField<String>(
-              value: _paymentMethod,
-              decoration: const InputDecoration(labelText: 'Medio de pago', isDense: true),
-              items: const [
-                DropdownMenuItem(value: 'Efectivo', child: Text('Efectivo')),
-                DropdownMenuItem(value: 'Yape', child: Text('Yape')),
-                DropdownMenuItem(value: 'Plin', child: Text('Plin')),
-                DropdownMenuItem(value: 'Tarjeta', child: Text('Tarjeta')),
-              ],
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Pago mixto'),
+              subtitle: const Text('Divide el total entre dos medios de pago.'),
+              value: _mixedPayment,
               onChanged: _working || _pendingSaleKey != null ? null : (value) {
-                if (value != null) setState(() => _paymentMethod = value);
+                setState(() {
+                  _mixedPayment = value;
+                  _error = null;
+                  if (value) {
+                    _mixedAmount1.text = _money(_total).replaceFirst('S/ ', '');
+                    _mixedAmount2.text = '0.00';
+                  }
+                });
               },
             ),
+            if (!_mixedPayment)
+              DropdownButtonFormField<String>(
+                value: _paymentMethod,
+                decoration: const InputDecoration(labelText: 'Medio de pago', isDense: true),
+                items: _paymentMethods.map((method) => DropdownMenuItem(value: method, child: Text(method))).toList(),
+                onChanged: _working || _pendingSaleKey != null ? null : (value) {
+                  if (value != null) setState(() => _paymentMethod = value);
+                },
+              )
+            else ...[
+              DropdownButtonFormField<String>(
+                value: _mixedMethod1,
+                decoration: const InputDecoration(labelText: 'Primer medio', isDense: true),
+                items: _paymentMethods.map((method) => DropdownMenuItem(value: method, child: Text(method))).toList(),
+                onChanged: _working || _pendingSaleKey != null ? null : (value) {
+                  if (value != null) setState(() => _mixedMethod1 = value);
+                },
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _mixedAmount1,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(labelText: 'Importe $_mixedMethod1', isDense: true),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: _mixedMethod2,
+                decoration: const InputDecoration(labelText: 'Segundo medio', isDense: true),
+                items: _paymentMethods.map((method) => DropdownMenuItem(value: method, child: Text(method))).toList(),
+                onChanged: _working || _pendingSaleKey != null ? null : (value) {
+                  if (value != null) setState(() => _mixedMethod2 = value);
+                },
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _mixedAmount2,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(labelText: 'Importe $_mixedMethod2', isDense: true),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 4),
+              Text('Distribuido: ${_money(_number(_mixedAmount1.text) + _number(_mixedAmount2.text))} de ${_money(_total)}'),
+            ],
             const SizedBox(height: 10),
             FilledButton.icon(
               onPressed: _working || _cash == null || _cart.isEmpty ? null : _checkout,
