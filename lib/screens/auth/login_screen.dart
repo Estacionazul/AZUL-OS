@@ -6,6 +6,7 @@ import '../../repositories/usuarios_repository.dart';
 import '../../repositories/permisos_usuario_repository.dart';
 import '../../services/sesion_service.dart';
 import '../home_screen.dart';
+import 'api_connection_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -207,6 +208,18 @@ class _LoginScreenState extends State<LoginScreen> {
                             _ingresando ? 'INGRESANDO...' : 'INGRESAR',
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextButton.icon(
+                        onPressed: _ingresando
+                            ? null
+                            : () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const ApiConnectionScreen(),
+                                  ),
+                                ),
+                        icon: const Icon(Icons.devices_rounded),
+                        label: const Text('CONFIGURAR CONEXIÓN MULTIDISPOSITIVO'),
                       ),
                     ],
                   ),
