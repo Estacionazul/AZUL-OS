@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../multidispositivo/azul_api_client.dart';
+import 'api_central_inventory_screen.dart';
 
 class ApiCentralPosScreen extends StatefulWidget {
   const ApiCentralPosScreen({super.key});
@@ -390,6 +391,15 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       appBar: AppBar(
         title: const Text('AZUL OS · Caja y ventas centrales'),
         actions: [
+          IconButton(
+            tooltip: 'Inventario central',
+            onPressed: _working ? null : () {
+              Navigator.of(context).push(MaterialPageRoute<void>(
+                builder: (_) => const ApiCentralInventoryScreen(),
+              ));
+            },
+            icon: const Icon(Icons.inventory_2),
+          ),
           IconButton(
             tooltip: 'Historial de ventas centrales',
             onPressed: _working ? null : _showSalesHistory,
