@@ -18,7 +18,13 @@ const CustomerFields = {
 };
 const CustomerBody = z.object(CustomerFields).strict();
 const CustomerUpdate = z.object({
-  ...Object.fromEntries(Object.entries(CustomerFields).map(([key, value]) => [key, value.optional()])),
+  name: CustomerFields.name.optional(),
+  dni: optionalDni,
+  ruc: optionalRuc,
+  phone: CustomerFields.phone,
+  email: CustomerFields.email,
+  address: CustomerFields.address,
+  observations: CustomerFields.observations,
   active: z.boolean().optional(),
 }).strict().refine((value) => Object.keys(value).length > 0, "Indica al menos un cambio.");
 
