@@ -9,6 +9,7 @@ on:
     branches:
       - main
       - arquitectura-multidispositivo-20261008
+      - validacion-operacion-centralizada-20261010
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
@@ -94,3 +95,10 @@ jobs:
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/013_cash_close_idempotency.sql
       - name: Run tests
         run: npm test
+      - name: Validate isolated staging Compose and build image
+        run: |
+          cp staging.env.example .env.staging
+          sed -i 's/REPLACE_WITH_RANDOM_BASE64URL_SECRET/ci_only_secret_0123456789abcdefghijklmnopqrstuvwxyz/g' .env.staging
+          sed -i 's/REPLACE_WITH_DIFFERENT_RANDOM_BASE64URL_SECRET/ci_only_jwt_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ/g' .env.staging
+          docker compose --env-file .env.staging -f docker-compose.staging.yml config --quiet
+          docker compose --env-file .env.staging -f docker-compose.staging.yml build backend
