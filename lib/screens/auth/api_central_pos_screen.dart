@@ -98,6 +98,9 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
     super.dispose();
   }
 
+  bool _hasAtMostTwoDecimals(String value) =>
+      RegExp(r'^\d+(?:\.\d{1,2})?$').hasMatch(value.trim());
+
   double _number(Object? value) {
     if (value is num) return value.toDouble();
     return double.tryParse(value?.toString() ?? '') ?? 0;
@@ -288,7 +291,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   Future<void> _openCash() async {
     if (_recoveryBlocked) return;
     final amount = double.tryParse(_openingAmount.text.trim());
-    if (amount == null || !amount.isFinite || amount < 0 || (amount * 100).roundToDouble() != amount * 100) {
+    if (amount == null || !amount.isFinite || amount < 0 || !_hasAtMostTwoDecimals(_openingAmount.text)) {
       setState(() => _error = 'Ingresa un monto inicial válido con máximo dos decimales.');
       return;
     }
@@ -307,7 +310,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   Future<void> _closeCash() async {
     if (_recoveryBlocked) return;
     final amount = double.tryParse(_closingAmount.text.trim());
-    if (amount == null || !amount.isFinite || amount < 0 || (amount * 100).roundToDouble() != amount * 100) {
+    if (amount == null || !amount.isFinite || amount < 0 || !_hasAtMostTwoDecimals(_closingAmount.text)) {
       setState(() => _error = 'Ingresa el efectivo contado con máximo dos decimales.');
       return;
     }
@@ -365,8 +368,8 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       if (amount1 == null || amount2 == null ||
           !amount1.isFinite || !amount2.isFinite ||
           amount1 <= 0 || amount2 <= 0 ||
-          (amount1 * 100).roundToDouble() != amount1 * 100 ||
-          (amount2 * 100).roundToDouble() != amount2 * 100) {
+          !_hasAtMostTwoDecimals(_mixedAmount1.text) ||
+          !_hasAtMostTwoDecimals(_mixedAmount2.text)) {
         setState(() => _error = 'En el pago mixto, ambos importes deben ser positivos y tener máximo dos decimales.');
         return;
       }
