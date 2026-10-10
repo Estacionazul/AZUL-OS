@@ -6,11 +6,13 @@ import { authenticate, requirePermission } from "./auth.js";
 
 export const salesRouter = Router();
 
+const hasAtMostTwoDecimals = (value: number) => /^\d+(?:\.\d{1,2})?$/.test(value.toString());
+
 const SinglePaymentMethod = z.enum(["Efectivo", "Yape", "Plin", "Tarjeta"]);
 const SalePayment = z.object({
   method: SinglePaymentMethod,
   amount: z.number().finite().positive().max(999999999.99)
-    .refine((value) => Number.isInteger(value * 100), "El importe admite hasta dos decimales."),
+    .refine(hasAtMostTwoDecimals, "El importe admite hasta dos decimales."),
 });
 const SaleBody = z.object({
   items: z.array(z.object({
@@ -25,7 +27,7 @@ const SaleBody = z.object({
   })).min(1).max(200),
   paymentMethod: z.enum(["Efectivo", "Yape", "Plin", "Tarjeta", "Mixto"]).optional(),
   payments: z.array(SalePayment).min(2).max(4).optional(),
-  discount: z.number().finite().min(0).max(999999999.99).default(0),
+  discount: z.number().finite().min(0).max(999999999.99).refine(hasAtMostTwoDecimals, "El descuento admite hasta dos decimales.").default(0),
   customerId: z.string().uuid().optional(),
   dni: z.string().trim().max(8).optional(),
   ruc: z.string().trim().max(11).optional(),
