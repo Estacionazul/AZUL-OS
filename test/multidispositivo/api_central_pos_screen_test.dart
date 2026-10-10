@@ -21,6 +21,48 @@ class _FakePosApiClient extends AzulApiClient {
     if (path == '/api/v1/cash/current') {
       return <String, dynamic>{'cashRegister': cash};
     }
+    if (path == '/api/v1/sales') {
+      return <String, dynamic>{
+        'items': <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 'sale-id',
+            'numero': 'V000001',
+            'fecha': '2026-10-10T10:00:00.000Z',
+            'documentType': 'Nota de Venta',
+            'customerName': null,
+            'total': 8.0,
+            'paymentMethod': 'Efectivo',
+          },
+        ],
+        'total': 1,
+        'limit': 50,
+        'offset': 0,
+      };
+    }
+    if (path == '/api/v1/sales/sale-id') {
+      return <String, dynamic>{
+        'sale': <String, dynamic>{
+          'id': 'sale-id',
+          'numero': 'V000001',
+          'total': 8.0,
+          'paymentMethod': 'Efectivo',
+          'customerName': null,
+        },
+        'items': <Map<String, dynamic>>[
+          <String, dynamic>{
+            'productId': productId,
+            'productName': 'Americano central',
+            'quantity': 1,
+            'unitPrice': 8.0,
+            'subtotal': 8.0,
+          },
+        ],
+        'payments': <Map<String, dynamic>>[
+          <String, dynamic>{'method': 'Efectivo', 'amount': 8.0},
+        ],
+        'documents': <Object?>[],
+      };
+    }
     if (path == '/api/v1/catalog/products') {
       return <String, dynamic>{
         'items': <Map<String, dynamic>>[
@@ -104,6 +146,30 @@ void main() {
     expect(api.lastSaleBody?['items'], isA<List<Object?>>());
     expect(api.lastIdempotencyKey, isNotNull);
     expect(find.textContaining('V000001'), findsOneWidget);
+
+  testWidgets('central POS opens central sales history and detail', (tester) async {
+    tester.view.physicalSize = const Size(1400, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final api = _FakePosApiClient();
+    addTearDown(api.dispose);
+
+    await tester.pumpWidget(
+      Provider<AzulApiClient>.value(
+        value: api,
+        child: const MaterialApp(home: ApiCentralPosScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Historial de ventas centrales'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('V000001'), findsOneWidget);
+    await tester.tap(find.textContaining('V000001'));
+    await tester.pumpAndSettle();
+    expect(find.text('Americano central'), findsOneWidget);
+    expect(find.text('Desglose de pagos'), findsOneWidget);
+  });
 
   testWidgets('central POS validates and sends mixed payment breakdown', (tester) async {
     tester.view.physicalSize = const Size(1400, 1000);
