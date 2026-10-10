@@ -89,8 +89,8 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
         items: [{ productId, quantity: 1 }],
         paymentMethod: "Mixto",
         payments: [
-          { method: "Efectivo", amount: 5.8 },
-          { method: "Yape", amount: 6 },
+          { method: "Efectivo", amount: 1.15 },
+          { method: "Yape", amount: 10.65 },
         ],
       }),
     });
@@ -104,8 +104,8 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
       [mixedSaleId, establishmentId],
     );
     assert.deepEqual(mixedTenders.rows.map((row) => [row.metodo_pago, Number(row.monto)]), [
-      ["Efectivo", 5.8],
-      ["Yape", 6],
+      ["Efectivo", 1.15],
+      ["Yape", 10.65],
     ]);
     const mixedCashMovements = await pool.query(
       "SELECT metodo_pago, monto FROM movimientos_caja WHERE referencia = $1 ORDER BY metodo_pago",
@@ -174,11 +174,11 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     const close = await fetch(`${baseUrl}/api/v1/cash/close`, {
       method: "POST",
       headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-      body: JSON.stringify({ closingAmount: 117.6 }),
+      body: JSON.stringify({ closingAmount: 112.95 }),
     });
     assert.equal(close.status, 200);
     const closeBody = await close.json() as { reconciliation: { expectedCash: number; difference: number; mixedPaymentsToReview: number } };
-    assert.equal(closeBody.reconciliation.expectedCash, 117.6);
+    assert.equal(closeBody.reconciliation.expectedCash, 112.95);
     assert.equal(closeBody.reconciliation.difference, 0);
     assert.equal(closeBody.reconciliation.mixedPaymentsToReview, 0);
   } finally {
