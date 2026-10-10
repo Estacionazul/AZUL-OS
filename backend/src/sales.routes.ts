@@ -132,7 +132,7 @@ salesRouter.get("/:id", authenticate, requirePermission("Ventas"), async (req, r
   }
   try {
     const result = await pool.query(
-      `SELECT v.id, v.numero, v.fecha, v.tipo_documento AS "documentType",
+      `SELECT v.id, v.numero AS "number", v.fecha, v.tipo_documento AS "documentType",
               v.dni, v.ruc, v.nombre_cliente AS "customerName",
               v.razon_social AS "businessName", v.direccion_fiscal AS "fiscalAddress",
               v.subtotal, v.igv, v.descuento AS discount, v.total,
