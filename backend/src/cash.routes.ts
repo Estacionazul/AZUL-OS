@@ -64,7 +64,13 @@ cashRouter.post("/open", authenticate, requirePermission("Caja"), async (req, re
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === "23505") {
       res.status(409).json({ error: { code: "CASH_REGISTER_ALREADY_OPEN", message: "Ya existe una caja abierta para este establecimiento." } });
-    cashRouter.post("/close", authenticate, requirePermission("Caja"), async (req, res, next) => {
+      return;
+    }
+    next(error);
+  }
+});
+
+cashRouter.post("/close", authenticate, requirePermission("Caja"), async (req, res, next) => {
   const parsed = CloseCashBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Datos de cierre de caja inválidos." } });
