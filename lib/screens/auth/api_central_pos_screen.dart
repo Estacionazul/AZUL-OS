@@ -379,7 +379,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                         subtitle: Text('${_text(product['code'])} · ${_money(product['salePrice'])}'),
                         trailing: IconButton(
                           tooltip: 'Agregar al carrito',
-                          onPressed: _working || _cash == null || id.isEmpty
+                          onPressed: _working || _pendingSaleKey != null || _cash == null || id.isEmpty
                               ? null
                               : () => setState(() => _cart[id] = quantity + 1),
                           icon: const Icon(Icons.add_shopping_cart),
@@ -420,7 +420,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                             children: [
                               IconButton(
                                 tooltip: 'Quitar una unidad',
-                                onPressed: _working ? null : () => setState(() {
+                                onPressed: _working || _pendingSaleKey != null ? null : () => setState(() {
                                   if (quantity <= 1) {
                                     _cart.remove(id);
                                   } else {
@@ -431,7 +431,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                               ),
                               IconButton(
                                 tooltip: 'Eliminar producto',
-                                onPressed: _working ? null : () => setState(() => _cart.remove(id)),
+                                onPressed: _working || _pendingSaleKey != null ? null : () => setState(() => _cart.remove(id)),
                                 icon: const Icon(Icons.delete_outline),
                               ),
                             ],
@@ -458,7 +458,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                 DropdownMenuItem(value: 'Plin', child: Text('Plin')),
                 DropdownMenuItem(value: 'Tarjeta', child: Text('Tarjeta')),
               ],
-              onChanged: _working ? null : (value) {
+              onChanged: _working || _pendingSaleKey != null ? null : (value) {
                 if (value != null) setState(() => _paymentMethod = value);
               },
             ),
