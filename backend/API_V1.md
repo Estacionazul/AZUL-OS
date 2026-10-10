@@ -48,28 +48,49 @@ Las rutas requieren autenticación y permiso de módulo; el rol CEO omite los pe
 
 Las respuestas incluyen una lista `items` y, en las rutas paginadas, `pagination.limit`, `pagination.offset` y `pagination.total`.
 
-### Inventario de solo lectura
+### Inventario
 
 El stock se calcula sumando los movimientos de inventario; no se mantiene mediante una edición directa del saldo.
 
 - `GET /api/v1/inventory/stock?itemType=todos&q=&lowStockOnly=false&limit=50&offset=0` — módulo `Inventario`.
 - `GET /api/v1/inventory/movements?itemType=&itemId=&limit=50&offset=0` — módulo `Inventario`.
+- `POST /api/v1/inventory/movements` — módulo `Inventario`; requiere encabezado `Idempotency-Key` con UUID.
 
-`itemType` acepta `producto`, `insumo` o `todos` para el endpoint de stock; el historial acepta `producto` o `insumo`. La paginación está limitada a 100 resultados por petición.
+El movimiento acepta `itemType` (`producto` o `insumo`), `itemId` (UUID), `type` (`ENTRADA`, `SALIDA` o `AJUSTE`), `quantity` positiva con hasta cuatro decimales, `sign` para ajustes, y `referenceId`/`note` opcionales. Las entradas aumentan stock, las salidas lo reducen, los ajustes requieren signo, se rechaza stock negativo y los productos de receta no admiten movimientos manuales. La misma clave con datos diferentes devuelve conflicto. La paginación está limitada a 100 resultados por petición.
 
-## Contrato previsto, todavía no implementado
+### Caja
 
-Estas rutas describen fases futuras; no deben considerarse disponibles:
+Estas rutas requieren autenticación y permiso `Caja`:
 
-- escritura y administración de productos, insumos, recetas y clientes;
-- entradas y ajustes de inventario con idempotencia y auditoría;
-- apertura, movimientos y cierre de caja;
+- `GET /api/v1/cash/current`: consulta la caja abierta del establecimiento.
+- `POST /api/v1/cash/open`: abre caja con `openingAmount` y `note` opcional.
+- `POST /api/v1/cash/close`: cierra la caja abierta con `closingAmount` y `note` opcional; devuelve conciliación de efectivo y diferencia.
+
+Todavía no existe una ruta API independiente para registrar movimientos manuales de caja (por ejemplo, gastos o ingresos distintos de ventas).
+
+### Ventas
+
+Estas rutas requieren autenticación y permiso `Ventas`:
+
+- `GET /api/v1/sales?from=&to=&documentType=&limit=50&offset=0`: historial filtrado por establecimiento y rango de fechas.
+- `GET /api/v1/sales/:id`: detalle y comprobantes de una venta del establecimiento.
+- `POST /api/v1/sales`: registra una venta transaccional con detalles, movimientos de inventario, movimiento de caja y correlativo. Requiere `Idempotency-Key` con UUID. El backend rechaza productos/clientes de otro establecimiento y stock insuficiente.
+
+La API de ventas admite un único medio de pago por venta: `Efectivo`, `Yape`, `Plin` o `Tarjeta`. `Mixto` se rechaza hasta implementar desglose por medio de pago.
+
+## Pendiente antes de producción
+
+Estas funciones aún no deben considerarse disponibles:
+
+- altas, ediciones, bajas y administración completa de productos, insumos, categorías, recetas y clientes;
 - pedidos y comandas;
-- ventas con una sola transacción para venta, detalles, inventario, caja y correlativos;
-- emisión y procesamiento de comprobantes SUNAT en el servidor;
-- sincronización incremental y resolución de conflictos entre dispositivos.
+- desglose de pagos mixtos y operaciones manuales de caja;
+- emisión, firma, envío, consulta y reconciliación de comprobantes SUNAT desde el backend;
+- sincronización incremental, resolución de conflictos y gestión administrativa de dispositivos/usuarios;
+- integración con Flutter y validación en Windows, Android y tabletas;
+- despliegue seguro con HTTPS, secretos administrados, respaldos y monitoreo.
 
-Antes de implementar las escrituras se definirán las reglas de stock negativo, unidades, precios, permisos, claves de idempotencia y reversos. No se expondrá un endpoint que permita editar directamente el saldo de inventario.
+No existe un endpoint que permita editar directamente el saldo de inventario. Este backend sigue siendo una rama de desarrollo y no debe conectarse a la operación de producción hasta completar la integración y las pruebas de aceptación.
 
 ## Pagos en ventas
 
