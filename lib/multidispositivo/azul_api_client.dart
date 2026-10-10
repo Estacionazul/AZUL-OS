@@ -133,6 +133,9 @@ class AzulApiClient {
       value: jsonEncode(<String, Object?>{
         'idempotencyKey': idempotencyKey,
         'body': body,
+        'baseUrl': await _storage.read(key: _baseUrlKey),
+        'establishmentId': await _storage.read(key: _establishmentKey),
+        'deviceId': await _storage.read(key: _deviceKey),
       }),
     );
   }
@@ -145,6 +148,16 @@ class AzulApiClient {
       if (decoded is Map<String, dynamic> &&
           decoded['idempotencyKey'] is String &&
           decoded['body'] is Map<String, dynamic>) {
+        final baseUrl = await _storage.read(key: _baseUrlKey);
+        final establishmentId = await _storage.read(key: _establishmentKey);
+        final deviceId = await _storage.read(key: _deviceKey);
+        if (decoded['baseUrl'] != baseUrl ||
+            decoded['establishmentId'] != establishmentId ||
+            decoded['deviceId'] != deviceId) {
+          throw const FormatException(
+            'Hay una venta pendiente asociada a otra API, establecimiento o dispositivo. No cambies de servidor ni cobres de nuevo hasta verificar el historial del servidor original.',
+          );
+        }
         return decoded;
       }
     } on FormatException {
