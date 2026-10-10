@@ -101,6 +101,8 @@ Estas rutas requieren autenticación y permiso `Caja`:
 - `GET /api/v1/cash/current`: consulta la caja abierta del establecimiento.
 - `POST /api/v1/cash/open`: abre caja con `openingAmount` y `note` opcional.
 - `POST /api/v1/cash/close`: cierra la caja abierta con `closingAmount` y `note` opcional; devuelve conciliación de efectivo y diferencia.
+- `GET /api/v1/cash/movements?type=&from=&to=&limit=50&offset=0`: historial paginado de ingresos y egresos del establecimiento.
+- `POST /api/v1/cash/movements`: registra ingreso/egreso manual con importe, medio de pago, concepto y clave `Idempotency-Key` UUID. Requiere caja abierta; repetir la misma clave y datos devuelve la operación previa, y reutilizarla con datos distintos devuelve conflicto. Solo los movimientos en efectivo afectan el efectivo esperado al cierre.
 
 Todavía no existe una ruta API independiente para registrar movimientos manuales de caja (por ejemplo, gastos o ingresos distintos de ventas).
 
