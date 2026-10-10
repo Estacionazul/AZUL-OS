@@ -495,7 +495,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                     ),
                   ),
                   OutlinedButton(
-                    onPressed: _working ? null : _closeCash,
+                    onPressed: _working || _pendingSaleKey != null ? null : _closeCash,
                     child: const Text('Cerrar caja'),
                   ),
                 ],
@@ -651,6 +651,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                 controller: _mixedAmount1,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(labelText: 'Importe $_mixedMethod1', isDense: true),
+                enabled: !_working && _pendingSaleKey == null,
                 onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: 8),
