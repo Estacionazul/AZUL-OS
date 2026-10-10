@@ -113,6 +113,10 @@ test("inventory movements enforce idempotency, non-negative stock and recipe res
     assert.equal(conflict.status, 409);
     assert.equal((await conflict.json() as { error: { code: string } }).error.code, "IDEMPOTENCY_CONFLICT");
 
+    const metadataConflict = await sendMovement(entryKey, { ...entry, note: "Different note, same key" });
+    assert.equal(metadataConflict.status, 409, "idempotency must compare note and reference metadata as well as stock fields");
+    assert.equal((await metadataConflict.json() as { error: { code: string } }).error.code, "IDEMPOTENCY_CONFLICT");
+
     const shortage = await sendMovement("44444444-4444-4444-8444-444444444444", {
       itemType: "producto", itemId: productId, type: "SALIDA", quantity: 20,
     });
