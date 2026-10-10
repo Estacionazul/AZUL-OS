@@ -170,7 +170,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       if (mounted) {
         setState(() {
           _error = _friendlyError(e);
-          _pendingSaleRejected = _pendingSaleKey != null &&
+          _pendingSaleRejected = markPendingSaleRejected && _pendingSaleKey != null &&
               e is AzulApiException &&
               (e.statusCode == 400 ||
                (e.statusCode == 409 && e.code != 'IDEMPOTENCY_CONFLICT'));
@@ -419,7 +419,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
         _notice = 'Venta central ${number} registrada por ${_money(total)}.';
       });
       await _refresh();
-    });
+    }, markPendingSaleRejected: true);
   }
 
   Future<void> _discardRejectedSale() async {
@@ -445,7 +445,10 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
     });
   }
 
-  Future<void> _runOperation(Future<void> Function() operation) async {
+  Future<void> _runOperation(
+    Future<void> Function() operation, {
+    bool markPendingSaleRejected = false,
+  }) async {
     setState(() {
       _working = true;
       _error = null;
