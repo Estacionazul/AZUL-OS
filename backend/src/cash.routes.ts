@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { createHash } from "node:crypto";
 import { z } from "zod";
 import { pool } from "./db.js";
 import { authenticate, requirePermission } from "./auth.js";
@@ -63,22 +64,73 @@ cashRouter.post("/open", authenticate, requirePermission("Caja"), async (req, re
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === "23505") {
       res.status(409).json({ error: { code: "CASH_REGISTER_ALREADY_OPEN", message: "Ya existe una caja abierta para este establecimiento." } });
-      return;
-    }
-    next(error);
-  }
-});
-
-cashRouter.post("/close", authenticate, requirePermission("Caja"), async (req, res, next) => {
+    cashRouter.post("/close", authenticate, requirePermission("Caja"), async (req, res, next) => {
   const parsed = CloseCashBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Datos de cierre de caja inválidos." } });
     return;
   }
+  const key = z.string().uuid().safeParse(req.get("Idempotency-Key"));
+  if (!key.success) {
+    res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Falta una clave de idempotencia válida para el cierre." } });
+    return;
+  }
+  const note = parsed.data.note?.trim() || null;
+  const requestHash = createHash("sha256").update(JSON.stringify({
+    closingAmount: parsed.data.closingAmount,
+    note,
+  })).digest("hex");
 
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+    const prior = await client.query(
+      `SELECT id, fecha_apertura AS "openedAt", fecha_cierre AS "closedAt",
+              monto_inicial AS "openingAmount", monto_cierre AS "closingAmount",
+              estado, usuario_apertura_id AS "openedByUserId",
+              dispositivo_apertura_id AS "openedByDeviceId",
+              usuario_cierre_id AS "closedByUserId",
+              dispositivo_cierre_id AS "closedByDeviceId", observaciones AS note,
+              cierre_request_hash AS "requestHash",
+              cierre_efectivo_esperado AS "expectedCash",
+              cierre_diferencia AS difference,
+              cierre_pagos_mixtos AS "mixedPaymentsToReview",
+              usuario_cierre_id AS "closedByUserId",
+              dispositivo_cierre_id AS "closedByDeviceId"
+         FROM cajas
+        WHERE establecimiento_id = $1 AND cierre_idempotency_key = $2
+        FOR UPDATE`,
+      [req.auth!.establishmentId, key.data],
+    );
+    if (prior.rowCount) {
+      const row = prior.rows[0];
+      const sameActor = row.closedByUserId === req.auth!.userId &&
+        row.closedByDeviceId === req.auth!.deviceId;
+      if (row.requestHash !== requestHash || !sameActor || row.estado !== "CERRADA") {
+        await client.query("COMMIT");
+        res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave de cierre ya fue utilizada con otros datos, usuario o dispositivo." } });
+        return;
+      }
+      await client.query("COMMIT");
+      res.status(200).json({
+        cashRegister: {
+          id: row.id, openedAt: row.openedAt, closedAt: row.closedAt,
+          openingAmount: Number(row.openingAmount), closingAmount: Number(row.closingAmount),
+          estado: row.estado, openedByUserId: row.openedByUserId,
+          openedByDeviceId: row.openedByDeviceId, closedByUserId: row.closedByUserId,
+          closedByDeviceId: row.closedByDeviceId, note: row.note,
+        },
+        reconciliation: {
+          expectedCash: Number(row.expectedCash),
+          countedCash: Number(row.closingAmount),
+          difference: Number(row.difference),
+          mixedPaymentsToReview: Number(row.mixedPaymentsToReview),
+        },
+        replayed: true,
+      });
+      return;
+    }
+
     const current = await client.query(
       `SELECT id, fecha_apertura AS "openedAt", monto_inicial AS "openingAmount",
               usuario_apertura_id AS "openedByUserId",
@@ -111,12 +163,11 @@ cashRouter.post("/close", authenticate, requirePermission("Caja"), async (req, r
     const mixedPayments = Number(totals.rows[0].mixedPayments);
     const expectedAmount = Math.round((Number(cashRegister.openingAmount) + cashMovements + Number.EPSILON) * 100) / 100;
     const difference = Math.round((parsed.data.closingAmount - expectedAmount + Number.EPSILON) * 100) / 100;
-    const note = parsed.data.note?.trim() || null;
     const combinedNote = [
       cashRegister.note,
       note,
       mixedPayments > 0 ? `Atención: hay S/ ${mixedPayments.toFixed(2)} en pagos mixtos sin desglose; verificar manualmente.` : null,
-    ].filter((value): value is string => Boolean(value)).join("\n") || null;
+    ].filter((value): value is string => Boolean(value)).join("\\n") || null;
 
     const updated = await client.query(
       `UPDATE cajas
@@ -125,7 +176,12 @@ cashRouter.post("/close", authenticate, requirePermission("Caja"), async (req, r
               monto_cierre = $2,
               usuario_cierre_id = $3,
               dispositivo_cierre_id = $4,
-              observaciones = $5
+              observaciones = $5,
+              cierre_idempotency_key = $7,
+              cierre_request_hash = $8,
+              cierre_efectivo_esperado = $9,
+              cierre_diferencia = $10,
+              cierre_pagos_mixtos = $11
         WHERE id = $1 AND establecimiento_id = $6 AND estado = 'ABIERTA'
         RETURNING id, fecha_apertura AS "openedAt", fecha_cierre AS "closedAt",
                   monto_inicial AS "openingAmount", monto_cierre AS "closingAmount",
@@ -133,7 +189,8 @@ cashRouter.post("/close", authenticate, requirePermission("Caja"), async (req, r
                   dispositivo_apertura_id AS "openedByDeviceId",
                   usuario_cierre_id AS "closedByUserId",
                   dispositivo_cierre_id AS "closedByDeviceId", observaciones AS note`,
-      [cashRegister.id, parsed.data.closingAmount, req.auth!.userId, req.auth!.deviceId, combinedNote, req.auth!.establishmentId],
+      [cashRegister.id, parsed.data.closingAmount, req.auth!.userId, req.auth!.deviceId,
+        combinedNote, req.auth!.establishmentId, key.data, requestHash, expectedAmount, difference, mixedPayments],
     );
     if (!updated.rowCount) {
       await client.query("ROLLBACK");
@@ -144,11 +201,18 @@ cashRouter.post("/close", authenticate, requirePermission("Caja"), async (req, r
     res.status(200).json({
       cashRegister: updated.rows[0],
       reconciliation: { expectedCash: expectedAmount, countedCash: parsed.data.closingAmount, difference, mixedPaymentsToReview: mixedPayments },
+      replayed: false,
     });
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     next(error);
   } finally {
+    client.release();
+  }
+});
+
+
+finally {
     client.release();
   }
 });
