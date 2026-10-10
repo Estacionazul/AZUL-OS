@@ -38,6 +38,17 @@ Respuesta correcta: token Bearer firmado, vencimiento y datos básicos del usuar
 
 Los errores de autenticación no deben revelar si existe un usuario concreto.
 
+### Administración (solo CEO)
+
+Estas rutas requieren sesión activa con rol `CEO`. El acceso se valida en el backend, no solo en la interfaz.
+
+- `GET /api/v1/admin/devices`: lista dispositivos del establecimiento.
+- `POST /api/v1/admin/devices`: registra dispositivo y devuelve su UUID para configurarlo en el equipo correspondiente. Acepta `windows`, `android`, `tablet`, `ios` o `other`.
+- `PATCH /api/v1/admin/devices/:id`: activa o desactiva un dispositivo. Las sesiones de dispositivos desactivados dejan de autenticarse.
+- `GET /api/v1/admin/users`: lista usuarios del establecimiento y permisos por módulo.
+- `POST /api/v1/admin/users`: crea un cajero con PIN de cuatro dígitos y permisos explícitos. El PIN se guarda con hash y nunca se devuelve.
+- `PATCH /api/v1/admin/users/:id`: permite cambiar nombre, activar/desactivar cajero, restablecer PIN o reemplazar permisos. Desactivar usuario o cambiar PIN revoca sus sesiones activas. Esta ruta no permite desactivar el CEO.
+
 ### Catálogos de solo lectura
 
 Las rutas requieren autenticación y permiso de módulo; el rol CEO omite los permisos de módulo.
