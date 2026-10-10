@@ -185,9 +185,10 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
           title: Text('Movimiento · ${_text(item['name'])}'),
           content: SizedBox(
             width: 440,
-            child: Form(
-              key: formKey,
-              child: Column(
+            child: SingleChildScrollView(
+              child: Form(
+                key: formKey,
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -242,6 +243,7 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
                     decoration: const InputDecoration(labelText: 'Motivo / observación'),
                   ),
                 ],
+                ),
               ),
             ),
           ),
