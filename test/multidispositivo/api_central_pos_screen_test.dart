@@ -146,6 +146,7 @@ void main() {
     expect(api.lastSaleBody?['items'], isA<List<Object?>>());
     expect(api.lastIdempotencyKey, isNotNull);
     expect(find.textContaining('V000001'), findsOneWidget);
+  });
 
   testWidgets('central POS opens central sales history and detail', (tester) async {
     tester.view.physicalSize = const Size(1400, 1000);
