@@ -129,6 +129,7 @@ test("concurrent sales with different idempotency keys cannot oversell the same 
       await closed;
     }
     if (saleId) await pool.query("DELETE FROM detalle_ventas WHERE venta_id = $1", [saleId]);
+    if (saleId) await pool.query("DELETE FROM pagos_venta WHERE venta_id = $1", [saleId]);
     if (saleId) await pool.query("DELETE FROM movimientos_caja WHERE referencia = $1", [saleId]);
     if (saleId) await pool.query("DELETE FROM movimientos_inventario WHERE referencia_id = $1", [saleId]);
     if (saleId) await pool.query("DELETE FROM ventas WHERE id = $1", [saleId]);
