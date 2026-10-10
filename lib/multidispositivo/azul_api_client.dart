@@ -130,13 +130,13 @@ class AzulApiClient {
   Future<Map<String, dynamic>> postJson(
     String path, {
     Map<String, Object?>? body,
-    bool idempotent = false,
+    String? idempotencyKey,
   }) =>
       _send(
         method: 'POST',
         path: path,
         body: body,
-        idempotencyKey: idempotent ? newIdempotencyKey() : null,
+        idempotencyKey: idempotencyKey,
       );
 
   Future<Map<String, dynamic>> patchJson(
