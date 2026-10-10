@@ -44,11 +44,13 @@ class _ApiCentralScreenState extends State<ApiCentralScreen> {
     try {
       if (await api.hasSession) {
         final profile = await api.me();
-        final user = profile['user'];
-        if (user is Map<String, dynamic>) {
-          _user = user;
-          await _loadCatalog();
-        }
+        _user = <String, dynamic>{
+          'id': profile['userId'],
+          'username': 'Sesión central',
+          'name': 'Sesión central',
+          'role': profile['role'],
+        };
+        await _loadCatalog();
       }
     } on AzulApiException catch (e) {
       if (e.statusCode != 401) _error = e.message;
@@ -78,7 +80,6 @@ class _ApiCentralScreenState extends State<ApiCentralScreen> {
       _user = user;
       await _loadCatalog();
     } catch (e) {
-      _user = null;
       _error = _friendlyError(e);
     } finally {
       if (mounted) setState(() => _working = false);
