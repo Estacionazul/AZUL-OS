@@ -10,6 +10,7 @@ class _FakePosApiClient extends AzulApiClient {
   Map<String, dynamic>? cash;
   Map<String, dynamic>? lastSaleBody;
   String? lastIdempotencyKey;
+  String? lastCloseIdempotencyKey;
   Map<String, dynamic>? pendingSale;
   Map<String, dynamic>? pendingCashClose;
 
@@ -31,6 +32,7 @@ class _FakePosApiClient extends AzulApiClient {
     pendingSale = null;
   }
 
+  @override
   Future<void> savePendingCentralCashClose({
     required String idempotencyKey,
     required Map<String, Object?> body,
@@ -123,6 +125,15 @@ class _FakePosApiClient extends AzulApiClient {
     Map<String, Object?>? body,
     String? idempotencyKey,
   }) async {
+    if (path == '/api/v1/cash/close') {
+      lastCloseIdempotencyKey = idempotencyKey;
+      cash = null;
+      return <String, dynamic>{
+        'cashRegister': <String, dynamic>{'id': 'cash-id', 'estado': 'CERRADA'},
+        'reconciliation': <String, dynamic>{'expectedCash': 100.0, 'difference': 0.0},
+        'replayed': true,
+      };
+    }
     if (path == '/api/v1/cash/open') {
       cash = <String, dynamic>{
         'id': 'cash-id',
@@ -182,6 +193,29 @@ void main() {
     expect(api.lastSaleBody?['items'], isA<List<Object?>>());
     expect(api.lastIdempotencyKey, isNotNull);
     expect(find.textContaining('V000001'), findsOneWidget);
+  });
+
+  testWidgets('central POS retries a pending cash close with its original key', (tester) async {
+    final api = _FakePosApiClient()
+      ..pendingCashClose = <String, dynamic>{
+        'idempotencyKey': 'close-key-original',
+        'body': <String, dynamic>{'closingAmount': 100.0},
+      };
+    await tester.pumpWidget(
+      Provider<AzulApiClient>.value(
+        value: api,
+        child: const MaterialApp(home: ApiCentralPosScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cierre de caja pendiente'), findsOneWidget);
+    await tester.tap(find.text('Reintentar cierre'));
+    await tester.pumpAndSettle();
+
+    expect(api.lastCloseIdempotencyKey, 'close-key-original');
+    expect(api.pendingCashClose, isNull);
+    expect(find.textContaining('Caja cerrada'), findsOneWidget);
   });
 
   testWidgets('central POS opens central sales history and detail', (tester) async {
