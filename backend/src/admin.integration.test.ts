@@ -22,6 +22,7 @@ test("CEO can register devices and cashier users; non-CEO cannot access administ
   let createdProductId: string | undefined;
   let createdInsumoId: string | undefined;
   let createdRecipeId: string | undefined;
+  let createdCustomerId: string | undefined;
   let server: ReturnType<typeof app.listen> | undefined;
 
   try {
@@ -137,6 +138,23 @@ test("CEO can register devices and cashier users; non-CEO cannot access administ
     assert.equal(recipeBody.recipe.name, "CI Updated Recipe");
     assert.equal(Number(recipeBody.recipe.ingredients[0].quantity), 2);
 
+    const customerDni = suffix.replace(/\D/g, "").slice(0, 8).padEnd(8, "7");
+    const customer = await fetch(`${baseUrl}/api/v1/customers`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${ceoToken}`, "content-type": "application/json" },
+      body: JSON.stringify({ name: "CI Test Customer", dni: customerDni, phone: "999111222" }),
+    });
+    assert.equal(customer.status, 201);
+    createdCustomerId = (await customer.json() as { customer: { id: string } }).customer.id;
+
+    const customerUpdate = await fetch(`${baseUrl}/api/v1/customers/${createdCustomerId}`, {
+      method: "PATCH",
+      headers: { authorization: `Bearer ${ceoToken}`, "content-type": "application/json" },
+      body: JSON.stringify({ name: "CI Updated Customer" }),
+    });
+    assert.equal(customerUpdate.status, 200);
+    assert.equal((await customerUpdate.json() as { customer: { name: string } }).customer.name, "CI Updated Customer");
+
     const productUpdate = await fetch(`${baseUrl}/api/v1/admin/catalog/products/${createdProductId}`, {
       method: "PATCH",
       headers: { authorization: `Bearer ${ceoToken}`, "content-type": "application/json" },
@@ -176,6 +194,7 @@ test("CEO can register devices and cashier users; non-CEO cannot access administ
     assert.equal((await disabled.json() as { device: { active: boolean } }).device.active, false);
   } finally {
     if (server) await new Promise<void>((resolve) => server!.close(() => resolve()));
+    if (createdCustomerId) await pool.query("DELETE FROM clientes WHERE id = $1", [createdCustomerId]);
     if (createdRecipeId) await pool.query("DELETE FROM recetas WHERE id = $1", [createdRecipeId]);
     if (createdProductId) await pool.query("DELETE FROM productos WHERE id = $1", [createdProductId]);
     if (createdInsumoId) await pool.query("DELETE FROM insumos WHERE id = $1", [createdInsumoId]);
