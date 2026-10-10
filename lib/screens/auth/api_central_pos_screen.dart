@@ -170,10 +170,6 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       if (mounted) {
         setState(() {
           _error = _friendlyError(e);
-          _pendingSaleRejected = markPendingSaleRejected && _pendingSaleKey != null &&
-              e is AzulApiException &&
-              (e.statusCode == 400 ||
-               (e.statusCode == 409 && e.code != 'IDEMPOTENCY_CONFLICT'));
         });
       }
     } finally {
