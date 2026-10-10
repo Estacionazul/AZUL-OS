@@ -73,6 +73,10 @@ test("inventory movements enforce idempotency, non-negative stock and recipe res
       [foreignEstablishmentId, `CI-${foreignEstablishmentId.slice(0, 8)}-X`, "CI Foreign Product", foreignCategoryId],
     );
     foreignProductId = foreignProduct.rows[0].id as string;
+    await pool.query(
+      "INSERT INTO movimientos_inventario (establecimiento_id, tipo, nombre_item, unidad, producto_id, cantidad, signo, idempotency_key) VALUES ($1, 'ENTRADA', 'CI Foreign Product', 'unid', $2, 7, 1, $3)",
+      [foreignEstablishmentId, foreignProductId, "77777777-7777-4777-8777-777777777777"],
+    );
 
     server = app.listen(0, "127.0.0.1");
     await once(server, "listening");
@@ -136,6 +140,13 @@ test("inventory movements enforce idempotency, non-negative stock and recipe res
     assert.equal(allStock.status, 200);
     const allStockBody = await allStock.json() as { items: Array<{ id: string }> };
     assert.equal(allStockBody.items.some((item) => item.id === foreignProductId), false);
+
+    const movements = await fetch(`${base}/api/v1/inventory/movements?itemType=producto`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    assert.equal(movements.status, 200);
+    const movementsBody = await movements.json() as { items: Array<{ productId: string }> };
+    assert.equal(movementsBody.items.some((movement) => movement.productId === foreignProductId), false);
 
     const foreignMovement = await sendMovement("66666666-6666-4666-8666-666666666666", {
       itemType: "producto", itemId: foreignProductId, type: "ENTRADA", quantity: 1,
