@@ -1,0 +1,96 @@
+name: Backend CI
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  push:
+    branches:
+      - main
+      - arquitectura-multidispositivo-20261008
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: azul_os
+          POSTGRES_PASSWORD: azul_os_test_only
+          POSTGRES_DB: azul_os_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U azul_os -d azul_os_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgres://azul_os:azul_os_test_only@127.0.0.1:5432/azul_os_test
+      JWT_SECRET: test-only-secret-that-is-at-least-32-characters-long
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Type-check
+        run: npm run typecheck
+      - name: Compile
+        run: npm run build
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Rehearse populated-database tenant migration safeguards
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "CREATE DATABASE azul_os_backfill_test"
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "CREATE DATABASE azul_os_ambiguous_test"
+          BACKFILL_DATABASE_URL="${DATABASE_URL%/*}/azul_os_backfill_test"
+          AMBIGUOUS_DATABASE_URL="${DATABASE_URL%/*}/azul_os_ambiguous_test"
+
+          psql "$BACKFILL_DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_initial.sql
+          psql "$BACKFILL_DATABASE_URL" -v ON_ERROR_STOP=1 -c "INSERT INTO establecimientos (nombre) VALUES ('CI backfill establishment'); INSERT INTO categorias (nombre) VALUES ('CI backfill category')"
+          psql "$BACKFILL_DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/002_establishment_isolation.sql
+          NULL_CATEGORY_OWNERSHIP="$(psql "$BACKFILL_DATABASE_URL" -v ON_ERROR_STOP=1 -Atc "SELECT count(*) FROM categorias WHERE establecimiento_id IS NULL")"
+          if [ "$NULL_CATEGORY_OWNERSHIP" -ne 0 ]; then
+            echo "ERROR: migration 002 left categories without an establishment" >&2
+            exit 1
+          fi
+
+          psql "$AMBIGUOUS_DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_initial.sql
+          psql "$AMBIGUOUS_DATABASE_URL" -v ON_ERROR_STOP=1 -c "INSERT INTO establecimientos (nombre) VALUES ('CI establishment one'), ('CI establishment two'); INSERT INTO categorias (nombre) VALUES ('CI ambiguous category')"
+          if psql "$AMBIGUOUS_DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/002_establishment_isolation.sql; then
+            echo "ERROR: migration 002 must refuse to guess ownership for populated multi-establishment data" >&2
+            exit 1
+          else
+            echo "Expected refusal confirmed: migration 002 did not guess data ownership"
+          fi
+      - name: Validate PostgreSQL migrations
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_initial.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/002_establishment_isolation.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/003_catalog_inventory_integrity.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/004_sales_cash_establishment_integrity.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/005_cash_register_establishment_integrity.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/006_orders_establishment_integrity.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/007_electronic_documents_establishment_integrity.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/008_sales_number_establishment.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/009_sales_idempotency_hash.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/010_tenant_scoped_catalog_uniqueness.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/011_customers_active_uniqueness.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/012_sale_payment_breakdown.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/013_cash_close_idempotency.sql
+      - name: Run tests
+        run: npm test

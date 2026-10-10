@@ -1,0 +1,4 @@
+-- DEPRECATED: Este archivo se conserva solo por compatibilidad de ruta.
+-- La documentación está en docs/POSTGRESQL_ESQUEMA_INICIAL.md.
+-- La migración SQL de desarrollo está en backend/migrations/001_initial.sql.
+-- No ejecutar este archivo: no contiene cambios de esquema.

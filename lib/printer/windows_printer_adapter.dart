@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:ffi/ffi.dart';
 import 'package:win32/win32.dart';
@@ -15,6 +16,7 @@ class WindowsPrinterAdapter implements PrinterAdapter {
 
   @override
   Future<List<String>> discoverPrinters() async {
+    if (!Platform.isWindows) return const <String>[];
     final printers = <String>[];
 
     final flags = PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS;
@@ -80,6 +82,9 @@ class WindowsPrinterAdapter implements PrinterAdapter {
 
   @override
   Future<void> selectPrinter(String printerName) async {
+    if (!Platform.isWindows) {
+      throw UnsupportedError('La impresora Windows solo está disponible en Windows.');
+    }
     if (printerName.trim().isEmpty) {
       throw ArgumentError('El nombre de la impresora no puede estar vacío.');
     }
@@ -93,6 +98,7 @@ class WindowsPrinterAdapter implements PrinterAdapter {
 
   @override
   Future<bool> isConnected() async {
+    if (!Platform.isWindows) return false;
     if (_selectedPrinter == null || _selectedPrinter!.trim().isEmpty) {
       return false;
     }
@@ -104,6 +110,9 @@ class WindowsPrinterAdapter implements PrinterAdapter {
 
   @override
   Future<void> printTicket(List<int> bytes) async {
+    if (!Platform.isWindows) {
+      throw UnsupportedError('La impresión Windows no está disponible en esta plataforma.');
+    }
     final printer = _rawPrinter;
 
     if (printer == null) {

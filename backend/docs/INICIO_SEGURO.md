@@ -1,54 +1,66 @@
 # Inicio seguro del backend y creación del CEO
 
-Este procedimiento es solo para una base PostgreSQL **nueva y vacía**, en desarrollo o en un entorno preparado expresamente para la primera instalación. No se debe ejecutar sobre la SQLite de Windows ni sobre datos reales de la cafetería.
+Este procedimiento es exclusivamente para una instalación nueva en una base PostgreSQL vacía de desarrollo o staging preparada para pruebas. No se ejecuta sobre SQLite de Windows ni sobre datos reales de Estación Azul.
 
-## 1. Preparar el entorno
+## 1. Preparar entorno y base de datos
 
 Desde la carpeta `backend`:
 
-1. Instala Node.js 22 o superior y PostgreSQL 16 o compatible.
+1. Instala Node.js 22 o superior y PostgreSQL 16 o compatible con `pgcrypto`.
 2. Copia `.env.example` a `.env`.
-3. Configura `DATABASE_URL` para una base dedicada a AZUL OS.
-4. Genera un secreto JWT aleatorio y privado desde Node.js:
+3. Configura `DATABASE_URL` para una base PostgreSQL dedicada, nueva y vacía. Antes de continuar, confirma el host, puerto y nombre de la base.
+4. Genera un secreto JWT privado desde Node.js:
 
    `node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'))"`
 
-5. Guarda ese valor únicamente en `.env` como `JWT_SECRET`. No lo publiques ni lo envíes por chat.
+5. Guarda el secreto únicamente en `.env` como `JWT_SECRET`. No lo publiques ni lo envíes por chat.
 6. Instala dependencias con `npm install`.
 
-## 2. Aplicar el esquema a la base vacía
+## 2. Aplicar migraciones versionadas
 
-Primero confirma que `DATABASE_URL` apunta a la base correcta. Después ejecuta la migración versionada:
+No ejecutes manualmente solo `migrations/001_initial.sql`: el esquema actual usa un runner versionado que aplica las migraciones en orden y registra el historial.
 
-`psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_initial.sql`
+Primero verifica otra vez que `DATABASE_URL` apunta a la base vacía correcta. Luego, desde PowerShell:
 
-En PowerShell:
+```powershell
+$env:MIGRATIONS_CONFIRM = "APPLY_AZUL_MIGRATIONS"
+npm run migrate
+```
 
-`psql $env:DATABASE_URL -v ON_ERROR_STOP=1 -f migrations/001_initial.sql`
+El runner exige esa confirmación explícita, usa un bloqueo advisory y registra cada migración aplicada en `schema_migrations`. Si detecta tablas existentes sin historial de migraciones, se detiene en lugar de adoptar un esquema desconocido. No intentes saltarte esa protección.
 
-Revisa que el comando termine sin errores. No continúes si hay errores parciales; elimina y vuelve a crear la base de desarrollo vacía en lugar de improvisar correcciones sobre una instalación incierta.
+## 3. Crear el CEO inicial y dispositivo
 
-## 3. Crear el CEO inicial (una sola vez)
+Configura estas variables de entorno en la terminal segura donde ejecutarás el comando:
 
-Define estas variables de entorno solo en la terminal segura donde vas a ejecutar el proceso:
-
-- `BOOTSTRAP_ESTABLISHMENT_NAME`: nombre del establecimiento.
+- `BOOTSTRAP_ESTABLISHMENT_NAME`: nombre del establecimiento de desarrollo.
 - `BOOTSTRAP_USERNAME`: identificador de acceso del CEO.
-- `BOOTSTRAP_CEO_NAME`: nombre que se mostrará en el sistema.
-- `BOOTSTRAP_PIN`: PIN de cuatro dígitos.
-- `BOOTSTRAP_DEVICE_NAME`: nombre del equipo inicial.
+- `BOOTSTRAP_CEO_NAME`: nombre visible del CEO.
+- `BOOTSTRAP_PIN`: PIN privado de cuatro dígitos; evita combinaciones obvias.
+- `BOOTSTRAP_DEVICE_NAME`: nombre del dispositivo inicial.
 - `BOOTSTRAP_DEVICE_PLATFORM`: `windows`, `android`, `ios`, `tablet` u `other`.
+- `BOOTSTRAP_CONFIRM`: debe ser exactamente `CREATE_INITIAL_CEO_AND_DEVICE`.
 
-Ejecuta `npm run bootstrap:ceo` una sola vez. El proceso comprueba que no exista ningún establecimiento, genera un hash bcrypt para el PIN y registra el establecimiento, el usuario CEO y un dispositivo inicial en una única transacción. Si ya existe un establecimiento, se niega a continuar.
+Después de verificar que `DATABASE_URL` apunta a la base vacía de desarrollo correcta, ejecuta una sola vez:
 
-Guarda los identificadores que imprime el proceso en un lugar administrativo seguro; se necesitan para el primer inicio de sesión. El PIN no se imprime ni se guarda en texto plano.
+```powershell
+npm run bootstrap:ceo
+```
 
-## 4. Verificar sin conectar todavía Flutter
+El comando comprueba dentro de una transacción que no exista ya un establecimiento, genera un hash bcrypt del PIN y crea el establecimiento, el usuario CEO y el dispositivo. Si ya existe un establecimiento, se niega a continuar. El PIN no se imprime ni se almacena en texto plano. Guarda los identificadores resultantes en un lugar administrativo seguro.
 
-- `npm run typecheck`
-- `npm run build`
-- `npm test`
-- `GET /health/live` debe responder que el proceso está activo.
-- `GET /health/ready` debe responder que PostgreSQL está disponible.
+No ejecutes este bootstrap contra producción ni vuelvas a ejecutarlo para reparar una instalación existente.
 
-El backend aún no está listo para operar ventas reales. Antes de conectarlo a los equipos deben pasar las verificaciones de CI, completarse los endpoints empresariales y añadirse pruebas de integración de autenticación, permisos, inventario y ventas. No distribuir el secreto JWT a clientes y no desplegar sin HTTPS.
+## 4. Validar sin conectar Flutter de producción
+
+Desde `backend`:
+
+```powershell
+npm run typecheck
+npm run build
+npm test
+```
+
+También verifica `GET /health/live` y `GET /health/ready` en el entorno de desarrollo.
+
+Las pruebas automatizadas no sustituyen la revisión de seguridad, staging ni la aceptación funcional en Windows, Android y tabletas. El backend no está aprobado para operar ventas reales: no conectes el SQLite de producción, no migres ventas históricas y no alteres caja, correlativos, comprobantes SUNAT ni la impresión local.
