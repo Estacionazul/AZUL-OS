@@ -143,25 +143,28 @@ class AzulApiClient {
   Future<Map<String, dynamic>?> readPendingCentralSale() async {
     final raw = await _storage.read(key: _pendingCentralSaleKey);
     if (raw == null || raw.trim().isEmpty) return null;
+    dynamic decoded;
     try {
-      final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic> &&
-          decoded['idempotencyKey'] is String &&
-          decoded['body'] is Map<String, dynamic>) {
-        final baseUrl = await _storage.read(key: _baseUrlKey);
-        final establishmentId = await _storage.read(key: _establishmentKey);
-        final deviceId = await _storage.read(key: _deviceKey);
-        if (decoded['baseUrl'] != baseUrl ||
-            decoded['establishmentId'] != establishmentId ||
-            decoded['deviceId'] != deviceId) {
-          throw const FormatException(
-            'Hay una venta pendiente asociada a otra API, establecimiento o dispositivo. No cambies de servidor ni cobres de nuevo hasta verificar el historial del servidor original.',
-          );
-        }
-        return decoded;
-      }
+      decoded = jsonDecode(raw);
     } on FormatException {
-      // Corrupt local pending state must not be treated as a valid request.
+      throw const FormatException(
+        'La venta central pendiente está dañada. No inicies otro cobro hasta revisar el historial central.',
+      );
+    }
+    if (decoded is Map<String, dynamic> &&
+        decoded['idempotencyKey'] is String &&
+        decoded['body'] is Map<String, dynamic>) {
+      final baseUrl = await _storage.read(key: _baseUrlKey);
+      final establishmentId = await _storage.read(key: _establishmentKey);
+      final deviceId = await _storage.read(key: _deviceKey);
+      if (decoded['baseUrl'] != baseUrl ||
+          decoded['establishmentId'] != establishmentId ||
+          decoded['deviceId'] != deviceId) {
+        throw const FormatException(
+          'Hay una venta pendiente asociada a otra API, establecimiento o dispositivo. No cambies de servidor ni cobres de nuevo hasta verificar el historial del servidor original.',
+        );
+      }
+      return decoded;
     }
     throw const FormatException(
       'La venta central pendiente está dañada. No inicies otro cobro hasta revisar el historial central.',
