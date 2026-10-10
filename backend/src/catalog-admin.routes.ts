@@ -402,7 +402,7 @@ catalogAdminRouter.patch("/recipes/:id", async (req, res, next) => {
       await insertRecipeIngredients(client, id.data, parsed.data.ingredients);
     }
     const recipe = await client.query(
-      "SELECT id, producto_id AS \\"productId\\", nombre AS name, activo AS active FROM recetas WHERE id = $1 AND establecimiento_id = $2",
+      `SELECT id, producto_id AS "productId", nombre AS name, activo AS active FROM recetas WHERE id = $1 AND establecimiento_id = $2`,
       [id.data, req.auth!.establishmentId],
     );
     const ingredients = await client.query(
