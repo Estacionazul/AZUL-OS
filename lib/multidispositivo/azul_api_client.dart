@@ -36,6 +36,7 @@ class AzulApiClient {
   static const _deviceKey = 'azul.api.device_id';
   static const _tokenKey = 'azul.api.access_token';
   static const _pendingCentralSaleKey = 'azul.api.pending_central_sale';
+  static const _pendingCentralCashCloseKey = 'azul.api.pending_central_cash_close';
   static const _pendingCentralInventoryKey = 'azul.api.pending_central_inventory_movement';
 
   final FlutterSecureStorage _storage;
@@ -174,6 +175,57 @@ class AzulApiClient {
 
   Future<void> clearPendingCentralSale() =>
       _storage.delete(key: _pendingCentralSaleKey);
+
+  Future<void> savePendingCentralCashClose({
+    required String idempotencyKey,
+    required Map<String, Object?> body,
+  }) async {
+    await _storage.write(
+      key: _pendingCentralCashCloseKey,
+      value: jsonEncode(<String, Object?>{
+        'idempotencyKey': idempotencyKey,
+        'body': body,
+        'baseUrl': await _storage.read(key: _baseUrlKey),
+        'establishmentId': await _storage.read(key: _establishmentKey),
+        'deviceId': await _storage.read(key: _deviceKey),
+      }),
+    );
+  }
+
+  Future<Map<String, dynamic>?> readPendingCentralCashClose() async {
+    final raw = await _storage.read(key: _pendingCentralCashCloseKey);
+    if (raw == null || raw.trim().isEmpty) return null;
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(raw);
+    } on FormatException {
+      throw const FormatException(
+        'El cierre de caja pendiente está dañado. Verifica el estado de caja antes de continuar.',
+      );
+    }
+    if (decoded is Map<String, dynamic> &&
+        decoded['idempotencyKey'] is String &&
+        decoded['body'] is Map<String, dynamic>) {
+      final baseUrl = await _storage.read(key: _baseUrlKey);
+      final establishmentId = await _storage.read(key: _establishmentKey);
+      final deviceId = await _storage.read(key: _deviceKey);
+      if (decoded['baseUrl'] != baseUrl ||
+          decoded['establishmentId'] != establishmentId ||
+          decoded['deviceId'] != deviceId) {
+        throw const FormatException(
+          'Hay un cierre pendiente asociado a otra API, establecimiento o dispositivo. Verifica el servidor original antes de continuar.',
+        );
+      }
+      return decoded;
+    }
+    throw const FormatException(
+      'El cierre de caja pendiente está dañado. Verifica el estado de caja antes de continuar.',
+    );
+  }
+
+  Future<void> clearPendingCentralCashClose() =>
+      _storage.delete(key: _pendingCentralCashCloseKey);
+
 
   Future<void> savePendingCentralInventoryMovement({
     required String idempotencyKey,
