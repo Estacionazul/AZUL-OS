@@ -104,6 +104,9 @@ class AzulApiClient {
     return result;
   }
 
+  Future<Map<String, dynamic>> checkHealth() =>
+      _send(method: 'GET', path: '/health/ready', authenticated: false);
+
   Future<Map<String, dynamic>> me() => getJson('/api/v1/auth/me');
 
   Future<void> logout() async {
