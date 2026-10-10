@@ -79,6 +79,64 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
         : number.toStringAsFixed(4).replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
   }
 
+  Future<void> _showMovementHistory() async {
+    setState(() {
+      _working = true;
+      if (!_recoveryBlocked) _error = null;
+    });
+    try {
+      final response = await context.read<AzulApiClient>().getJson(
+        '/api/v1/inventory/movements',
+        query: const {'limit': '50', 'offset': '0'},
+      );
+      final items = response['items'];
+      if (items is! List) {
+        throw const FormatException('La API devolvió un historial de inventario inválido.');
+      }
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Movimientos de inventario central'),
+          content: SizedBox(
+            width: 720,
+            height: 520,
+            child: items.isEmpty
+                ? const Center(child: Text('Todavía no hay movimientos centrales.'))
+                : ListView.separated(
+                    itemCount: items.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final movement = items[index];
+                      if (movement is! Map<String, dynamic>) return const SizedBox.shrink();
+                      final delta = _number(movement['delta']);
+                      return ListTile(
+                        title: Text('${_text(movement['itemName'])} · ${_text(movement['type'])}'),
+                        subtitle: Text('${_text(movement['date'])}\n${_text(movement['note'], 'Sin observación')}'),
+                        isThreeLine: true,
+                        trailing: Text(
+                          '${delta > 0 ? '+' : ''}${_quantity(delta)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: delta < 0 ? Theme.of(context).colorScheme.error : null,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cerrar')),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (mounted) setState(() => _error = _friendlyError(e));
+    } finally {
+      if (mounted) setState(() => _working = false);
+    }
+  }
+
   Future<void> _loadStock() async {
     setState(() {
       _loading = true;
@@ -327,6 +385,11 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
       appBar: AppBar(
         title: const Text('AZUL OS · Inventario central'),
         actions: [
+          IconButton(
+            tooltip: 'Historial de movimientos',
+            onPressed: _working ? null : _showMovementHistory,
+            icon: const Icon(Icons.history),
+          ),
           IconButton(
             tooltip: 'Actualizar inventario',
             onPressed: _working ? null : _loadStock,
