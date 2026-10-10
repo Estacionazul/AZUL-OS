@@ -35,6 +35,7 @@ class AzulApiClient {
   static const _establishmentKey = 'azul.api.establishment_id';
   static const _deviceKey = 'azul.api.device_id';
   static const _tokenKey = 'azul.api.access_token';
+  static const _pendingCentralSaleKey = 'azul.api.pending_central_sale';
 
   final FlutterSecureStorage _storage;
   final HttpClient _http;
@@ -120,6 +121,42 @@ class AzulApiClient {
   }
 
   Future<void> clearSession() => _storage.delete(key: _tokenKey);
+
+  /// Persists the exact pending central sale request so an ambiguous network
+  /// result can be retried with the same idempotency key after app restart.
+  Future<void> savePendingCentralSale({
+    required String idempotencyKey,
+    required Map<String, Object?> body,
+  }) async {
+    await _storage.write(
+      key: _pendingCentralSaleKey,
+      value: jsonEncode(<String, Object?>{
+        'idempotencyKey': idempotencyKey,
+        'body': body,
+      }),
+    );
+  }
+
+  Future<Map<String, dynamic>?> readPendingCentralSale() async {
+    final raw = await _storage.read(key: _pendingCentralSaleKey);
+    if (raw == null || raw.trim().isEmpty) return null;
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map<String, dynamic> &&
+          decoded['idempotencyKey'] is String &&
+          decoded['body'] is Map<String, dynamic>) {
+        return decoded;
+      }
+    } on FormatException {
+      // Corrupt local pending state must not be treated as a valid request.
+    }
+    throw const FormatException(
+      'La venta central pendiente está dañada. No inicies otro cobro hasta revisar el historial central.',
+    );
+  }
+
+  Future<void> clearPendingCentralSale() =>
+      _storage.delete(key: _pendingCentralSaleKey);
 
   Future<Map<String, dynamic>> getJson(
     String path, {
