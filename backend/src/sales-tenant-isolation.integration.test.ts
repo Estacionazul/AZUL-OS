@@ -113,7 +113,7 @@ test("sales history and detail never disclose another establishment's sale", { s
       },
       body: JSON.stringify({ items: [{ productId: ids.productB, quantity: 1 }], paymentMethod: "Efectivo" }),
     });
-    assert.equal(createSale.status, 201, await createSale.text().catch(() => ""));
+    assert.equal(createSale.status, 201);
     const created = await createSale.json() as { sale: { id: string } };
     ids.saleB = created.sale.id;
 
