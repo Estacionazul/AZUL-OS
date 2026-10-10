@@ -9,6 +9,7 @@ import { cashRouter } from "./cash.routes.js";
 import { salesRouter } from "./sales.routes.js";
 import { adminRouter } from "./admin.routes.js";
 import { catalogAdminRouter } from "./catalog-admin.routes.js";
+import { customersRouter } from "./customers.routes.js";
 
 export const app = express();
 app.disable("x-powered-by");
@@ -50,6 +51,7 @@ app.use("/api/v1/cash", cashRouter);
 app.use("/api/v1/sales", salesRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/admin/catalog", catalogAdminRouter);
+app.use("/api/v1/customers", customersRouter);
 
 app.get("/health/live", (_req, res) => {
   res.status(200).json({ status: "ok", service: "azul-os-backend" });
