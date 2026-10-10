@@ -120,8 +120,7 @@ La API admite pago simple (`paymentMethod`: `Efectivo`, `Yape`, `Plin` o `Tarjet
 
 Estas funciones aún no deben considerarse disponibles:
 
-- altas, ediciones, bajas y administración completa de productos, insumos, categorías, recetas y clientes;
-- pedidos y comandas;
+- completar las reglas de negocio y operaciones de consulta individual para catálogos, recetas y clientes;
 - pedidos y comandas;
 - emisión, firma, envío, consulta y reconciliación de comprobantes SUNAT desde el backend;
 - sincronización incremental, resolución de conflictos y gestión administrativa de dispositivos/usuarios;
