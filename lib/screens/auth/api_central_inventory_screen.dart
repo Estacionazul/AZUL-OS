@@ -195,6 +195,7 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     value: movementType,
+                    isExpanded: true,
                     decoration: const InputDecoration(labelText: 'Tipo de movimiento'),
                     items: const [
                       DropdownMenuItem(value: 'ENTRADA', child: Text('Entrada')),
@@ -208,6 +209,7 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
                   if (movementType == 'AJUSTE')
                     DropdownButtonFormField<int>(
                       value: adjustmentSign,
+                      isExpanded: true,
                       decoration: const InputDecoration(labelText: 'El ajuste'),
                       items: const [
                         DropdownMenuItem(value: 1, child: Text('Aumenta el stock')),
@@ -453,6 +455,7 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
                   width: 190,
                   child: DropdownButtonFormField<String>(
                     value: _itemType,
+                    isExpanded: true,
                     decoration: const InputDecoration(labelText: 'Tipo de artículo'),
                     items: const [
                       DropdownMenuItem(value: 'todos', child: Text('Productos e insumos')),
@@ -505,34 +508,30 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
                               leading: CircleAvatar(
                                 child: Icon(item['itemType'] == 'insumo' ? Icons.inventory_2 : Icons.local_cafe),
                               ),
-                              title: Text(_text(item['name']), style: const TextStyle(fontWeight: FontWeight.bold)),
+                              title: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(_text(item['name']), style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Stock ${_quantity(item['currentStock'])}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: low ? Theme.of(context).colorScheme.error : null,
+                                    ),
+                                  ),
+                                ],
+                              ),
                               subtitle: Text(
                                 '${_text(item['code'])} · ${_text(item['category'])}\n'
-                                'Tipo: ${_text(item['itemType'])} · Mínimo: ${_quantity(item['minimumStock'])}',
+                                'Tipo: ${_text(item['itemType'])} · Mínimo: ${_quantity(item['minimumStock'])} · ${_text(item['status'])}',
                               ),
                               isThreeLine: true,
-                              trailing: SizedBox(
-                                width: 150,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      _quantity(item['currentStock']),
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: low ? Theme.of(context).colorScheme.error : null,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                    Text(_text(item['status']), style: const TextStyle(fontSize: 12)),
-                                    IconButton(
-                                      tooltip: 'Registrar movimiento',
-                                      onPressed: _working || _recoveryBlocked || _pendingMovementKey != null ? null : () => _registerMovement(item),
-                                      icon: const Icon(Icons.add_circle_outline),
-                                    ),
-                                  ],
-                                ),
+                              trailing: IconButton(
+                                tooltip: 'Registrar movimiento',
+                                onPressed: _working || _recoveryBlocked || _pendingMovementKey != null ? null : () => _registerMovement(item),
+                                icon: const Icon(Icons.add_circle_outline),
                               ),
                             ),
                           );
