@@ -84,6 +84,7 @@ cashRouter.post("/open", authenticate, requirePermission("Caja"), async (req, re
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [key.data]);
     const prior = await client.query(
       `SELECT id, fecha_apertura AS "openedAt", fecha_cierre AS "closedAt",
               monto_inicial AS "openingAmount", monto_cierre AS "closingAmount",
