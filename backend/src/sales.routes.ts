@@ -6,6 +6,12 @@ import { authenticate, requirePermission } from "./auth.js";
 
 export const salesRouter = Router();
 
+const SinglePaymentMethod = z.enum(["Efectivo", "Yape", "Plin", "Tarjeta"]);
+const SalePayment = z.object({
+  method: SinglePaymentMethod,
+  amount: z.number().finite().positive().max(999999999.99)
+    .refine((value) => Number.isInteger(value * 100), "El importe admite hasta dos decimales."),
+});
 const SaleBody = z.object({
   items: z.array(z.object({
     productId: z.string().uuid(),
@@ -17,7 +23,8 @@ const SaleBody = z.object({
     extraShot: z.boolean().default(false),
     note: z.string().trim().max(500).optional(),
   })).min(1).max(200),
-  paymentMethod: z.enum(["Efectivo", "Yape", "Plin", "Tarjeta"]),
+  paymentMethod: z.enum(["Efectivo", "Yape", "Plin", "Tarjeta", "Mixto"]).optional(),
+  payments: z.array(SalePayment).min(2).max(4).optional(),
   discount: z.number().finite().min(0).max(999999999.99).default(0),
   customerId: z.string().uuid().optional(),
   dni: z.string().trim().max(8).optional(),
@@ -32,6 +39,18 @@ const SaleBody = z.object({
   }
   if (value.ruc && !/^\d{11}$/.test(value.ruc)) {
     ctx.addIssue({ code: "custom", path: ["ruc"], message: "El RUC debe tener 11 dígitos." });
+  }
+  if (!value.paymentMethod && !value.payments) {
+    ctx.addIssue({ code: "custom", path: ["paymentMethod"], message: "Indica el medio de pago o su desglose." });
+  }
+  if (value.paymentMethod === "Mixto" && !value.payments) {
+    ctx.addIssue({ code: "custom", path: ["payments"], message: "El pago mixto requiere un desglose por medio." });
+  }
+  if (value.payments && value.paymentMethod && value.paymentMethod !== "Mixto") {
+    ctx.addIssue({ code: "custom", path: ["paymentMethod"], message: "Usa paymentMethod Mixto cuando envíes un desglose." });
+  }
+  if (value.payments && new Set(value.payments.map((payment) => payment.method)).size !== value.payments.length) {
+    ctx.addIssue({ code: "custom", path: ["payments"], message: "Cada medio de pago debe aparecer una sola vez." });
   }
 });
 
@@ -145,7 +164,17 @@ salesRouter.get("/:id", authenticate, requirePermission("Ventas"), async (req, r
         ORDER BY fecha_emision DESC`,
       [id.data, req.auth!.establishmentId],
     );
-    res.json({ sale: result.rows[0], items: details.rows, documents: documents.rows });
+    const paymentRows = await pool.query(
+      `SELECT metodo_pago AS method, monto AS amount FROM pagos_venta
+        WHERE venta_id = $1 AND establecimiento_id = $2 ORDER BY created_at, id`,
+      [id.data, req.auth!.establishmentId],
+    );
+    const payments = paymentRows.rows.length
+      ? paymentRows.rows
+      : result.rows[0].paymentMethod === "Mixto"
+        ? []
+        : [{ method: result.rows[0].paymentMethod, amount: Number(result.rows[0].total) }];
+    res.json({ sale: result.rows[0], items: details.rows, documents: documents.rows, payments });
   } catch (error) {
     next(error);
   }
@@ -256,6 +285,13 @@ salesRouter.post("/", authenticate, requirePermission("Ventas"), async (req, res
       return;
     }
     const total = money(grossTotal - input.discount);
+    const paymentMethod = input.payments ? "Mixto" : input.paymentMethod!;
+    const paymentBreakdown = input.payments ?? [{ method: input.paymentMethod as z.infer<typeof SinglePaymentMethod>, amount: total }];
+    if (input.payments && money(paymentBreakdown.reduce((sum, payment) => sum + payment.amount, 0)) !== total) {
+      await client.query("ROLLBACK");
+      res.status(400).json({ error: { code: "PAYMENT_TOTAL_MISMATCH", message: "La suma de los medios de pago debe coincidir exactamente con el total de la venta." } });
+      return;
+    }
     const preparedLines = prepared.map(item => {
       const lineDiscount = grossTotal === 0 ? 0 : money(input.discount * item.gross / grossTotal);
       const lineTotal = money(item.gross - lineDiscount);
@@ -377,17 +413,26 @@ salesRouter.post("/", authenticate, requirePermission("Ventas"), async (req, res
     );
     const sale = insertedSale.rows[0] as { id: string; numero: string; fecha: Date; subtotal: string; igv: string; descuento: string; total: string; paymentMethod: string };
 
-    await client.query(
-      `INSERT INTO movimientos_caja
-         (caja_id, tipo, concepto, monto, metodo_pago, referencia, observacion,
-          usuario_id, dispositivo_id, idempotency_key, establecimiento_id)
-       VALUES ($1, 'INGRESO', $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [
-        cashRegisterId, `Venta ${number}`, total, input.paymentMethod, sale.id,
-        `Ingreso asociado a la venta ${number}`, req.auth!.userId, req.auth!.deviceId,
-        randomUUID(), req.auth!.establishmentId,
-      ],
-    );
+    for (const payment of paymentBreakdown) {
+      if (payment.amount > 0) {
+        await client.query(
+          `INSERT INTO pagos_venta (venta_id, establecimiento_id, metodo_pago, monto)
+           VALUES ($1, $2, $3, $4)`,
+          [sale.id, req.auth!.establishmentId, payment.method, payment.amount],
+        );
+      }
+      await client.query(
+        `INSERT INTO movimientos_caja
+           (caja_id, tipo, concepto, monto, metodo_pago, referencia, observacion,
+            usuario_id, dispositivo_id, idempotency_key, establecimiento_id)
+         VALUES ($1, 'INGRESO', $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [
+          cashRegisterId, `Venta ${number} - ${payment.method}`, payment.amount, payment.method, sale.id,
+          `Ingreso asociado a la venta ${number}`, req.auth!.userId, req.auth!.deviceId,
+          randomUUID(), req.auth!.establishmentId,
+        ],
+      );
+    }
 
     for (const line of preparedLines) {
       await client.query(
