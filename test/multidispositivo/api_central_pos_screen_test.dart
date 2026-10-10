@@ -148,9 +148,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('No hay caja central abierta'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).first, '1.15');
     await tester.tap(find.text('Abrir caja'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Caja abierta'), findsOneWidget);
+    expect(api.cash?['openingAmount'], 1.15);
 
     await tester.tap(find.byTooltip('Agregar al carrito'));
     await tester.pumpAndSettle();
@@ -214,6 +216,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byType(SwitchListTile));
     await tester.pumpAndSettle();
+    await tester.enterText(find.byWidgetPredicate((widget) => widget is TextField && widget.decoration?.labelText == 'Importe Efectivo'), '1.15');
+    await tester.enterText(find.byWidgetPredicate((widget) => widget is TextField && widget.decoration?.labelText == 'Importe Yape'), '6.85');
     await tester.tap(find.text('REGISTRAR VENTA CENTRAL'));
     await tester.pumpAndSettle();
 
