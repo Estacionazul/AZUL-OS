@@ -38,8 +38,6 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
     return double.tryParse(value?.toString() ?? '') ?? 0;
   }
 
-  String _money(Object? value) => 'S/ ${_number(value).toStringAsFixed(2)}';
-
   String _text(Object? value, [String fallback = '—']) {
     final result = value?.toString().trim() ?? '';
     return result.isEmpty ? fallback : result;
