@@ -180,7 +180,7 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
 
     const close = await fetch(`${baseUrl}/api/v1/cash/close`, {
       method: "POST",
-      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "Idempotency-Key": randomUUID() },
       body: JSON.stringify({ closingAmount: 112.95 }),
     });
     assert.equal(close.status, 200);
