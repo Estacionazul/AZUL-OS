@@ -181,11 +181,14 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Historial de ventas centrales'));
-    await tester.pumpAndSettle();
+    // The central history keeps the parent operation alive while its modal is open;
+    // advance the route animation directly instead of waiting for global quiescence.
+    await tester.pump(const Duration(milliseconds: 350));
     expect(find.textContaining('V000001'), findsOneWidget);
     await tester.tap(find.textContaining('V000001'));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pump(const Duration(milliseconds: 350));
     expect(find.text('Americano central'), findsWidgets);
     expect(find.text('Desglose de pagos'), findsOneWidget);
   });
