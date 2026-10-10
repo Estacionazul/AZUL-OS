@@ -136,7 +136,9 @@ test("CEO can register devices and cashier users; non-CEO cannot access administ
     assert.equal(recipeUpdate.status, 200);
     const recipeBody = await recipeUpdate.json() as { recipe: { name: string; ingredients: { quantity: number }[] } };
     assert.equal(recipeBody.recipe.name, "CI Updated Recipe");
-    assert.equal(Number(recipeBody.recipe.ingredients[0].quantity), 2);
+    const updatedIngredient = recipeBody.recipe.ingredients[0];
+    assert.ok(updatedIngredient);
+    assert.equal(Number(updatedIngredient.quantity), 2);
 
     const customerDni = suffix.replace(/\D/g, "").slice(0, 8).padEnd(8, "7");
     const customer = await fetch(`${baseUrl}/api/v1/customers`, {
