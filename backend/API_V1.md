@@ -59,8 +59,20 @@ Estas rutas requieren sesión activa con rol `CEO`. Los códigos y categorías s
 - `PATCH /api/v1/admin/catalog/products/:id`: modifica campos del producto o lo desactiva con `active: false`.
 - `POST /api/v1/admin/catalog/insumos`: crea insumo y unidad de medida.
 - `PATCH /api/v1/admin/catalog/insumos/:id`: modifica campos del insumo o lo desactiva con `active: false`.
+- `POST /api/v1/admin/catalog/recipes`: crea una receta, valida que producto e insumos pertenezcan al establecimiento y guarda cabecera/detalles en una transacción.
+- `PATCH /api/v1/admin/catalog/recipes/:id`: modifica nombre, estado o reemplaza los ingredientes de una receta de forma transaccional.
 
 Las rutas de escritura devuelven `409` si el código/nombre ya existe en el establecimiento y `404` si la categoría indicada no pertenece a ese establecimiento o no está activa.
+
+### Clientes
+
+Las rutas requieren permiso `Clientes` y filtran siempre por establecimiento.
+
+- `GET /api/v1/customers?q=&limit=50&offset=0&includeInactive=false`: busca clientes con paginación.
+- `POST /api/v1/customers`: registra un cliente y valida DNI/RUC.
+- `PATCH /api/v1/customers/:id`: actualiza datos o realiza baja lógica con `active: false`. No elimina físicamente clientes vinculados a ventas.
+
+DNI y RUC no vacíos son únicos dentro del establecimiento; la migración 011 se niega a crear índices si encuentra duplicados previos.
 
 ### Catálogos de solo lectura
 
