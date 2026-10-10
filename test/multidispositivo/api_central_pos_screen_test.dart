@@ -10,8 +10,25 @@ class _FakePosApiClient extends AzulApiClient {
   Map<String, dynamic>? cash;
   Map<String, dynamic>? lastSaleBody;
   String? lastIdempotencyKey;
+  Map<String, dynamic>? pendingSale;
 
   static const productId = 'f2c8b91a-a0c3-4dc4-8b32-3e4e9cb31b01';
+
+  @override
+  Future<void> savePendingCentralSale({
+    required String idempotencyKey,
+    required Map<String, Object?> body,
+  }) async {
+    pendingSale = <String, dynamic>{'idempotencyKey': idempotencyKey, 'body': body};
+  }
+
+  @override
+  Future<Map<String, dynamic>?> readPendingCentralSale() async => null;
+
+  @override
+  Future<void> clearPendingCentralSale() async {
+    pendingSale = null;
+  }
 
   @override
   Future<Map<String, dynamic>> getJson(
