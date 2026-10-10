@@ -123,8 +123,8 @@ Estas funciones aún no deben considerarse disponibles:
 - completar las reglas de negocio y operaciones de consulta individual para catálogos, recetas y clientes;
 - pedidos y comandas;
 - emisión, firma, envío, consulta y reconciliación de comprobantes SUNAT desde el backend;
-- sincronización incremental, resolución de conflictos y gestión administrativa de dispositivos/usuarios;
-- integración con Flutter y validación en Windows, Android y tabletas;
+- sincronización incremental y resolución de conflictos entre dispositivos;
+- conectar los flujos de negocio de Flutter al backend (la pantalla actual solo configura y prueba la conexión) y validar ventas/caja/inventario en Windows, Android y tabletas;
 - despliegue seguro con HTTPS, secretos administrados, respaldos y monitoreo.
 
 No existe un endpoint que permita editar directamente el saldo de inventario. Este backend sigue siendo una rama de desarrollo y no debe conectarse a la operación de producción hasta completar la integración y las pruebas de aceptación.
