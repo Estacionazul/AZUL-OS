@@ -29,6 +29,8 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   final _mixedAmount1 = TextEditingController();
   final _mixedAmount2 = TextEditingController();
   String? _pendingSaleKey;
+  String? _pendingCloseKey;
+  Map<String, dynamic>? _pendingCloseBody;
   bool _pendingSaleRejected = false;
   bool _recoveryBlocked = false;
 
@@ -40,7 +42,26 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
 
   Future<void> _initialize() async {
     try {
-      final pending = await context.read<AzulApiClient>().readPendingCentralSale();
+      final api = context.read<AzulApiClient>();
+      final pending = await api.readPendingCentralSale();
+      final pendingClose = await api.readPendingCentralCashClose();
+      if (pending != null && pendingClose != null) {
+        throw const FormatException('Hay una venta y un cierre pendientes simultáneamente. Verifica el historial central antes de operar.');
+      }
+      if (pendingClose != null && mounted) {
+        final closeBody = pendingClose['body'];
+        final closeKey = pendingClose['idempotencyKey'];
+        if (closeBody is Map<String, dynamic> && closeKey is String && closeBody['closingAmount'] is num) {
+          setState(() {
+            _pendingCloseKey = closeKey;
+            _pendingCloseBody = closeBody;
+            _closingAmount.text = _number(closeBody['closingAmount']).toStringAsFixed(2);
+            _notice = 'Se recuperó un cierre de caja pendiente. Reinténtalo para confirmar el mismo cierre sin duplicarlo.';
+          });
+        } else {
+          throw const FormatException('El cierre de caja pendiente está incompleto. Verifica el estado central antes de operar.');
+        }
+      }
       if (pending != null && mounted) {
         final body = pending['body'];
         final key = pending['idempotencyKey'];
@@ -309,33 +330,53 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
 
   Future<void> _closeCash() async {
     if (_recoveryBlocked) return;
-    final amount = double.tryParse(_closingAmount.text.trim());
-    if (amount == null || !amount.isFinite || amount < 0 || !_hasAtMostTwoDecimals(_closingAmount.text)) {
+    final isRetry = _pendingCloseKey != null && _pendingCloseBody != null;
+    final amount = isRetry
+        ? _number(_pendingCloseBody!['closingAmount'])
+        : double.tryParse(_closingAmount.text.trim());
+    if (amount == null || !amount.isFinite || amount < 0 ||
+        (!isRetry && !_hasAtMostTwoDecimals(_closingAmount.text))) {
       setState(() => _error = 'Ingresa el efectivo contado con máximo dos decimales.');
       return;
     }
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cerrar caja central'),
-        content: Text('Se registrará el efectivo contado de ${_money(amount)}. Esta operación cierra la caja central. ¿Deseas continuar?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Cerrar caja')),
-        ],
-      ),
-    );
-    if (confirm != true || !mounted) return;
-    await _runOperation(() async {
-      final result = await context.read<AzulApiClient>().postJson(
-        '/api/v1/cash/close',
-        body: {'closingAmount': amount},
+    if (!isRetry) {
+      if (_cash == null) {
+        setState(() => _error = 'No hay una caja abierta. Actualiza el estado antes de cerrar.');
+        return;
+      }
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Cerrar caja central'),
+          content: Text('Se registrará el efectivo contado de ${_money(amount)}. Esta operación cierra la caja central. ¿Deseas continuar?'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Cerrar caja')),
+          ],
+        ),
       );
+      if (confirm != true || !mounted) return;
+    }
+    final api = context.read<AzulApiClient>();
+    final key = _pendingCloseKey ?? AzulApiClient.newIdempotencyKey();
+    final body = _pendingCloseBody ?? <String, Object?>{'closingAmount': amount};
+    await _runOperation(() async {
+      if (!isRetry) {
+        await api.savePendingCentralCashClose(idempotencyKey: key, body: body);
+        setState(() {
+          _pendingCloseKey = key;
+          _pendingCloseBody = Map<String, dynamic>.from(body);
+        });
+      }
+      final result = await api.postJson('/api/v1/cash/close', idempotencyKey: key, body: body);
       final reconciliation = result['reconciliation'];
       final expected = reconciliation is Map<String, dynamic> ? reconciliation['expectedCash'] : null;
       final difference = reconciliation is Map<String, dynamic> ? reconciliation['difference'] : null;
+      await api.clearPendingCentralCashClose();
       setState(() {
         _cash = null;
+        _pendingCloseKey = null;
+        _pendingCloseBody = null;
         _closingAmount.clear();
         _notice = 'Caja cerrada. Efectivo esperado: ${_money(expected)} · Diferencia: ${_money(difference)}';
       });
@@ -344,6 +385,10 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   }
 
   Future<void> _checkout() async {
+    if (_pendingCloseKey != null) {
+      setState(() => _error = 'Hay un cierre de caja pendiente. Confírmalo antes de registrar otra venta.');
+      return;
+    }
     if (_cash == null) {
       setState(() => _error = 'Abre una caja central antes de cobrar.');
       return;
@@ -585,27 +630,50 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: cash == null
-            ? Wrap(
-                spacing: 12,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  const Icon(Icons.point_of_sale, size: 30),
-                  const Text('No hay caja central abierta', style: TextStyle(fontWeight: FontWeight.bold)),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      controller: _openingAmount,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(labelText: 'Monto inicial S/', isDense: true),
-                    ),
-                  ),
-                  FilledButton(
-                    onPressed: _working || _recoveryBlocked ? null : _openCash,
-                    child: const Text('Abrir caja'),
-                  ),
-                ],
-              )
+            ? (_pendingCloseKey != null
+                ? Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      const Icon(Icons.warning_amber, size: 30),
+                      const Text('Cierre de caja pendiente', style: TextStyle(fontWeight: FontWeight.bold)),
+                      SizedBox(
+                        width: 150,
+                        child: TextField(
+                          controller: _closingAmount,
+                          enabled: false,
+                          decoration: const InputDecoration(labelText: 'Efectivo contado S/', isDense: true),
+                        ),
+                      ),
+                      FilledButton(
+                        onPressed: _working || _recoveryBlocked ? null : _closeCash,
+                        child: const Text('Reintentar cierre'),
+                      ),
+                    ],
+                  )
+                : Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      const Icon(Icons.point_of_sale, size: 30),
+                      const Text('No hay caja central abierta', style: TextStyle(fontWeight: FontWeight.bold)),
+                      SizedBox(
+                        width: 150,
+                        child: TextField(
+                          controller: _openingAmount,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Monto inicial S/', isDense: true),
+                        ),
+                      ),
+                      FilledButton(
+                        onPressed: _working || _recoveryBlocked ? null : _openCash,
+                        child: const Text('Abrir caja'),
+                      ),
+                    ],
+                  ))
+
             : Wrap(
                 spacing: 12,
                 runSpacing: 8,
@@ -618,13 +686,14 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                     width: 150,
                     child: TextField(
                       controller: _closingAmount,
+                      enabled: _pendingCloseKey == null,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       decoration: const InputDecoration(labelText: 'Efectivo contado S/', isDense: true),
                     ),
                   ),
                   OutlinedButton(
                     onPressed: _working || _recoveryBlocked || _pendingSaleKey != null ? null : _closeCash,
-                    child: const Text('Cerrar caja'),
+                    child: Text(_pendingCloseKey == null ? 'Cerrar caja' : 'Reintentar cierre'),
                   ),
                 ],
               ),
