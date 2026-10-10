@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'facturacion/config/sunat_config.dart';
 import 'facturacion/firma/certificado_service.dart';
@@ -65,24 +66,24 @@ Future<void> main() async {
   print('              AZUL OS');
   print('==============================================');
 
-  final printers = await printerAdapter.discoverPrinters();
+  if (Platform.isWindows) {
+    final printers = await printerAdapter.discoverPrinters();
+    const nombreImpresora = 'POS-58-Series';
 
-  const nombreImpresora = 'POS-58-Series';
-
-  if (printers.contains(nombreImpresora)) {
-    await printerAdapter.selectPrinter(nombreImpresora);
-
-    print('');
-    print('✅ IMPRESORA AUTOMÁTICAMENTE SELECCIONADA');
-    print('\u{1F5A8}\u{FE0F} $nombreImpresora');
+    if (printers.contains(nombreImpresora)) {
+      await printerAdapter.selectPrinter(nombreImpresora);
+      print('');
+      print('==============================================');
+      print('        IMPRESORA WINDOWS SELECCIONADA');
+      print('              AZUL OS');
+      print('==============================================');
+      print('🖨️ $nombreImpresora');
+    } else {
+      print('No se encontró la impresora Windows POS-58-Series.');
+    }
   } else {
-    print('');
-    print('⚠️ NO SE ENCONTRÓ LA IMPRESORA:');
-    print('\u{1F5A8}\u{FE0F} $nombreImpresora');
+    print('La detección automática de impresora Windows se omite en esta plataforma.');
   }
-
-  print('==============================================');
-  print('');
 
   runApp(AzulOSApp(database: database, printerAdapter: printerAdapter));
 }
