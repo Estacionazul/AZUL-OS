@@ -17,7 +17,8 @@ En esta rama:
 - movimientos de inventario transaccionales e idempotentes, con protección contra stock negativo;
 - apertura, consulta y cierre de caja;
 - registro e historial de ventas transaccionales, con control de establecimiento, stock, correlativo, idempotencia y desglose de pagos mixtos;
-- bootstrap controlado para el primer CEO y dispositivo;\n- administración protegida por CEO para registrar/desactivar dispositivos y crear/gestionar cajeros y permisos;
+- bootstrap controlado para el primer CEO y dispositivo;
+- administración protegida por CEO para registrar/desactivar dispositivos y crear/gestionar cajeros y permisos;
 - operaciones de creación/edición/desactivación lógica de categorías, productos, insumos y recetas, restringidas al CEO;
 - API de clientes con búsqueda, paginación, actualización y baja lógica, aislada por establecimiento;
 - runner de migraciones PostgreSQL versionadas con bloqueo advisory;
@@ -30,7 +31,8 @@ En esta rama:
 - Catálogo: `GET /api/v1/catalog/products`, `GET /api/v1/catalog/categories`, `GET /api/v1/catalog/insumos`, `GET /api/v1/catalog/recipes`
 - Inventario: `GET /api/v1/inventory/stock`, `GET /api/v1/inventory/movements`, `POST /api/v1/inventory/movements`
 - Caja: `GET /api/v1/cash/current`, `POST /api/v1/cash/open`, `POST /api/v1/cash/close`, `GET/POST /api/v1/cash/movements`
-- Ventas: `GET /api/v1/sales`, `GET /api/v1/sales/:id`, `POST /api/v1/sales`\n- Administración CEO: `GET/POST /api/v1/admin/devices`, `PATCH /api/v1/admin/devices/:id`, `GET/POST /api/v1/admin/users`, `PATCH /api/v1/admin/users/:id`
+- Ventas: `GET /api/v1/sales`, `GET /api/v1/sales/:id`, `POST /api/v1/sales`
+- Administración CEO: `GET/POST /api/v1/admin/devices`, `PATCH /api/v1/admin/devices/:id`, `GET/POST /api/v1/admin/users`, `PATCH /api/v1/admin/users/:id`
 - Catálogo administrativo CEO: `POST/PATCH /api/v1/admin/catalog/categories`, `POST/PATCH /api/v1/admin/catalog/products`, `POST/PATCH /api/v1/admin/catalog/insumos`, `POST/PATCH /api/v1/admin/catalog/recipes`
 - Clientes: `GET/POST /api/v1/customers`, `PATCH /api/v1/customers/:id`
 
@@ -55,8 +57,7 @@ Requisitos: Node.js 22+ y PostgreSQL 16 o compatible con `pgcrypto`. Utiliza una
 
 ## Pendiente antes de producción
 
-- completar pedidos/comandas;
-- implementar pedidos/comandas, desglose de pagos mixtos y movimientos manuales de caja;
+- implementar pedidos/comandas;
 - implementar en el backend la emisión, firma, envío, consulta y reconciliación de comprobantes SUNAT;
 - diseñar y probar sincronización incremental y resolución de conflictos;
 - integrar Flutter y validar los flujos completos en Windows, Android y tabletas;
