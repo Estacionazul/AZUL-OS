@@ -173,8 +173,8 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
   }
 
   Future<void> _registerMovement(Map<String, dynamic> item) async {
-    final quantityController = TextEditingController(text: '1');
-    final noteController = TextEditingController();
+    var quantityText = '1';
+    var noteText = '';
     String movementType = 'ENTRADA';
     int adjustmentSign = 1;
     final formKey = GlobalKey<FormState>();
@@ -221,7 +221,8 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
                       },
                     ),
                   TextFormField(
-                    controller: quantityController,
+                    initialValue: quantityText,
+                    onSaved: (value) => quantityText = (value ?? '').trim(),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: const InputDecoration(labelText: 'Cantidad'),
                     validator: (value) {
@@ -238,7 +239,8 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
                     },
                   ),
                   TextFormField(
-                    controller: noteController,
+                    initialValue: noteText,
+                    onSaved: (value) => noteText = (value ?? '').trim(),
                     maxLength: 500,
                     decoration: const InputDecoration(labelText: 'Motivo / observación'),
                   ),
@@ -252,11 +254,12 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
             FilledButton(
               onPressed: () {
                 if (!formKey.currentState!.validate()) return;
+                formKey.currentState!.save();
                 Navigator.pop(dialogContext, <String, Object?>{
                   'type': movementType,
-                  'quantity': double.parse(quantityController.text.trim()),
+                  'quantity': double.parse(quantityText),
                   'sign': movementType == 'AJUSTE' ? adjustmentSign : null,
-                  'note': noteController.text.trim(),
+                  'note': noteText,
                 });
               },
               child: const Text('Registrar movimiento'),
@@ -265,8 +268,6 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
         ),
       ),
     );
-    quantityController.dispose();
-    noteController.dispose();
     if (input == null || !mounted) return;
 
     final key = AzulApiClient.newIdempotencyKey();
