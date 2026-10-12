@@ -50,6 +50,13 @@ import 'facturacion/repositories/resumenes_diarios_repository.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Android staging/mobile uses only the central API flow. Do not open the
+  // local SQLite POS, seed local users, or register SUNAT services on mobile.
+  if (Platform.isAndroid) {
+    runApp(const AzulOSMobileApp());
+    return;
+  }
+
   final database = AppDatabase();
 
   await DatosIniciales(database).cargar();
