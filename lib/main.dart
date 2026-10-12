@@ -18,6 +18,7 @@ import 'repositories/receta_detalle_repository.dart';
 import 'repositories/clientes_repository.dart';
 import 'repositories/insumo_repository.dart';
 import 'screens/auth/auth_gate.dart';
+import 'screens/auth/api_connection_screen.dart';
 
 import 'seed/datos_iniciales.dart';
 import 'pedidos/services/pedidos_service.dart';
@@ -93,6 +94,26 @@ Future<void> main() async {
   }
 
   runApp(AzulOSApp(database: database, printerAdapter: printerAdapter));
+}
+
+/// Android runs the central API onboarding only. The Windows desktop POS
+/// continues to use its existing local database and fiscal services.
+class AzulOSMobileApp extends StatelessWidget {
+  const AzulOSMobileApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Provider<AzulApiClient>(
+      create: (_) => AzulApiClient(),
+      dispose: (_, client) => client.dispose(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'AZUL OS · Móvil',
+        theme: AppTheme.lightTheme,
+        home: const ApiConnectionScreen(),
+      ),
+    );
+  }
 }
 
 class AzulOSApp extends StatelessWidget {
