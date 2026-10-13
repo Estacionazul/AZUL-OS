@@ -33,6 +33,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   Map<String, dynamic>? _pendingCloseBody;
   bool _pendingSaleRejected = false;
   bool _recoveryBlocked = false;
+  bool _mobileCartVisible = false;
 
   @override
   void initState() {
@@ -602,10 +603,36 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                           ],
                         );
                       }
-                      return ListView(
+                      return Column(
                         children: [
-                          SizedBox(height: 420, child: _productPanel()),
-                          SizedBox(height: 440, child: _cartPanel()),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                            child: SegmentedButton<bool>(
+                              segments: [
+                                ButtonSegment<bool>(
+                                  value: false,
+                                  icon: const Icon(Icons.storefront),
+                                  label: Text('Productos (${_products.length})'),
+                                ),
+                                ButtonSegment<bool>(
+                                  value: true,
+                                  icon: const Icon(Icons.shopping_cart),
+                                  label: Text('Carrito (${_cart.values.fold<int>(0, (sum, quantity) => sum + quantity)})'),
+                                ),
+                              ],
+                              selected: <bool>{_mobileCartVisible},
+                              onSelectionChanged: _working
+                                  ? null
+                                  : (selection) => setState(() {
+                                        _mobileCartVisible = selection.first;
+                                      }),
+                            ),
+                          ),
+                          Expanded(
+                            child: _mobileCartVisible
+                                ? _cartPanel()
+                                : _productPanel(),
+                          ),
                         ],
                       );
                     },
@@ -725,6 +752,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
     }
     setState(() {
       _cart[id] = quantity + 1;
+      _mobileCartVisible = true;
       _error = null;
       _notice = 'Producto agregado al carrito.';
     });
