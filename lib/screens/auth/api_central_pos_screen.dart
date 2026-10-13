@@ -701,6 +701,35 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
     );
   }
 
+  void _addProductToCart(String id, int quantity) {
+    if (!mounted) return;
+    if (_working) {
+      setState(() => _error = 'Espera a que termine la operación en curso antes de agregar productos.');
+      return;
+    }
+    if (_recoveryBlocked) {
+      setState(() => _error = 'El carrito está bloqueado porque no se pudo verificar una operación pendiente. Consulta el historial central antes de continuar.');
+      return;
+    }
+    if (_pendingSaleKey != null) {
+      setState(() => _error = 'Hay una venta pendiente de confirmación. Revisa el historial central antes de iniciar otra venta.');
+      return;
+    }
+    if (_cash == null) {
+      setState(() => _error = 'No hay una caja central abierta. Actualiza el estado o abre la caja de pruebas.');
+      return;
+    }
+    if (id.isEmpty) {
+      setState(() => _error = 'El producto no tiene un identificador válido. Actualiza el catálogo central.');
+      return;
+    }
+    setState(() {
+      _cart[id] = quantity + 1;
+      _error = null;
+      _notice = 'Producto agregado al carrito.';
+    });
+  }
+
   Widget _productPanel() {
     return Column(
       children: [
@@ -739,9 +768,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                         subtitle: Text('${_text(product['code'])} · ${_money(product['salePrice'])}'),
                         trailing: IconButton(
                           tooltip: 'Agregar al carrito',
-                          onPressed: _working || _recoveryBlocked || _pendingSaleKey != null || _cash == null || id.isEmpty
-                              ? null
-                              : () => setState(() => _cart[id] = quantity + 1),
+                          onPressed: id.isEmpty ? null : () => _addProductToCart(id, quantity),
                           icon: const Icon(Icons.add_shopping_cart),
                         ),
                       ),
