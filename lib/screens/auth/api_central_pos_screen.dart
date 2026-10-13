@@ -811,50 +811,58 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   Widget _cartPanel() {
     return Card(
       margin: const EdgeInsets.all(12),
-      child: Padding(
+      clipBehavior: Clip.antiAlias,
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Venta central · ${_cart.values.fold<int>(0, (sum, quantity) => sum + quantity)} unidades',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Venta central · ${_cart.values.fold<int>(0, (sum, quantity) => sum + quantity)} unidades',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const Divider(),
-            Expanded(
-              child: _cartProducts.isEmpty
-                  ? const Center(child: Text('Agrega productos desde el catálogo.'))
-                  : ListView(
-                      children: _cartProducts.map((product) {
-                        final id = product['id'].toString();
-                        final quantity = _cart[id] ?? 0;
-                        return ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(_text(product['name'])),
-                          subtitle: Text('${quantity} × ${_money(product['salePrice'])}'),
-                          trailing: Wrap(
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              IconButton(
-                                tooltip: 'Quitar una unidad',
-                                onPressed: _working || _pendingSaleKey != null ? null : () => setState(() {
+            if (_cartProducts.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(child: Text('Agrega productos desde el catálogo.')),
+              )
+            else
+              ..._cartProducts.map((product) {
+                final id = product['id'].toString();
+                final quantity = _cart[id] ?? 0;
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(_text(product['name'])),
+                  subtitle: Text('${quantity} × ${_money(product['salePrice'])}'),
+                  trailing: Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      IconButton(
+                        tooltip: 'Quitar una unidad',
+                        onPressed: _working || _pendingSaleKey != null
+                            ? null
+                            : () => setState(() {
                                   if (quantity <= 1) {
                                     _cart.remove(id);
                                   } else {
                                     _cart[id] = quantity - 1;
                                   }
                                 }),
-                                icon: const Icon(Icons.remove_circle_outline),
-                              ),
-                              IconButton(
-                                tooltip: 'Eliminar producto',
-                                onPressed: _working || _pendingSaleKey != null ? null : () => setState(() => _cart.remove(id)),
-                                icon: const Icon(Icons.delete_outline),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            ),
+                        icon: const Icon(Icons.remove_circle_outline),
+                      ),
+                      IconButton(
+                        tooltip: 'Eliminar producto',
+                        onPressed: _working || _pendingSaleKey != null
+                            ? null
+                            : () => setState(() => _cart.remove(id)),
+                        icon: const Icon(Icons.delete_outline),
+                      ),
+                    ],
+                  ),
+                );
+              }),
             const Divider(),
             Wrap(
               alignment: WrapAlignment.spaceBetween,
@@ -870,35 +878,41 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
               title: const Text('Pago mixto'),
               subtitle: const Text('Divide el total entre dos medios de pago.'),
               value: _mixedPayment,
-              onChanged: _working || _pendingSaleKey != null ? null : (value) {
-                setState(() {
-                  _mixedPayment = value;
-                  _error = null;
-                  if (value) {
-                    final firstAmount = ((_total * 100) / 2).round() / 100;
-                    _mixedAmount1.text = (_total / 2).toStringAsFixed(2);
-                    _mixedAmount2.text = (_total - firstAmount).toStringAsFixed(2);
-                  }
-                });
-              },
+              onChanged: _working || _pendingSaleKey != null
+                  ? null
+                  : (value) {
+                      setState(() {
+                        _mixedPayment = value;
+                        _error = null;
+                        if (value) {
+                          final firstAmount = ((_total * 100) / 2).round() / 100;
+                          _mixedAmount1.text = (_total / 2).toStringAsFixed(2);
+                          _mixedAmount2.text = (_total - firstAmount).toStringAsFixed(2);
+                        }
+                      });
+                    },
             ),
             if (!_mixedPayment)
               DropdownButtonFormField<String>(
                 value: _paymentMethod,
                 decoration: const InputDecoration(labelText: 'Medio de pago', isDense: true),
                 items: _paymentMethods.map((method) => DropdownMenuItem(value: method, child: Text(method))).toList(),
-                onChanged: _working || _pendingSaleKey != null ? null : (value) {
-                  if (value != null) setState(() => _paymentMethod = value);
-                },
+                onChanged: _working || _pendingSaleKey != null
+                    ? null
+                    : (value) {
+                        if (value != null) setState(() => _paymentMethod = value);
+                      },
               )
             else ...[
               DropdownButtonFormField<String>(
                 value: _mixedMethod1,
                 decoration: const InputDecoration(labelText: 'Primer medio', isDense: true),
                 items: _paymentMethods.map((method) => DropdownMenuItem(value: method, child: Text(method))).toList(),
-                onChanged: _working || _pendingSaleKey != null ? null : (value) {
-                  if (value != null) setState(() => _mixedMethod1 = value);
-                },
+                onChanged: _working || _pendingSaleKey != null
+                    ? null
+                    : (value) {
+                        if (value != null) setState(() => _mixedMethod1 = value);
+                      },
               ),
               const SizedBox(height: 8),
               TextField(
@@ -913,9 +927,11 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                 value: _mixedMethod2,
                 decoration: const InputDecoration(labelText: 'Segundo medio', isDense: true),
                 items: _paymentMethods.map((method) => DropdownMenuItem(value: method, child: Text(method))).toList(),
-                onChanged: _working || _pendingSaleKey != null ? null : (value) {
-                  if (value != null) setState(() => _mixedMethod2 = value);
-                },
+                onChanged: _working || _pendingSaleKey != null
+                    ? null
+                    : (value) {
+                        if (value != null) setState(() => _mixedMethod2 = value);
+                      },
               ),
               const SizedBox(height: 8),
               TextField(
@@ -929,12 +945,15 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
               Text('Distribuido: ${_money(_number(_mixedAmount1.text) + _number(_mixedAmount2.text))} de ${_money(_total)}'),
             ],
             const SizedBox(height: 10),
-            FilledButton.icon(
-              onPressed: _working || _recoveryBlocked || _cash == null || _cart.isEmpty ? null : _checkout,
-              icon: _working
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.point_of_sale),
-              label: Text(_working ? 'PROCESANDO...' : 'REGISTRAR VENTA CENTRAL'),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _working || _recoveryBlocked || _cash == null || _cart.isEmpty ? null : _checkout,
+                icon: _working
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.point_of_sale),
+                label: Text(_working ? 'PROCESANDO...' : 'REGISTRAR VENTA CENTRAL'),
+              ),
             ),
           ],
         ),
