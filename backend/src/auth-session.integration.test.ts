@@ -43,6 +43,15 @@ test("cashier permissions are enforced and logout immediately invalidates the se
     assert.ok(address && typeof address !== "string");
     const baseUrl = `http://127.0.0.1:${address.port}`;
 
+    // A device must not authenticate when paired with a different establishment.
+    const crossEstablishmentLogin = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ establishmentId: randomUUID(), username: `ci-cashier-${suffix}`, pin: "1234", deviceId }),
+    });
+    assert.equal(crossEstablishmentLogin.status, 401);
+    assert.equal((await crossEstablishmentLogin.json() as { error: { code: string } }).error.code, "LOGIN_FAILED");
+
     const login = await fetch(`${baseUrl}/api/v1/auth/login`, {
       method: "POST",
       headers: { "content-type": "application/json" },
