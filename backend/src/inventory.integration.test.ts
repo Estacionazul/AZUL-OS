@@ -157,6 +157,27 @@ test("inventory movements enforce idempotency, non-negative stock and recipe res
     });
     assert.equal(foreignMovement.status, 404);
     assert.equal((await foreignMovement.json() as { error: { code: string } }).error.code, "ITEM_NOT_FOUND");
+
+    // Two simultaneous exits must serialize on the item lock; only one may consume stock.
+    const concurrentExits = await Promise.all([
+      sendMovement("88888888-8888-4888-8888-888888888888", {
+        itemType: "producto", itemId: productId, type: "SALIDA", quantity: 7,
+      }),
+      sendMovement("99999999-9999-4999-8999-999999999999", {
+        itemType: "producto", itemId: productId, type: "SALIDA", quantity: 7,
+      }),
+    ]);
+    const concurrentStatuses = concurrentExits.map((response) => response.status).sort((a, b) => a - b);
+    assert.deepEqual(concurrentStatuses, [201, 409]);
+    const rejectedExit = concurrentExits.find((response) => response.status === 409);
+    assert.ok(rejectedExit);
+    assert.equal((await rejectedExit.json() as { error: { code: string } }).error.code, "STOCK_INSUFFICIENTE");
+
+    const finalStock = await pool.query(
+      "SELECT COALESCE(SUM(cantidad * signo), 0)::numeric(14,4) AS stock FROM movimientos_inventario WHERE establecimiento_id = $1 AND producto_id = $2",
+      [establishmentId, productId],
+    );
+    assert.equal(Number(finalStock.rows[0].stock), 3, "concurrent exits must not create negative stock");
   } finally {
     if (server) await new Promise<void>((resolve) => server!.close(() => resolve()));
     if (productId) await pool.query("DELETE FROM movimientos_inventario WHERE producto_id = $1", [productId]);

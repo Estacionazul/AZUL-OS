@@ -43,6 +43,15 @@ test("cashier permissions are enforced and logout immediately invalidates the se
     assert.ok(address && typeof address !== "string");
     const baseUrl = `http://127.0.0.1:${address.port}`;
 
+    // A device must not authenticate when paired with a different establishment.
+    const crossEstablishmentLogin = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ establishmentId: randomUUID(), username: `ci-cashier-${suffix}`, pin: "1234", deviceId }),
+    });
+    assert.equal(crossEstablishmentLogin.status, 401);
+    assert.equal((await crossEstablishmentLogin.json() as { error: { code: string } }).error.code, "LOGIN_FAILED");
+
     const login = await fetch(`${baseUrl}/api/v1/auth/login`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -56,15 +65,45 @@ test("cashier permissions are enforced and logout immediately invalidates the se
     assert.equal(forbidden.status, 403);
     assert.equal((await forbidden.json() as { error: { code: string } }).error.code, "FORBIDDEN");
 
+    // Revoking a device must invalidate tokens that were issued before revocation.
+    await pool.query("UPDATE dispositivos SET activo = false WHERE id = $1", [deviceId]);
+    const afterDeviceRevocation = await fetch(`${baseUrl}/api/v1/auth/me`, { headers });
+    assert.equal(afterDeviceRevocation.status, 401);
+    assert.equal((await afterDeviceRevocation.json() as { error: { code: string } }).error.code, "SESSION_REVOKED");
+    await pool.query("UPDATE dispositivos SET activo = true WHERE id = $1", [deviceId]);
+
+    const reLogin = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ establishmentId, username: `ci-cashier-${suffix}`, pin: "1234", deviceId }),
+    });
+    assert.equal(reLogin.status, 200);
+    const reLoginBody = await reLogin.json() as { token: string };
+    const logoutHeaders = { authorization: `Bearer ${reLoginBody.token}` };
+
     const logout = await fetch(`${baseUrl}/api/v1/auth/logout`, {
       method: "POST",
-      headers,
+      headers: logoutHeaders,
     });
     assert.equal(logout.status, 204);
 
-    const afterLogout = await fetch(`${baseUrl}/api/v1/auth/me`, { headers });
+    const afterLogout = await fetch(`${baseUrl}/api/v1/auth/me`, { headers: logoutHeaders });
     assert.equal(afterLogout.status, 401);
     assert.equal((await afterLogout.json() as { error: { code: string } }).error.code, "SESSION_REVOKED");
+
+    // Deactivating a user must invalidate any still-active session immediately.
+    const finalLogin = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ establishmentId, username: `ci-cashier-${suffix}`, pin: "1234", deviceId }),
+    });
+    assert.equal(finalLogin.status, 200);
+    const finalLoginBody = await finalLogin.json() as { token: string };
+    const finalHeaders = { authorization: `Bearer ${finalLoginBody.token}` };
+    await pool.query("UPDATE usuarios SET activo = false WHERE id = $1", [userId]);
+    const afterUserDeactivation = await fetch(`${baseUrl}/api/v1/auth/me`, { headers: finalHeaders });
+    assert.equal(afterUserDeactivation.status, 401);
+    assert.equal((await afterUserDeactivation.json() as { error: { code: string } }).error.code, "SESSION_REVOKED");
   } finally {
     if (server) await new Promise<void>((resolve) => server!.close(() => resolve()));
     if (userId) await pool.query("DELETE FROM sesiones WHERE usuario_id = $1", [userId]);
