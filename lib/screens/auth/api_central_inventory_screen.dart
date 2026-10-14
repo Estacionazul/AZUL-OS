@@ -511,14 +511,18 @@ class _ApiCentralInventoryScreenState extends State<ApiCentralInventoryScreen> {
                               leading: CircleAvatar(
                                 child: Icon(item['itemType'] == 'insumo' ? Icons.inventory_2 : Icons.local_cafe),
                               ),
-                              title: Row(
+                              title: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: Text(_text(item['name']), style: const TextStyle(fontWeight: FontWeight.bold)),
-                                  ),
-                                  const SizedBox(width: 8),
                                   Text(
-                                    'Stock ${_quantity(item['currentStock'])}',
+                                    _text(item['name']),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Stock: ${_quantity(item['currentStock'])}',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: low ? Theme.of(context).colorScheme.error : null,
