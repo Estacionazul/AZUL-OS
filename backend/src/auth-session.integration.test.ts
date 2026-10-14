@@ -90,6 +90,20 @@ test("cashier permissions are enforced and logout immediately invalidates the se
     const afterLogout = await fetch(`${baseUrl}/api/v1/auth/me`, { headers: logoutHeaders });
     assert.equal(afterLogout.status, 401);
     assert.equal((await afterLogout.json() as { error: { code: string } }).error.code, "SESSION_REVOKED");
+
+    // Deactivating a user must invalidate any still-active session immediately.
+    const finalLogin = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ establishmentId, username: `ci-cashier-${suffix}`, pin: "1234", deviceId }),
+    });
+    assert.equal(finalLogin.status, 200);
+    const finalLoginBody = await finalLogin.json() as { token: string };
+    const finalHeaders = { authorization: `Bearer ${finalLoginBody.token}` };
+    await pool.query("UPDATE usuarios SET activo = false WHERE id = $1", [userId]);
+    const afterUserDeactivation = await fetch(`${baseUrl}/api/v1/auth/me`, { headers: finalHeaders });
+    assert.equal(afterUserDeactivation.status, 401);
+    assert.equal((await afterUserDeactivation.json() as { error: { code: string } }).error.code, "SESSION_REVOKED");
   } finally {
     if (server) await new Promise<void>((resolve) => server!.close(() => resolve()));
     if (userId) await pool.query("DELETE FROM sesiones WHERE usuario_id = $1", [userId]);
