@@ -162,3 +162,15 @@ Esto valida una operación individual de venta, pago, caja e inventario en stagi
 
 No registrar en este documento PIN, tokens, contraseñas, archivos `.env`, certificados, ni datos personales reales. Mantener SQLite productivo, ventas históricas, correlativos, SUNAT y la impresora sin cambios hasta la aprobación separada de G7.
 
+
+
+## Evidencia CI de seguridad — 2026-10-14
+
+- Commit revisado: `d588e5f47cb5cfff6a20f8d25cc7e16619f4d22d`.
+- Ejecución Backend CI #257: https://github.com/Estacionazul/AZUL-OS/actions/runs/38603234553
+- Resultado observado: trabajo `backend` completado con `success`; instalación, type-check, compilación, ensayo de salvaguardas de migración, validación de migraciones, pruebas automatizadas, validación de Compose/build y limpieza del entorno CI completados.
+- Las pruebas de sesión incluyen aislamiento de establecimiento en el inicio de sesión, permisos de cajero, revocación de dispositivo, cierre de sesión e invalidación inmediata al desactivar el usuario.
+- La prueba de inventario existente cubre repetición idempotente, conflicto al reutilizar clave con datos distintos, prevención de stock negativo, restricción de movimientos manuales para productos de receta y aislamiento entre establecimientos.
+- Esta evidencia demuestra el resultado de CI para este commit, no la aceptación física multidispositivo ni la seguridad HTTPS en una red real.
+
+**Estado de salida:** CI del commit aprobado. G1 y G5 siguen pendientes por configuración/aceptación en entorno aislado con dispositivos; G3, G4 y G6 siguen pendientes de pruebas completas y conciliación documentada. G7 continúa bloqueado. No se autoriza producción, fusión automática ni cambios a SQLite, SUNAT, correlativos o impresora productiva.
