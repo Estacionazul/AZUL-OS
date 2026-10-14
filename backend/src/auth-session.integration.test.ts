@@ -60,7 +60,7 @@ test("cashier permissions are enforced and logout immediately invalidates the se
     await pool.query("UPDATE dispositivos SET activo = false WHERE id = $1", [deviceId]);
     const afterDeviceRevocation = await fetch(`${baseUrl}/api/v1/auth/me`, { headers });
     assert.equal(afterDeviceRevocation.status, 401);
-    assert.equal((await afterDeviceRevocation.json() as { error: { code: string } }).error.code, "SESSION_INVALID");
+    assert.equal((await afterDeviceRevocation.json() as { error: { code: string } }).error.code, "SESSION_REVOKED");
     await pool.query("UPDATE dispositivos SET activo = true WHERE id = $1", [deviceId]);
 
     const reLogin = await fetch(`${baseUrl}/api/v1/auth/login`, {
