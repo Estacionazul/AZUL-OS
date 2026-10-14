@@ -56,13 +56,29 @@ test("cashier permissions are enforced and logout immediately invalidates the se
     assert.equal(forbidden.status, 403);
     assert.equal((await forbidden.json() as { error: { code: string } }).error.code, "FORBIDDEN");
 
+    // Revoking a device must invalidate tokens that were issued before revocation.
+    await pool.query("UPDATE dispositivos SET activo = false WHERE id = $1", [deviceId]);
+    const afterDeviceRevocation = await fetch(`${baseUrl}/api/v1/auth/me`, { headers });
+    assert.equal(afterDeviceRevocation.status, 401);
+    assert.equal((await afterDeviceRevocation.json() as { error: { code: string } }).error.code, "SESSION_INVALID");
+    await pool.query("UPDATE dispositivos SET activo = true WHERE id = $1", [deviceId]);
+
+    const reLogin = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ establishmentId, username: `ci-cashier-${suffix}`, pin: "1234", deviceId }),
+    });
+    assert.equal(reLogin.status, 200);
+    const reLoginBody = await reLogin.json() as { token: string };
+    const logoutHeaders = { authorization: `Bearer ${reLoginBody.token}` };
+
     const logout = await fetch(`${baseUrl}/api/v1/auth/logout`, {
       method: "POST",
-      headers,
+      headers: logoutHeaders,
     });
     assert.equal(logout.status, 204);
 
-    const afterLogout = await fetch(`${baseUrl}/api/v1/auth/me`, { headers });
+    const afterLogout = await fetch(`${baseUrl}/api/v1/auth/me`, { headers: logoutHeaders });
     assert.equal(afterLogout.status, 401);
     assert.equal((await afterLogout.json() as { error: { code: string } }).error.code, "SESSION_REVOKED");
   } finally {
