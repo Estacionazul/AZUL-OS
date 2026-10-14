@@ -138,3 +138,27 @@ No ejecutes `down -v` salvo que se haya verificado expresamente que el proyecto 
 ### Alcance real de CI
 
 El workflow valida tipos, compilación, migraciones y pruebas de backend, y ahora valida la sintaxis de Compose y construye la imagen del backend de staging sin levantar una instancia accesible. Esto **no sustituye** ejecutar la aceptación funcional anterior ni demuestra que Windows, Android y la tableta estén conciliados entre sí.
+
+## Registro de evidencia ejecutada en staging — 2026-10-14
+
+Esta evidencia corresponde exclusivamente a la base PostgreSQL local de staging; no es una venta productiva ni un comprobante SUNAT.
+
+### Venta ficticia de extremo a extremo
+
+- Producto: `PRODUCTO FICTICIO - NO VENDER` (`TEST-STAGING-001`).
+- Venta: `V000001`, ID `d04338c4-0808-477a-9066-0f126c37f1d4`.
+- Importe y pago en efectivo: S/ 1.00.
+- Movimiento de caja: ingreso de S/ 1.00 asociado a la venta.
+- Movimiento de inventario: salida de 1 unidad asociada a la venta.
+- Conciliación observada: 1 venta; total de ventas S/ 1.00; pagos S/ 1.00; ingreso de caja S/ 1.00; stock final 0.
+- Caja de staging: permaneció abierta; monto inicial S/ 20.00.
+- Stock inicial de prueba: 1 unidad, registrada por una entrada previa; stock final cero tras la venta.
+
+### Alcance de esta evidencia
+
+Esto valida una operación individual de venta, pago, caja e inventario en staging. **No** demuestra todavía pruebas físicas multidispositivo, recuperación de una respuesta HTTP perdida, cierre y conciliación final de caja, HTTPS, emisión SUNAT ni autorización para producción. La venta ficticia debe conservarse como evidencia; no borrarla ni reutilizar el producto de prueba para nuevas ventas sin reponer stock mediante un movimiento de entrada identificado como prueba.
+
+### Seguridad de datos
+
+No registrar en este documento PIN, tokens, contraseñas, archivos `.env`, certificados, ni datos personales reales. Mantener SQLite productivo, ventas históricas, correlativos, SUNAT y la impresora sin cambios hasta la aprobación separada de G7.
+
