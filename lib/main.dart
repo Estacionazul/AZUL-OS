@@ -51,9 +51,12 @@ import 'facturacion/repositories/resumenes_diarios_repository.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Android staging/mobile uses only the central API flow. Do not open the
-  // local SQLite POS, seed local users, or register SUNAT services on mobile.
-  if (Platform.isAndroid) {
+  // Android staging/mobile always uses the central API flow. Windows can
+  // opt into the same isolated flow with --dart-define=AZUL_CENTRAL_MODE=true.
+  // In central mode, do not open local SQLite, seed local data, or register
+  // SUNAT services. The default Windows launch remains the existing local POS.
+  const centralMode = bool.fromEnvironment('AZUL_CENTRAL_MODE', defaultValue: false);
+  if (Platform.isAndroid || (Platform.isWindows && centralMode)) {
     runApp(const AzulOSMobileApp());
     return;
   }
@@ -96,8 +99,8 @@ Future<void> main() async {
   runApp(AzulOSApp(database: database, printerAdapter: printerAdapter));
 }
 
-/// Android runs the central API onboarding only. The Windows desktop POS
-/// continues to use its existing local database and fiscal services.
+/// Mobile and opt-in Windows central mode use API onboarding only. The normal
+/// Windows desktop launch keeps its existing local database and fiscal services.
 class AzulOSMobileApp extends StatelessWidget {
   const AzulOSMobileApp({super.key});
 
