@@ -258,113 +258,163 @@ class _ApiCentralScreenState extends State<ApiCentralScreen> {
   }
 
   Widget _catalog(Map<String, dynamic> user) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-          child: Card(
-            child: ListTile(
-              leading: const CircleAvatar(child: Icon(Icons.cloud_done_rounded)),
-              title: Text(_value(user['name'], _value(user['username'], 'Usuario central')),
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('Rol: ${_value(user['role'])} · Catálogo central en lectura'),
-              trailing: IconButton(
-                tooltip: 'Actualizar catálogo',
-                onPressed: _working ? null : _refresh,
-                icon: const Icon(Icons.refresh_rounded)),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              SizedBox(
-                width: 300,
-                child: TextField(
-                  controller: _search,
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: (_) => _refresh(),
-                  decoration: InputDecoration(
-                    labelText: 'Buscar producto central',
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    suffixIcon: IconButton(
-                      tooltip: 'Limpiar búsqueda',
-                      onPressed: _working ? null : () { _search.clear(); _refresh(); },
-                      icon: const Icon(Icons.clear_rounded)))),
-              ),
-              SizedBox(
-                width: 280,
-                child: DropdownButtonFormField<String>(
-                  value: _categoryId,
-                  isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Categoría central'),
-                  items: [
-                    const DropdownMenuItem<String>(value: null, child: Text('Todas las categorías')),
-                    ..._categories.map((c) => DropdownMenuItem<String>(
-                      value: _value(c['id'], ''),
-                      child: Text(_value(c['name'])))),
-                  ],
-                  onChanged: _working ? null : (v) { setState(() => _categoryId = v); _refresh(); },
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 600;
+        final horizontalPadding = compact ? 12.0 : 20.0;
+        final fieldWidth = compact
+            ? constraints.maxWidth - (horizontalPadding * 2)
+            : 300.0;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(horizontalPadding, 12, horizontalPadding, 8),
+              child: Card(
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(horizontal: compact ? 12 : 16, vertical: 4),
+                  leading: const CircleAvatar(child: Icon(Icons.cloud_done_rounded)),
+                  title: Text(
+                    _value(user['name'], _value(user['username'], 'Usuario central')),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text('Rol: ${_value(user['role'])} · Catálogo central en lectura'),
+                  trailing: IconButton(
+                    tooltip: 'Actualizar catálogo',
+                    onPressed: _working ? null : _refresh,
+                    icon: const Icon(Icons.refresh_rounded),
+                  ),
                 ),
               ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: FilledButton.icon(
-              onPressed: _working ? null : () {
-                Navigator.of(context).push(MaterialPageRoute<void>(
-                  builder: (_) => const ApiCentralPosScreen(),
-                ));
-              },
-              icon: const Icon(Icons.point_of_sale_rounded),
-              label: const Text('ABRIR VENTAS Y CAJA CENTRAL'),
             ),
-          ),
-        ),
-        if (_error != null) Padding(
-          padding: const EdgeInsets.all(20), child: _errorBanner(_error!)),
-        Expanded(
-          child: _working && _products.isEmpty
-            ? const Center(child: CircularProgressIndicator())
-            : _products.isEmpty
-              ? const Center(child: Text('No hay productos en el catálogo central.'))
-              : ListView.separated(
-                  padding: const EdgeInsets.all(20),
-                  itemCount: _products.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (context, i) {
-                    final p = _products[i];
-                    return Card(
-                      child: ListTile(
-                        leading: Text(_value(p['emoji'], '📦'), style: const TextStyle(fontSize: 28)),
-                        title: Text(_value(p['name'])),
-                        subtitle: Text(
-                          '${_value(p['code'])} · ${_value(p['categoryName'])}\n'
-                          'Tipo: ${_value(p['inventoryType'])} · IGV: ${_value(p['igvAffectation'])}'),
-                        isThreeLine: true,
-                        trailing: Text(_money(p['salePrice']),
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  SizedBox(
+                    width: fieldWidth,
+                    child: TextField(
+                      controller: _search,
+                      textInputAction: TextInputAction.search,
+                      onSubmitted: (_) => _refresh(),
+                      decoration: InputDecoration(
+                        labelText: 'Buscar producto central',
+                        prefixIcon: const Icon(Icons.search_rounded),
+                        suffixIcon: IconButton(
+                          tooltip: 'Limpiar búsqueda',
+                          onPressed: _working ? null : () {
+                            _search.clear();
+                            _refresh();
+                          },
+                          icon: const Icon(Icons.clear_rounded),
+                        ),
                       ),
-                    );
+                    ),
+                  ),
+                  SizedBox(
+                    width: compact ? fieldWidth : 280,
+                    child: DropdownButtonFormField<String>(
+                      value: _categoryId,
+                      isExpanded: true,
+                      decoration: const InputDecoration(labelText: 'Categoría central'),
+                      items: [
+                        const DropdownMenuItem<String>(
+                          value: null,
+                          child: Text('Todas las categorías'),
+                        ),
+                        ..._categories.map((c) => DropdownMenuItem<String>(
+                          value: _value(c['id'], ''),
+                          child: Text(
+                            _value(c['name']),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        )),
+                      ],
+                      onChanged: _working ? null : (v) {
+                        setState(() => _categoryId = v);
+                        _refresh();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(horizontalPadding, 12, horizontalPadding, 0),
+              child: SizedBox(
+                width: compact ? double.infinity : null,
+                child: FilledButton.icon(
+                  onPressed: _working ? null : () {
+                    Navigator.of(context).push(MaterialPageRoute<void>(
+                      builder: (_) => const ApiCentralPosScreen(),
+                    ));
                   },
+                  icon: const Icon(Icons.point_of_sale_rounded),
+                  label: const Text('ABRIR VENTAS Y CAJA CENTRAL'),
                 ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-          child: Text(
-            '${_products.length} productos · ${_categories.length} categorías · Solo lectura',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall),
-        ),
-      ],
+              ),
+            ),
+            if (_error != null)
+              Padding(
+                padding: EdgeInsets.all(horizontalPadding),
+                child: _errorBanner(_error!),
+              ),
+            Expanded(
+              child: _working && _products.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : _products.isEmpty
+                      ? const Center(child: Text('No hay productos en el catálogo central.'))
+                      : ListView.separated(
+                          padding: EdgeInsets.all(horizontalPadding),
+                          itemCount: _products.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (context, i) {
+                            final p = _products[i];
+                            return Card(
+                              child: ListTile(
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: compact ? 12 : 16,
+                                  vertical: 4,
+                                ),
+                                leading: Text(
+                                  _value(p['emoji'], '📦'),
+                                  style: const TextStyle(fontSize: 28),
+                                ),
+                                title: Text(
+                                  _value(p['name']),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                subtitle: Text(
+                                  '${_value(p['code'])} · ${_value(p['categoryName'])}\n'
+                                  'Tipo: ${_value(p['inventoryType'])} · IGV: ${_value(p['igvAffectation'])}',
+                                ),
+                                isThreeLine: true,
+                                trailing: Text(
+                                  _money(p['salePrice']),
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(horizontalPadding, 0, horizontalPadding, 12),
+              child: Text(
+                '${_products.length} productos · ${_categories.length} categorías · Solo lectura',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
