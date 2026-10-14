@@ -84,3 +84,5 @@ jobs:
         run: flutter pub get
       - name: Build Windows debug app
         run: flutter build windows --debug
+      - name: Build Windows debug app in isolated central mode
+        run: flutter build windows --debug --dart-define=AZUL_CENTRAL_MODE=true
