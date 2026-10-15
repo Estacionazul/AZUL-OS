@@ -21,6 +21,7 @@ test("inventory movements enforce idempotency, non-negative stock and recipe res
   let foreignCategoryId: string | undefined;
   let foreignProductId: string | undefined;
   let deviceId: string | undefined;
+  let retryDeviceId: string | undefined;
   let userId: string | undefined;
   let categoryId: string | undefined;
   let productId: string | undefined;
@@ -33,6 +34,11 @@ test("inventory movements enforce idempotency, non-negative stock and recipe res
       [establishmentId, "CI integration device", "test"],
     );
     deviceId = device.rows[0].id as string;
+    const retryDevice = await pool.query(
+      "INSERT INTO dispositivos (establecimiento_id, nombre, plataforma) VALUES ($1, $2, $3) RETURNING id",
+      [establishmentId, "CI inventory retry device", "test"],
+    );
+    retryDeviceId = retryDevice.rows[0].id as string;
     const user = await pool.query(
       `INSERT INTO usuarios (establecimiento_id, usuario, nombre, pin_hash, rol)
        VALUES ($1, $2, $3, $4, 'CEO') RETURNING id`,
@@ -91,10 +97,18 @@ test("inventory movements enforce idempotency, non-negative stock and recipe res
     assert.equal(login.status, 200);
     const { token } = await login.json() as { token: string };
 
-    const sendMovement = (key: string, body: object) => fetch(`${base}/api/v1/inventory/movements`, {
+    const retryLogin = await fetch(`${base}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ establishmentId, username: "ci-inventory-ceo", pin: "4826", deviceId: retryDeviceId }),
+    });
+    assert.equal(retryLogin.status, 200);
+    const { token: retryToken } = await retryLogin.json() as { token: string };
+
+    const sendMovement = (key: string, body: object, authToken = token) => fetch(`${base}/api/v1/inventory/movements`, {
       method: "POST",
       headers: {
-        authorization: `Bearer ${token}`,
+        authorization: `Bearer ${authToken}`,
         "content-type": "application/json",
         "idempotency-key": key,
       },
@@ -108,6 +122,10 @@ test("inventory movements enforce idempotency, non-negative stock and recipe res
     const replay = await sendMovement(entryKey, entry);
     assert.equal(replay.status, 200);
     assert.equal((await replay.json() as { replayed: boolean }).replayed, true);
+
+    const crossDeviceReplay = await sendMovement(entryKey, entry, retryToken);
+    assert.equal(crossDeviceReplay.status, 409);
+    assert.equal((await crossDeviceReplay.json() as { error: { code: string } }).error.code, "IDEMPOTENCY_CONFLICT");
 
     const conflict = await sendMovement(entryKey, { ...entry, quantity: 11 });
     assert.equal(conflict.status, 409);
@@ -169,6 +187,7 @@ test("inventory movements enforce idempotency, non-negative stock and recipe res
     if (categoryId) await pool.query("DELETE FROM categorias WHERE id = $1", [categoryId]);
     if (foreignCategoryId) await pool.query("DELETE FROM categorias WHERE id = $1", [foreignCategoryId]);
     if (userId) await pool.query("DELETE FROM usuarios WHERE id = $1", [userId]);
+    if (retryDeviceId) await pool.query("DELETE FROM dispositivos WHERE id = $1", [retryDeviceId]);
     if (deviceId) await pool.query("DELETE FROM dispositivos WHERE id = $1", [deviceId]);
     if (foreignEstablishmentId) await pool.query("DELETE FROM establecimientos WHERE id = $1", [foreignEstablishmentId]);
     await pool.query("DELETE FROM establecimientos WHERE id = $1", [establishmentId]);

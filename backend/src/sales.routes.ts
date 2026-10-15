@@ -202,7 +202,7 @@ salesRouter.post("/", authenticate, requirePermission("Ventas"), async (req, res
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [idempotencyKey]);
 
     const prior = await client.query(
-      `SELECT id, numero, total, establecimiento_id, idempotency_hash
+      `SELECT id, numero, total, establecimiento_id, usuario_id, dispositivo_id, idempotency_hash
          FROM ventas WHERE idempotency_key = $1`,
       [idempotencyKey],
     );
@@ -211,6 +211,11 @@ salesRouter.post("/", authenticate, requirePermission("Ventas"), async (req, res
       if (row.establecimiento_id !== req.auth!.establishmentId) {
         await client.query("COMMIT");
         res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave ya se usó en otro establecimiento." } });
+        return;
+      }
+      if (row.usuario_id !== req.auth!.userId || row.dispositivo_id !== req.auth!.deviceId) {
+        await client.query("COMMIT");
+        res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave de venta ya pertenece a otro usuario o dispositivo." } });
         return;
       }
       if (!row.idempotency_hash) {
