@@ -193,7 +193,7 @@ inventoryRouter.post("/movements", authenticate, requirePermission("Inventario")
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [idempotencyKey]);
 
     const prior = await client.query(
-      `SELECT id, establecimiento_id, producto_id, insumo_id, tipo, cantidad, signo,
+      `SELECT id, establecimiento_id, usuario_id, dispositivo_id, producto_id, insumo_id, tipo, cantidad, signo,
               referencia_id, observacion
          FROM movimientos_inventario WHERE idempotency_key = $1`,
       [idempotencyKey],
@@ -202,6 +202,8 @@ inventoryRouter.post("/movements", authenticate, requirePermission("Inventario")
       const row = prior.rows[0];
       const sameRequest =
         row.establecimiento_id === req.auth!.establishmentId &&
+        row.usuario_id === req.auth!.userId &&
+        row.dispositivo_id === req.auth!.deviceId &&
         row.producto_id === (input.itemType === "producto" ? input.itemId : null) &&
         row.insumo_id === (input.itemType === "insumo" ? input.itemId : null) &&
         row.tipo === input.type &&
