@@ -15,6 +15,7 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
   let establishmentId: string | undefined;
   let userId: string | undefined;
   let deviceId: string | undefined;
+  let retryDeviceId: string | undefined;
   let categoryId: string | undefined;
   let productId: string | undefined;
   let cashRegisterId: string | undefined;
@@ -40,6 +41,12 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
       [establishmentId, `CI sale device ${suffix}`],
     );
     deviceId = device.rows[0].id as string;
+
+    const retryDevice = await pool.query(
+      "INSERT INTO dispositivos (establecimiento_id, nombre, plataforma) VALUES ($1, $2, 'test') RETURNING id",
+      [establishmentId, `CI sale retry device ${suffix}`],
+    );
+    retryDeviceId = retryDevice.rows[0].id as string;
 
     const category = await pool.query(
       "INSERT INTO categorias (establecimiento_id, nombre) VALUES ($1, $2) RETURNING id",
@@ -78,6 +85,15 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     });
     assert.equal(login.status, 200);
     const { token } = await login.json() as { token: string };
+
+    const retryLogin = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ establishmentId, username, pin: "1234", deviceId: retryDeviceId }),
+    });
+    assert.equal(retryLogin.status, 200);
+    const { token: retryToken } = await retryLogin.json() as { token: string };
+
     const mixedPayment = await fetch(`${baseUrl}/api/v1/sales`, {
       method: "POST",
       headers: {
@@ -143,6 +159,20 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     assert.equal(replay.body.replayed, true);
     assert.equal(replay.body.sale.id, created.body.sale.id);
     assert.equal(replay.body.sale.total, created.body.sale.total);
+
+    // A matching payload and key must not replay another device's sale.
+    const crossDeviceRetry = await fetch(`${baseUrl}/api/v1/sales`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${retryToken}`,
+        "content-type": "application/json",
+        "idempotency-key": idempotencyKey,
+      },
+      body,
+    });
+    const crossDeviceBody = await crossDeviceRetry.json() as { error?: { code?: string } };
+    assert.equal(crossDeviceRetry.status, 409, JSON.stringify(crossDeviceBody));
+    assert.equal(crossDeviceBody.error?.code, "IDEMPOTENCY_CONFLICT");
 
     const detailResponse = await fetch(`${baseUrl}/api/v1/sales/${saleId}`, {
       headers: { authorization: `Bearer ${token}` },
@@ -210,6 +240,7 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     if (productId) await pool.query("DELETE FROM productos WHERE id = $1", [productId]);
     if (categoryId) await pool.query("DELETE FROM categorias WHERE id = $1", [categoryId]);
     if (userId) await pool.query("DELETE FROM sesiones WHERE usuario_id = $1", [userId]);
+    if (retryDeviceId) await pool.query("DELETE FROM dispositivos WHERE id = $1", [retryDeviceId]);
     if (deviceId) await pool.query("DELETE FROM dispositivos WHERE id = $1", [deviceId]);
     if (userId) await pool.query("DELETE FROM usuarios WHERE id = $1", [userId]);
     if (establishmentId) await pool.query("DELETE FROM correlativos WHERE establecimiento_id = $1", [establishmentId]);
