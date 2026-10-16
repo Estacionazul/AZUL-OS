@@ -66,36 +66,63 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
         final body = pending['body'];
         final key = pending['idempotencyKey'];
         if (body is Map<String, dynamic> && key is String) {
-          final items = body['items'];
-          final payments = body['payments'];
-          setState(() {
-            _pendingSaleKey = key;
-            _pendingSaleRejected = false;
-            _cart.clear();
-            if (items is List) {
-              for (final item in items.whereType<Map<String, dynamic>>()) {
-                final productId = item['productId']?.toString();
-                final quantity = item['quantity'];
-                if (productId != null && quantity is num && quantity > 0) {
-                  _cart[productId] = quantity.toInt();
+          // Reconcile with the server before restoring a pending cart. This
+          // prevents a lost response from making the operator guess whether
+          // the sale committed. Only an authenticated 404 permits same-key retry.
+          var saleAlreadyCommitted = false;
+          try {
+            final recovery = await api.recoverCentralSale(key);
+            final sale = recovery['sale'];
+            if (sale is! Map<String, dynamic>) {
+              throw const FormatException('La API devolvió una recuperación de venta inválida.');
+            }
+            await api.clearPendingCentralSale();
+            saleAlreadyCommitted = true;
+            if (mounted) {
+              setState(() {
+                _pendingSaleKey = null;
+                _pendingSaleRejected = false;
+                _cart.clear();
+                _notice = 'Venta central ${_text(sale['number'])} confirmada al recuperar la conexión por ${_money(sale['total'])}. Consulta el historial para ver el detalle.';
+              });
+            }
+          } on AzulApiException catch (error) {
+            if (error.statusCode != 404 || error.code != 'SALE_NOT_FOUND') rethrow;
+          }
+          if (!saleAlreadyCommitted && mounted) {
+            final items = body['items'];
+            final payments = body['payments'];
+            setState(() {
+              _pendingSaleKey = key;
+              _pendingSaleRejected = false;
+              _cart.clear();
+              if (items is List) {
+                for (final item in items.whereType<Map<String, dynamic>>()) {
+                  final productId = item['productId']?.toString();
+                  final quantity = item['quantity'];
+                  if (productId != null && quantity is num && quantity > 0) {
+                    _cart[productId] = quantity.toInt();
+                  }
                 }
               }
-            }
-            _mixedPayment = body['paymentMethod'] == 'Mixto';
-            if (!_mixedPayment && body['paymentMethod'] is String) {
-              _paymentMethod = body['paymentMethod'] as String;
-            }
-            if (_mixedPayment && payments is List) {
-              final entries = payments.whereType<Map<String, dynamic>>().toList();
-              if (entries.length >= 2) {
-                _mixedMethod1 = entries[0]['method']?.toString() ?? 'Efectivo';
-                _mixedMethod2 = entries[1]['method']?.toString() ?? 'Yape';
-                _mixedAmount1.text = _number(entries[0]['amount']).toStringAsFixed(2);
-                _mixedAmount2.text = _number(entries[1]['amount']).toStringAsFixed(2);
+              _mixedPayment = body['paymentMethod'] == 'Mixto';
+              if (!_mixedPayment && body['paymentMethod'] is String) {
+                _paymentMethod = body['paymentMethod'] as String;
               }
-            }
-            _notice = 'Se recuperó una venta central pendiente. Reintenta con la misma solicitud o consulta el historial antes de iniciar otra venta.';
-          });
+              if (_mixedPayment && payments is List) {
+                final entries = payments.whereType<Map<String, dynamic>>().toList();
+                if (entries.length >= 2) {
+                  _mixedMethod1 = entries[0]['method']?.toString() ?? 'Efectivo';
+                  _mixedMethod2 = entries[1]['method']?.toString() ?? 'Yape';
+                  _mixedAmount1.text = _number(entries[0]['amount']).toStringAsFixed(2);
+                  _mixedAmount2.text = _number(entries[1]['amount']).toStringAsFixed(2);
+                }
+              }
+              _notice = 'La solicitud pendiente no aparece confirmada en el servidor. Solo reintenta la misma solicitud; no crees otra venta.';
+            });
+          }
+        } else {
+          throw const FormatException('La venta central pendiente está incompleta. Verifica el historial central antes de operar.');
         }
       }
     } catch (e) {
