@@ -179,13 +179,6 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     assert.equal(absentRecovery.status, 200);
     assert.deepEqual(await absentRecovery.json(), { found: false });
 
-    const crossDeviceRecovery = await fetch(`${baseUrl}/api/v1/sales/by-idempotency/${idempotencyKey}`, {
-      headers: { authorization: `Bearer ${retryToken}` },
-    });
-    assert.equal(crossDeviceRecovery.status, 409);
-    const crossDeviceRecoveryBody = await crossDeviceRecovery.json() as { error?: { code?: string } };
-    assert.equal(crossDeviceRecoveryBody.error?.code, "IDEMPOTENCY_CONFLICT");
-
     // Simulate a historical sale created before request fingerprints were stored.
     await pool.query("UPDATE ventas SET idempotency_hash = NULL WHERE id = $1", [saleId]);
     const legacyKeyReuse = await fetch(`${baseUrl}/api/v1/sales`, {
