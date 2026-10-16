@@ -124,6 +124,39 @@ salesRouter.get("/", authenticate, requirePermission("Ventas"), async (req, res,
   }
 });
 
+// Read-only recovery lookup for a sale whose POST response may have been lost.
+salesRouter.get("/by-idempotency/:key", authenticate, requirePermission("Ventas"), async (req, res, next) => {
+  const key = z.string().uuid().safeParse(req.params.key);
+  if (!key.success) {
+    res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Clave de recuperación inválida." } });
+    return;
+  }
+  try {
+    const result = await pool.query(
+      `SELECT id, numero AS "number", total, establecimiento_id AS "establishmentId",
+              usuario_id AS "userId", dispositivo_id AS "deviceId"
+         FROM ventas
+        WHERE idempotency_key = $1 AND establecimiento_id = $2`,
+      [key.data, req.auth!.establishmentId],
+    );
+    if (!result.rowCount) {
+      res.status(200).json({ found: false });
+      return;
+    }
+    const sale = result.rows[0];
+    if (sale.userId !== req.auth!.userId || sale.deviceId !== req.auth!.deviceId) {
+      res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave pertenece a otra operación, usuario o dispositivo." } });
+      return;
+    }
+    res.status(200).json({
+      found: true,
+      sale: { id: sale.id, number: sale.number, total: Number(sale.total) },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 salesRouter.get("/:id", authenticate, requirePermission("Ventas"), async (req, res, next) => {
   const id = z.string().uuid().safeParse(req.params.id);
   if (!id.success) {
