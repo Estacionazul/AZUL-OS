@@ -193,6 +193,29 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     assert.equal(changedRequest.status, 409, JSON.stringify(changedBody));
     assert.equal(changedBody.error?.code, "IDEMPOTENCY_CONFLICT");
 
+    // Recovery lookup must confirm a previously committed sale without creating another one.
+    const recovery = await fetch(`${baseUrl}/api/v1/sales/by-idempotency/${idempotencyKey}`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    assert.equal(recovery.status, 200);
+    const recoveryBody = await recovery.json() as { found: boolean; sale?: { id: string; number: string; total: number } };
+    assert.equal(recoveryBody.found, true);
+    assert.equal(recoveryBody.sale?.id, saleId);
+    assert.equal(recoveryBody.sale?.number, created.body.sale.number);
+
+    const absentRecovery = await fetch(`${baseUrl}/api/v1/sales/by-idempotency/${randomUUID()}`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    assert.equal(absentRecovery.status, 200);
+    assert.deepEqual(await absentRecovery.json(), { found: false });
+
+    const crossDeviceRecovery = await fetch(`${baseUrl}/api/v1/sales/by-idempotency/${idempotencyKey}`, {
+      headers: { authorization: `Bearer ${retryToken}` },
+    });
+    assert.equal(crossDeviceRecovery.status, 409);
+    const crossDeviceRecoveryBody = await crossDeviceRecovery.json() as { error?: { code?: string } };
+    assert.equal(crossDeviceRecoveryBody.error?.code, "IDEMPOTENCY_CONFLICT");
+
     // Simulate a historical sale created before request fingerprints were stored.
     await pool.query("UPDATE ventas SET idempotency_hash = NULL WHERE id = $1", [saleId]);
     const legacyKeyReuse = await fetch(`${baseUrl}/api/v1/sales`, {
