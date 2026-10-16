@@ -124,6 +124,36 @@ salesRouter.get("/", authenticate, requirePermission("Ventas"), async (req, res,
   }
 });
 
+salesRouter.get("/recovery/:key", authenticate, requirePermission("Ventas"), async (req, res, next) => {
+  const key = z.string().uuid().safeParse(req.params.key);
+  if (!key.success) {
+    res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Clave de recuperación inválida." } });
+    return;
+  }
+  try {
+    // A pending request is recoverable only by the original actor on the
+    // original device and establishment. Do not reveal whether another actor's
+    // idempotency key exists.
+    const result = await pool.query(
+      `SELECT v.id, v.numero AS "number", v.fecha, v.tipo_documento AS "documentType",
+              v.total, v.metodo_pago AS "paymentMethod"
+         FROM ventas v
+        WHERE v.idempotency_key = $1
+          AND v.establecimiento_id = $2
+          AND v.usuario_id = $3
+          AND v.dispositivo_id = $4`,
+      [key.data, req.auth!.establishmentId, req.auth!.userId, req.auth!.deviceId],
+    );
+    if (!result.rowCount) {
+      res.status(404).json({ error: { code: "SALE_NOT_FOUND", message: "No se encontró una venta confirmada para esta solicitud en este dispositivo." } });
+      return;
+    }
+    res.json({ sale: result.rows[0], recovered: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
 salesRouter.get("/:id", authenticate, requirePermission("Ventas"), async (req, res, next) => {
   const id = z.string().uuid().safeParse(req.params.id);
   if (!id.success) {
