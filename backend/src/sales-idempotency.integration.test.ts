@@ -155,6 +155,21 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     assert.ok(created.body.sale);
     assert.ok(replay.body.sale);
     saleId = created.body.sale.id;
+    // A client recovering after an ambiguous response can verify a committed
+    // sale without creating another one. Recovery is scoped to the same actor/device.
+    const recovered = await fetch(`${baseUrl}/api/v1/sales/recovery/${idempotencyKey}`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    assert.equal(recovered.status, 200);
+    const recoveredBody = await recovered.json() as { recovered: boolean; sale: { id: string } };
+    assert.equal(recoveredBody.recovered, true);
+    assert.equal(recoveredBody.sale.id, created.body.sale.id);
+
+    const foreignRecovery = await fetch(`${baseUrl}/api/v1/sales/recovery/${idempotencyKey}`, {
+      headers: { authorization: `Bearer ${retryToken}` },
+    });
+    assert.equal(foreignRecovery.status, 404);
+
     assert.equal(created.body.replayed, false);
     assert.equal(replay.body.replayed, true);
     assert.equal(replay.body.sale.id, created.body.sale.id);
