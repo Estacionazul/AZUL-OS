@@ -280,6 +280,12 @@ class AzulApiClient {
   }) =>
       _send(method: 'GET', path: path, query: query);
 
+  /// Looks up a committed sale after a client lost the original response.
+  /// The backend scopes this lookup to the authenticated establishment,
+  /// user, and device; it does not create or retry a sale.
+  Future<Map<String, dynamic>> recoverCentralSale(String idempotencyKey) =>
+      getJson('/api/v1/sales/recovery/$idempotencyKey');
+
   Future<Map<String, dynamic>> postJson(
     String path, {
     Map<String, Object?>? body,
