@@ -352,6 +352,10 @@ void main() {
 
     expect(api.pendingSale?['idempotencyKey'], 'sale-key-original');
     expect(api.salePostCount, 0);
+    if (find.textContaining('Carrito (').evaluate().isNotEmpty) {
+      await tester.tap(find.textContaining('Carrito (').first);
+      await tester.pumpAndSettle();
+    }
     await tester.tap(find.text('REGISTRAR VENTA CENTRAL'));
     await tester.pumpAndSettle();
 
@@ -392,6 +396,10 @@ void main() {
     expect(api.pendingSale?['idempotencyKey'], 'sale-key-protected');
     expect(api.salePostCount, 0);
     expect(find.textContaining('Sesión no autorizada'), findsOneWidget);
+    if (find.textContaining('Carrito (').evaluate().isNotEmpty) {
+      await tester.tap(find.textContaining('Carrito (').first);
+      await tester.pumpAndSettle();
+    }
     await tester.tap(find.text('REGISTRAR VENTA CENTRAL'));
     await tester.pumpAndSettle();
     expect(api.pendingSale?['idempotencyKey'], 'sale-key-protected');
