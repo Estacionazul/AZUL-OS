@@ -363,6 +363,7 @@ void main() {
 
   testWidgets('recovery server error preserves pending sale and blocks another charge', (tester) async {
     final api = _FakePosApiClient()
+      ..cash = <String, dynamic>{'id': 'cash-id', 'openingAmount': 20.0}
       ..pendingSale = <String, dynamic>{
         'idempotencyKey': 'sale-key-protected',
         'body': <String, Object?>{
@@ -388,6 +389,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(api.pendingSale?['idempotencyKey'], 'sale-key-protected');
+    expect(api.salePostCount, 0);
+    expect(find.textContaining('Sesión no autorizada'), findsOneWidget);
+    await tester.tap(find.text('REGISTRAR VENTA CENTRAL'));
+    await tester.pumpAndSettle();
     expect(api.pendingSale?['idempotencyKey'], 'sale-key-protected');
     expect(api.salePostCount, 0);
     expect(find.textContaining('no registres otro cobro'), findsOneWidget);
