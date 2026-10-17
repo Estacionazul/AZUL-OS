@@ -326,6 +326,10 @@ void main() {
   });
 
   testWidgets('recovery not found keeps the original key and retries the same sale', (tester) async {
+    tester.view.physicalSize = const Size(1400, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final originalBody = <String, Object?>{
       'items': <Map<String, Object?>>[
         <String, Object?>{'productId': _FakePosApiClient.productId, 'quantity': 1, 'extraShot': false},
@@ -366,6 +370,10 @@ void main() {
   });
 
   testWidgets('recovery server error preserves pending sale and blocks another charge', (tester) async {
+    tester.view.physicalSize = const Size(1400, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final api = _FakePosApiClient()
       ..cash = <String, dynamic>{'id': 'cash-id', 'openingAmount': 20.0}
       ..pendingSale = <String, dynamic>{
