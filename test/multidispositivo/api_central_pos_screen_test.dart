@@ -408,11 +408,15 @@ void main() {
       await tester.tap(find.textContaining('Carrito (').first);
       await tester.pumpAndSettle();
     }
-    await tester.tap(find.text('REGISTRAR VENTA CENTRAL'));
-    await tester.pumpAndSettle();
+    final checkoutButton = tester.widget<FilledButton>(
+      find.ancestor(
+        of: find.text('REGISTRAR VENTA CENTRAL'),
+        matching: find.byType(FilledButton),
+      ),
+    );
+    expect(checkoutButton.onPressed, isNull);
     expect(api.pendingSale?['idempotencyKey'], 'sale-key-protected');
     expect(api.salePostCount, 0);
-    expect(find.textContaining('no registres otro cobro'), findsOneWidget);
   });
 
 }
