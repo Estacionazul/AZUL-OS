@@ -123,7 +123,6 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
           } else {
             throw const FormatException('El servidor devolvió un estado de recuperación inválido. No registres otro cobro.');
           }
-          });
         }
       }
     } catch (e) {
