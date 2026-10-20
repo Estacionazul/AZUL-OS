@@ -913,6 +913,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
         ),
       ),
     );
+  }
 
   Widget _banner(String message, {bool isError = false}) => Container(
         margin: const EdgeInsets.only(bottom: 8),
