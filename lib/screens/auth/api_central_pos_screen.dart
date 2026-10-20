@@ -913,19 +913,18 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
         ),
       ),
     );
-  }
 
   Widget _banner(String message, {bool isError = false}) => Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isError ? Theme.of(this.context).colorScheme.errorContainer : Theme.of(this.context).colorScheme.secondaryContainer,
+          color: isError ? Theme.of(context).colorScheme.errorContainer : Theme.of(context).colorScheme.secondaryContainer,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
           message,
           style: TextStyle(
-            color: isError ? Theme.of(this.context).colorScheme.onErrorContainer : Theme.of(this.context).colorScheme.onSecondaryContainer,
+            color: isError ? Theme.of(context).colorScheme.onErrorContainer : Theme.of(context).colorScheme.onSecondaryContainer,
           ),
         ),
       );
