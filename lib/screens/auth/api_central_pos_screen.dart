@@ -94,7 +94,35 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                 _mixedAmount2.text = _number(entries[1]['amount']).toStringAsFixed(2);
               }
             }
-            _notice = 'Se recuperó una venta central pendiente. Reintenta con la misma solicitud o consulta el historial antes de iniciar otra venta.';
+            _notice = 'Se recuperó una venta central pendiente. Verificando su estado en el servidor antes de permitir otra operación.';
+          });
+          // Resolve ambiguous POST outcomes through a read-only server lookup.
+          // Never clear the persisted request unless the server confirms the sale exists.
+          final recovery = await api.getJson('/api/v1/sales/by-idempotency/$key');
+          if (recovery['found'] == true) {
+            final sale = recovery['sale'];
+            if (sale is! Map<String, dynamic>) {
+              throw const FormatException('El servidor confirmó una venta pendiente con respuesta incompleta. No registres otro cobro.');
+            }
+            await api.clearPendingCentralSale();
+            if (mounted) {
+              setState(() {
+                _cart.clear();
+                _pendingSaleKey = null;
+                _pendingSaleRejected = false;
+                _recoveryBlocked = false;
+                _notice = 'Venta central ${_text(sale['number'])} confirmada por ${_money(sale['total'])}. No se volvió a cobrar.';
+              });
+            }
+          } else if (recovery['found'] == false) {
+            if (mounted) {
+              setState(() {
+                _notice = 'El servidor no encuentra la venta pendiente. Puedes reintentar únicamente la misma solicitud; no inicies una venta distinta.';
+              });
+            }
+          } else {
+            throw const FormatException('El servidor devolvió un estado de recuperación inválido. No registres otro cobro.');
+          }
           });
         }
       }
