@@ -54,6 +54,23 @@ jobs:
         run: flutter pub get
       - name: Build Android debug APK
         run: flutter build apk --debug
+      - name: Verify isolated staging package ID
+        shell: bash
+        run: |
+          APK="build/app/outputs/flutter-apk/app-debug.apk"
+          test -f "$APK"
+          AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)"
+          test -n "$AAPT"
+          "$AAPT" dump badging "$APK" | tee /tmp/azul-apk-badging.txt
+          grep -Fq "package: name='com.estacionazul.azul_os.staging.debug'" /tmp/azul-apk-badging.txt
+          echo "Verified: APK package ID is isolated from production."
+      - name: Upload staging debug APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: azul-os-huawei-staging-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
 
   windows-build:
     runs-on: windows-latest
@@ -67,3 +84,5 @@ jobs:
         run: flutter pub get
       - name: Build Windows debug app
         run: flutter build windows --debug
+      - name: Build Windows debug app in isolated central mode
+        run: flutter build windows --debug --dart-define=AZUL_CENTRAL_MODE=true

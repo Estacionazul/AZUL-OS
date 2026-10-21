@@ -18,6 +18,7 @@ import 'repositories/receta_detalle_repository.dart';
 import 'repositories/clientes_repository.dart';
 import 'repositories/insumo_repository.dart';
 import 'screens/auth/auth_gate.dart';
+import 'screens/auth/api_connection_screen.dart';
 
 import 'seed/datos_iniciales.dart';
 import 'pedidos/services/pedidos_service.dart';
@@ -49,6 +50,16 @@ import 'facturacion/repositories/resumenes_diarios_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Android staging/mobile always uses the central API flow. Windows can
+  // opt into the same isolated flow with --dart-define=AZUL_CENTRAL_MODE=true.
+  // In central mode, do not open local SQLite, seed local data, or register
+  // SUNAT services. The default Windows launch remains the existing local POS.
+  const centralMode = bool.fromEnvironment('AZUL_CENTRAL_MODE', defaultValue: false);
+  if (Platform.isAndroid || (Platform.isWindows && centralMode)) {
+    runApp(const AzulOSMobileApp());
+    return;
+  }
 
   final database = AppDatabase();
 
@@ -86,6 +97,26 @@ Future<void> main() async {
   }
 
   runApp(AzulOSApp(database: database, printerAdapter: printerAdapter));
+}
+
+/// Mobile and opt-in Windows central mode use API onboarding only. The normal
+/// Windows desktop launch keeps its existing local database and fiscal services.
+class AzulOSMobileApp extends StatelessWidget {
+  const AzulOSMobileApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Provider<AzulApiClient>(
+      create: (_) => AzulApiClient(),
+      dispose: (_, client) => client.dispose(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'AZUL OS · Móvil',
+        theme: AppTheme.lightTheme,
+        home: const ApiConnectionScreen(),
+      ),
+    );
+  }
 }
 
 class AzulOSApp extends StatelessWidget {

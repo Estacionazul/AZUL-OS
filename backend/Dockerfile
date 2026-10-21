@@ -12,6 +12,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
+# The compiled migration runner reads SQL files from /app/migrations.
+COPY migrations ./migrations
 USER node
 EXPOSE 8080
 CMD ["node", "dist/server.js"]
