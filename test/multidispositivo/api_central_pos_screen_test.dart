@@ -331,10 +331,20 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     final originalBody = <String, Object?>{
       'items': <Map<String, Object?>>[
-        <String, Object?>{'productId': _FakePosApiClient.productId, 'quantity': 1, 'extraShot': false},
+        <String, Object?>{
+          'productId': _FakePosApiClient.productId,
+          'quantity': 1,
+          'extraShot': false,
+          'size': 'Grande',
+          'milkType': 'Avena',
+          'sweetener': 'Miel',
+          'infusion': 'Té',
+          'note': 'sin hielo',
+        },
       ],
       'paymentMethod': 'Efectivo',
       'discount': 0,
+      'customerName': 'Cliente de prueba',
     };
     final api = _FakePosApiClient()
       ..cash = <String, dynamic>{'id': 'cash-id', 'openingAmount': 20.0}
