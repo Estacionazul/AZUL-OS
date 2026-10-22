@@ -15,6 +15,9 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
   let establishmentId: string | undefined;
   let userId: string | undefined;
   let deviceId: string | undefined;
+  let foreignEstablishmentId: string | undefined;
+  let foreignUserId: string | undefined;
+  let foreignDeviceId: string | undefined;
   let categoryId: string | undefined;
   let productId: string | undefined;
   let cashRegisterId: string | undefined;
@@ -179,6 +182,41 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     assert.equal(absentRecovery.status, 200);
     assert.deepEqual(await absentRecovery.json(), { found: false });
 
+    // Authenticate as a different establishment and prove that the existing
+    // global key is a conflict, not a safe-to-retry "not found" response.
+    const foreignEstablishment = await pool.query(
+      "INSERT INTO establecimientos (nombre) VALUES ($1) RETURNING id",
+      [`CI foreign recovery ${suffix}`],
+    );
+    foreignEstablishmentId = foreignEstablishment.rows[0].id as string;
+    const foreignDevice = await pool.query(
+      "INSERT INTO dispositivos (establecimiento_id, nombre, plataforma) VALUES ($1, $2, 'test') RETURNING id",
+      [foreignEstablishmentId, `CI foreign device ${suffix}`],
+    );
+    foreignDeviceId = foreignDevice.rows[0].id as string;
+    const foreignUser = await pool.query(
+      "INSERT INTO usuarios (establecimiento_id, usuario, nombre, pin_hash, rol) VALUES ($1, $2, $3, $4, 'CEO') RETURNING id",
+      [foreignEstablishmentId, `ci-foreign-${suffix}`, "CI Foreign Recovery", await bcrypt.hash("1234", 4)],
+    );
+    foreignUserId = foreignUser.rows[0].id as string;
+    const foreignLogin = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        establishmentId: foreignEstablishmentId,
+        username: `ci-foreign-${suffix}`,
+        pin: "1234",
+        deviceId: foreignDeviceId,
+      }),
+    });
+    assert.equal(foreignLogin.status, 200);
+    const foreignToken = (await foreignLogin.json() as { token: string }).token;
+    const foreignRecovery = await fetch(`${baseUrl}/api/v1/sales/by-idempotency/${idempotencyKey}`, {
+      headers: { authorization: `Bearer ${foreignToken}` },
+    });
+    assert.equal(foreignRecovery.status, 409);
+    assert.equal((await foreignRecovery.json() as { error?: { code?: string } }).error?.code, "IDEMPOTENCY_CONFLICT");
+
     // Simulate a historical sale created before request fingerprints were stored.
     await pool.query("UPDATE ventas SET idempotency_hash = NULL WHERE id = $1", [saleId]);
     const legacyKeyReuse = await fetch(`${baseUrl}/api/v1/sales`, {
@@ -225,6 +263,10 @@ test("concurrent retries of an idempotent sale do not duplicate sale, cash, or s
     if (productId) await pool.query("DELETE FROM movimientos_inventario WHERE producto_id = $1", [productId]);
     if (productId) await pool.query("DELETE FROM productos WHERE id = $1", [productId]);
     if (categoryId) await pool.query("DELETE FROM categorias WHERE id = $1", [categoryId]);
+    if (foreignUserId) await pool.query("DELETE FROM sesiones WHERE usuario_id = $1", [foreignUserId]);
+    if (foreignDeviceId) await pool.query("DELETE FROM dispositivos WHERE id = $1", [foreignDeviceId]);
+    if (foreignUserId) await pool.query("DELETE FROM usuarios WHERE id = $1", [foreignUserId]);
+    if (foreignEstablishmentId) await pool.query("DELETE FROM establecimientos WHERE id = $1", [foreignEstablishmentId]);
     if (userId) await pool.query("DELETE FROM sesiones WHERE usuario_id = $1", [userId]);
     if (deviceId) await pool.query("DELETE FROM dispositivos WHERE id = $1", [deviceId]);
     if (userId) await pool.query("DELETE FROM usuarios WHERE id = $1", [userId]);
