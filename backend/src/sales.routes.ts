@@ -143,12 +143,14 @@ salesRouter.get("/by-idempotency/:key", authenticate, requirePermission("Ventas"
       [key.data, req.auth!.establishmentId],
     );
     if (!result.rowCount) {
+      // The API never returns another tenant's sale details. It only reports a
+      // conflict if this globally unique key is already taken by another sale.
       const keyOwner = await pool.query(
         "SELECT 1 FROM ventas WHERE idempotency_key = $1",
         [key.data],
       );
       if (keyOwner.rowCount) {
-        res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave de recuperación pertenece a otra operación o establecimiento." } });
+        res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave de recuperación ya fue utilizada por otra operación." } });
         return;
       }
       res.status(200).json({ found: false });
