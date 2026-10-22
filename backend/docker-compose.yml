@@ -1,0 +1,44 @@
+name: azul-os-local
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-azul_os_staging}
+      POSTGRES_USER: ${POSTGRES_USER:-azul_os}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in backend/.env}
+    volumes:
+      - azul_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [azul-internal]
+  api:
+    build: { context: ., dockerfile: Dockerfile }
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      HOST: 0.0.0.0
+      PORT: 8080
+      DATABASE_URL: postgres://${POSTGRES_USER:-azul_os}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-azul_os_staging}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in backend/.env}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      MIGRATIONS_CONFIRM: ${MIGRATIONS_CONFIRM:-}
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
+    ports: ["${API_PORT:-8080}:8080"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 4s
+      retries: 10
+      start_period: 20s
+    networks: [azul-internal]
+networks:
+  azul-internal:
+    driver: bridge
+volumes:
+  azul_pgdata:
