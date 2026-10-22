@@ -132,6 +132,9 @@ salesRouter.get("/by-idempotency/:key", authenticate, requirePermission("Ventas"
     return;
   }
   try {
+    // Keep sale details tenant-scoped. If this tenant has no row, check whether
+    // the key is already owned elsewhere so the client cannot treat a foreign
+    // operation as a safe "not found" retry.
     const result = await pool.query(
       `SELECT id, numero AS "number", total, usuario_id AS "userId",
               dispositivo_id AS "deviceId"
@@ -140,6 +143,14 @@ salesRouter.get("/by-idempotency/:key", authenticate, requirePermission("Ventas"
       [key.data, req.auth!.establishmentId],
     );
     if (!result.rowCount) {
+      const keyOwner = await pool.query(
+        "SELECT 1 FROM ventas WHERE idempotency_key = $1",
+        [key.data],
+      );
+      if (keyOwner.rowCount) {
+        res.status(409).json({ error: { code: "IDEMPOTENCY_CONFLICT", message: "La clave de recuperación pertenece a otra operación o establecimiento." } });
+        return;
+      }
       res.status(200).json({ found: false });
       return;
     }
