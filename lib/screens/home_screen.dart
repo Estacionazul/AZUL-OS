@@ -80,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        body: IndexedStack(index: _selectedIndex, children: pages),
+        body: pages[_selectedIndex],
       );
     }
 
@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
             selectedIndex: _selectedIndex,
             onItemSelected: _seleccionar,
           ),
-          Expanded(child: IndexedStack(index: _selectedIndex, children: pages)),
+          Expanded(child: pages[_selectedIndex]),
         ],
       ),
     );
