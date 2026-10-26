@@ -482,86 +482,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ==================================================
-                  // KPIs
+                  // KPIs RESPONSIVOS
                   // ==================================================
-                  Row(
-                    children: [
-                      Expanded(
-                        child: KpiCard(
-                          icon: Icons.today,
-                          titulo: 'Ventas Hoy',
-                          valor: 'S/ ${resumen.ventasHoy.toStringAsFixed(2)}',
-                          color: AppColors.success,
-                        ),
-                      ),
-
-                      const SizedBox(width: AppSpacing.md),
-
-                      Expanded(
-                        child: KpiCard(
-                          icon: Icons.calendar_month,
-                          titulo: 'Ventas del Mes',
-                          valor: 'S/ ${resumen.ventasMes.toStringAsFixed(2)}',
-                          color: AppColors.info,
-                        ),
-                      ),
-
-                      const SizedBox(width: AppSpacing.md),
-
-                      Expanded(
-                        child: KpiCard(
-                          icon: Icons.receipt_long,
-                          titulo: 'Tickets Hoy',
-                          valor: resumen.ticketsHoy.toString(),
-                          color: Colors.brown,
-                        ),
-                      ),
-
-                      const SizedBox(width: AppSpacing.md),
-
-                      Expanded(
-                        child: KpiCard(
-                          icon: Icons.people,
-                          titulo: 'Clientes Hoy',
-                          valor: resumen.clientesHoy.toString(),
-                          color: AppColors.info,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: AppSpacing.md),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: KpiCard(
-                          icon: Icons.receipt_long_outlined,
-                          titulo: 'Tickets del Mes',
-                          valor: resumen.ticketsMes.toString(),
-                          color: Colors.deepPurple,
-                        ),
-                      ),
-
-                      const SizedBox(width: AppSpacing.md),
-
-                      Expanded(
-                        child: KpiCard(
-                          icon: Icons.people_outline,
-                          titulo: 'Clientes del Mes',
-                          valor: resumen.clientesMes.toString(),
-                          color: AppColors.info,
-                        ),
-                      ),
-
-                      const SizedBox(width: AppSpacing.md),
-
-                      const Expanded(child: SizedBox()),
-
-                      const SizedBox(width: AppSpacing.md),
-
-                      const Expanded(child: SizedBox()),
-                    ],
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final movil = constraints.maxWidth < 600;
+                      final columnas = movil ? 2 : constraints.maxWidth < 1000 ? 3 : 4;
+                      return GridView.count(
+                        crossAxisCount: columnas,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisSpacing: movil ? 8 : AppSpacing.md,
+                        mainAxisSpacing: movil ? 8 : AppSpacing.md,
+                        childAspectRatio: movil ? 1.05 : 2.25,
+                        children: [
+                          KpiCard(icon: Icons.today, titulo: 'Ventas Hoy',
+                            valor: 'S/ ${resumen.ventasHoy.toStringAsFixed(2)}',
+                            color: AppColors.success),
+                          KpiCard(icon: Icons.calendar_month, titulo: 'Ventas del Mes',
+                            valor: 'S/ ${resumen.ventasMes.toStringAsFixed(2)}',
+                            color: AppColors.info),
+                          KpiCard(icon: Icons.receipt_long, titulo: 'Tickets Hoy',
+                            valor: resumen.ticketsHoy.toString(), color: Colors.brown),
+                          KpiCard(icon: Icons.people, titulo: 'Clientes Hoy',
+                            valor: resumen.clientesHoy.toString(), color: AppColors.info),
+                          KpiCard(icon: Icons.receipt_long_outlined, titulo: 'Tickets del Mes',
+                            valor: resumen.ticketsMes.toString(), color: Colors.deepPurple),
+                          KpiCard(icon: Icons.people_outline, titulo: 'Clientes del Mes',
+                            valor: resumen.clientesMes.toString(), color: AppColors.info),
+                        ],
+                      );
+                    },
                   ),
 
                   const SizedBox(height: AppSpacing.xl),
