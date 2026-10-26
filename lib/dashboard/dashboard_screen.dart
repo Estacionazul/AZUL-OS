@@ -494,7 +494,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         crossAxisSpacing: movil ? 8 : AppSpacing.md,
                         mainAxisSpacing: movil ? 8 : AppSpacing.md,
-                        childAspectRatio: movil ? 1.05 : 2.25,
+                        childAspectRatio: movil ? 0.85 : 2.25,
                         children: [
                           KpiCard(icon: Icons.today, titulo: 'Ventas Hoy',
                             valor: 'S/ ${resumen.ventasHoy.toStringAsFixed(2)}',
