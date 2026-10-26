@@ -397,59 +397,64 @@ class _ReportesScreenState extends State<ReportesScreen> {
   // ==========================================================
 
   Widget _encabezado() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(28, 24, 28, 20),
-      color: Colors.white,
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: const Color(0xFF1557B0),
-              borderRadius: BorderRadius.circular(12),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final movil = constraints.maxWidth < 600;
+        final titulo = Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1557B0),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.bar_chart_rounded, size: 25, color: Colors.white),
             ),
-            child: const Icon(
-              Icons.bar_chart_rounded,
-              size: 28,
-              color: Colors.white,
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Reportes', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 4),
+                  Text('Resumen y análisis de las ventas de Estación Azul',
+                      style: TextStyle(color: Colors.grey, fontSize: 12)),
+                ],
+              ),
             ),
-          ),
-
-          const SizedBox(width: 14),
-
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Reportes',
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          ],
+        );
+        final acciones = Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            FilledButton.icon(
+              onPressed: _exportarExcel,
+              icon: const Icon(Icons.table_view_rounded),
+              label: const Text('Exportar Excel'),
+            ),
+            IconButton(
+              tooltip: 'Actualizar',
+              onPressed: _cargarReportes,
+              icon: const Icon(Icons.refresh),
+            ),
+          ],
+        );
+        return Container(
+          padding: EdgeInsets.fromLTRB(movil ? 12 : 28, movil ? 16 : 24, movil ? 12 : 28, movil ? 14 : 20),
+          color: Colors.white,
+          child: movil
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [titulo, const SizedBox(height: 12), acciones],
+                )
+              : Row(
+                  children: [Expanded(child: titulo), const SizedBox(width: 16), acciones],
                 ),
-                SizedBox(height: 4),
-                Text(
-                  'Resumen y análisis de las ventas de Estación Azul',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-
-          FilledButton.icon(
-            onPressed: _exportarExcel,
-            icon: const Icon(Icons.table_view_rounded),
-            label: const Text('Exportar Excel'),
-          ),
-
-          const SizedBox(width: 8),
-
-          IconButton(
-            tooltip: 'Actualizar',
-            onPressed: _cargarReportes,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -461,37 +466,25 @@ class _ReportesScreenState extends State<ReportesScreen> {
     return Card(
       elevation: 0,
       child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Row(
+        padding: const EdgeInsets.all(14),
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 10,
+          runSpacing: 6,
           children: [
             const Icon(Icons.filter_alt_outlined, color: Color(0xFF174D7A)),
-
-            const SizedBox(width: 12),
-
-            const Text(
-              'Periodo:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(width: 14),
-
+            const Text('Periodo:', style: TextStyle(fontWeight: FontWeight.bold)),
             DropdownButton<String>(
               value: _periodo,
               items: const [
                 DropdownMenuItem(value: 'Hoy', child: Text('Hoy')),
-                DropdownMenuItem(
-                  value: '7 días',
-                  child: Text('Últimos 7 días'),
-                ),
+                DropdownMenuItem(value: '7 días', child: Text('Últimos 7 días')),
                 DropdownMenuItem(value: 'Este mes', child: Text('Este mes')),
                 DropdownMenuItem(value: 'Todo', child: Text('Todo')),
               ],
               onChanged: (valor) {
                 if (valor == null) return;
-
-                setState(() {
-                  _periodo = valor;
-                });
+                setState(() => _periodo = valor);
               },
             ),
           ],
@@ -626,7 +619,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
-                  childAspectRatio: constraints.maxWidth < 600 ? 1.45 : 1.1,
+                  childAspectRatio: constraints.maxWidth < 600 ? 1.2 : 1.1,
                   children: metodos,
                 );
               },
