@@ -13,6 +13,9 @@ class _FakePosApiClient extends AzulApiClient {
   String? lastCloseIdempotencyKey;
   Map<String, dynamic>? pendingSale;
   Map<String, dynamic>? pendingCashClose;
+  Map<String, dynamic> recoveryResponse = <String, dynamic>{'found': false};
+  Object? recoveryError;
+  int salePostCount = 0;
 
   static const productId = 'f2c8b91a-a0c3-4dc4-8b32-3e4e9cb31b01';
 
@@ -25,7 +28,7 @@ class _FakePosApiClient extends AzulApiClient {
   }
 
   @override
-  Future<Map<String, dynamic>?> readPendingCentralSale() async => null;
+  Future<Map<String, dynamic>?> readPendingCentralSale() async => pendingSale;
 
   @override
   Future<void> clearPendingCentralSale() async {
@@ -54,6 +57,10 @@ class _FakePosApiClient extends AzulApiClient {
     String path, {
     Map<String, String>? query,
   }) async {
+    if (path.startsWith('/api/v1/sales/by-idempotency/')) {
+      if (recoveryError != null) throw recoveryError!;
+      return recoveryResponse;
+    }
     if (path == '/api/v1/cash/current') {
       return <String, dynamic>{'cashRegister': cash};
     }
@@ -143,6 +150,7 @@ class _FakePosApiClient extends AzulApiClient {
       return <String, dynamic>{'cashRegister': cash};
     }
     if (path == '/api/v1/sales') {
+      salePostCount++;
       lastSaleBody = body;
       lastIdempotencyKey = idempotencyKey;
       return <String, dynamic>{
@@ -282,6 +290,142 @@ void main() {
     );
     expect(paid, 8.0);
     expect(find.textContaining('V000001'), findsOneWidget);
+  });
+
+  testWidgets('recovery confirms an existing sale and never posts it again', (tester) async {
+    final api = _FakePosApiClient()
+      ..pendingSale = <String, dynamic>{
+        'idempotencyKey': 'sale-key-existing',
+        'body': <String, Object?>{
+          'items': <Map<String, Object?>>[
+            <String, Object?>{'productId': _FakePosApiClient.productId, 'quantity': 1, 'extraShot': false},
+          ],
+          'paymentMethod': 'Efectivo',
+          'discount': 0,
+        },
+      }
+      ..recoveryResponse = <String, dynamic>{
+        'found': true,
+        'sale': <String, dynamic>{'number': 'V000123', 'total': 8.0},
+      };
+    addTearDown(api.dispose);
+
+    await tester.pumpWidget(
+      Provider<AzulApiClient>.value(
+        value: api,
+        child: const MaterialApp(home: ApiCentralPosScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(api.salePostCount, 0);
+    expect(api.pendingSale, isNull);
+    expect(find.textContaining('V000123'), findsOneWidget);
+    expect(find.textContaining('No se volvió a cobrar'), findsOneWidget);
+  });
+
+  testWidgets('recovery not found keeps the original key and retries the same sale', (tester) async {
+    tester.view.physicalSize = const Size(1400, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final originalBody = <String, Object?>{
+      'items': <Map<String, Object?>>[
+        <String, Object?>{
+          'productId': _FakePosApiClient.productId,
+          'quantity': 1,
+          'extraShot': false,
+          'size': 'Grande',
+          'milkType': 'Avena',
+          'sweetener': 'Miel',
+          'infusion': 'Té',
+          'note': 'sin hielo',
+        },
+      ],
+      'paymentMethod': 'Efectivo',
+      'discount': 0,
+      'customerName': 'Cliente de prueba',
+    };
+    final api = _FakePosApiClient()
+      ..cash = <String, dynamic>{'id': 'cash-id', 'openingAmount': 20.0}
+      ..pendingSale = <String, dynamic>{
+        'idempotencyKey': 'sale-key-original',
+        'body': originalBody,
+      }
+      ..recoveryResponse = <String, dynamic>{'found': false};
+    addTearDown(api.dispose);
+
+    await tester.pumpWidget(
+      Provider<AzulApiClient>.value(
+        value: api,
+        child: const MaterialApp(home: ApiCentralPosScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(api.pendingSale?['idempotencyKey'], 'sale-key-original');
+    expect(api.salePostCount, 0);
+    if (find.textContaining('Carrito (').evaluate().isNotEmpty) {
+      await tester.tap(find.textContaining('Carrito (').first);
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('REGISTRAR VENTA CENTRAL'));
+    await tester.pumpAndSettle();
+
+    expect(api.lastIdempotencyKey, 'sale-key-original');
+    expect(api.lastSaleBody, originalBody);
+    expect(api.salePostCount, 1);
+    expect(api.pendingSale, isNull);
+  });
+
+  testWidgets('recovery server error preserves pending sale and blocks another charge', (tester) async {
+    tester.view.physicalSize = const Size(1400, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final api = _FakePosApiClient()
+      ..cash = <String, dynamic>{'id': 'cash-id', 'openingAmount': 20.0}
+      ..pendingSale = <String, dynamic>{
+        'idempotencyKey': 'sale-key-protected',
+        'body': <String, Object?>{
+          'items': <Map<String, Object?>>[
+            <String, Object?>{'productId': _FakePosApiClient.productId, 'quantity': 1, 'extraShot': false},
+          ],
+          'paymentMethod': 'Efectivo',
+          'discount': 0,
+        },
+      }
+      ..recoveryError = const AzulApiException(
+        statusCode: 401,
+        code: 'UNAUTHORIZED',
+        message: 'Sesión no autorizada',
+      );
+    addTearDown(api.dispose);
+
+    await tester.pumpWidget(
+      Provider<AzulApiClient>.value(
+        value: api,
+        child: const MaterialApp(home: ApiCentralPosScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(api.pendingSale?['idempotencyKey'], 'sale-key-protected');
+    expect(api.salePostCount, 0);
+    expect(find.textContaining('Sesión no autorizada'), findsOneWidget);
+    if (find.textContaining('Carrito (').evaluate().isNotEmpty) {
+      await tester.tap(find.textContaining('Carrito (').first);
+      await tester.pumpAndSettle();
+    }
+    final checkoutButton = tester.widget<FilledButton>(
+      find.ancestor(
+        of: find.text('REGISTRAR VENTA CENTRAL'),
+        matching: find.byType(FilledButton),
+      ),
+    );
+    expect(checkoutButton.onPressed, isNull);
+    expect(api.pendingSale?['idempotencyKey'], 'sale-key-protected');
+    expect(api.salePostCount, 0);
   });
 
 }

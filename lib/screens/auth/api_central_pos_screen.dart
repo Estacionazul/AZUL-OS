@@ -29,6 +29,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
   final _mixedAmount1 = TextEditingController();
   final _mixedAmount2 = TextEditingController();
   String? _pendingSaleKey;
+  Map<String, dynamic>? _pendingSaleBody;
   String? _pendingCloseKey;
   Map<String, dynamic>? _pendingCloseBody;
   bool _pendingSaleRejected = false;
@@ -70,6 +71,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
           final payments = body['payments'];
           setState(() {
             _pendingSaleKey = key;
+            _pendingSaleBody = Map<String, dynamic>.from(body);
             _pendingSaleRejected = false;
             _cart.clear();
             if (items is List) {
@@ -94,8 +96,36 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
                 _mixedAmount2.text = _number(entries[1]['amount']).toStringAsFixed(2);
               }
             }
-            _notice = 'Se recuperó una venta central pendiente. Reintenta con la misma solicitud o consulta el historial antes de iniciar otra venta.';
+            _notice = 'Se recuperó una venta central pendiente. Verificando su estado en el servidor antes de permitir otra operación.';
           });
+          // Resolve ambiguous POST outcomes through a read-only server lookup.
+          // Never clear the persisted request unless the server confirms the sale exists.
+          final recovery = await api.getJson('/api/v1/sales/by-idempotency/$key');
+          if (recovery['found'] == true) {
+            final sale = recovery['sale'];
+            if (sale is! Map<String, dynamic>) {
+              throw const FormatException('El servidor confirmó una venta pendiente con respuesta incompleta. No registres otro cobro.');
+            }
+            await api.clearPendingCentralSale();
+            if (mounted) {
+              setState(() {
+                _cart.clear();
+                _pendingSaleKey = null;
+                _pendingSaleBody = null;
+                _pendingSaleRejected = false;
+                _recoveryBlocked = false;
+                _notice = 'Venta central ${_text(sale['number'])} confirmada por ${_money(sale['total'])}. No se volvió a cobrar.';
+              });
+            }
+          } else if (recovery['found'] == false) {
+            if (mounted) {
+              setState(() {
+                _notice = 'El servidor no encuentra la venta pendiente. Puedes reintentar únicamente la misma solicitud; no inicies una venta distinta.';
+              });
+            }
+          } else {
+            throw const FormatException('El servidor devolvió un estado de recuperación inválido. No registres otro cobro.');
+          }
         }
       }
     } catch (e) {
@@ -401,6 +431,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       setState(() => _error = 'Agrega productos con importe mayor que cero a la venta.');
       return;
     }
+    final isRecoveryRetry = _pendingSaleKey != null && _pendingSaleBody != null;
     final items = _cart.entries.map((entry) => <String, Object?>{
       'productId': entry.key,
       'quantity': entry.value,
@@ -431,17 +462,25 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
         <String, Object?>{'method': _mixedMethod2, 'amount': amount2},
       ];
     }
-    final key = _pendingSaleKey ??= AzulApiClient.newIdempotencyKey();
-    final requestBody = <String, Object?>{
-      'items': items,
-      if (_mixedPayment) 'paymentMethod': 'Mixto' else 'paymentMethod': _paymentMethod,
-      if (payments != null) 'payments': payments,
-      'discount': 0,
-    };
+    final key = _pendingSaleKey ?? AzulApiClient.newIdempotencyKey();
+    final requestBody = isRecoveryRetry
+        ? Map<String, Object?>.from(_pendingSaleBody!)
+        : <String, Object?>{
+            'items': items,
+            if (_mixedPayment) 'paymentMethod': 'Mixto' else 'paymentMethod': _paymentMethod,
+            if (payments != null) 'payments': payments,
+            'discount': 0,
+          };
     await _runOperation(() async {
       final api = context.read<AzulApiClient>();
       _pendingSaleRejected = false;
       await api.savePendingCentralSale(idempotencyKey: key, body: requestBody);
+      if (!isRecoveryRetry) {
+        setState(() {
+          _pendingSaleKey = key;
+          _pendingSaleBody = Map<String, dynamic>.from(requestBody);
+        });
+      }
       final result = await api.postJson(
         '/api/v1/sales',
         idempotencyKey: key,
@@ -457,6 +496,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
       setState(() {
         _cart.clear();
         _pendingSaleKey = null;
+        _pendingSaleBody = null;
         _pendingSaleRejected = false;
         _recoveryBlocked = false;
         _mixedPayment = false;
@@ -485,6 +525,7 @@ class _ApiCentralPosScreenState extends State<ApiCentralPosScreen> {
     await context.read<AzulApiClient>().clearPendingCentralSale();
     setState(() {
       _pendingSaleKey = null;
+      _pendingSaleBody = null;
       _pendingSaleRejected = false;
       _error = null;
       _notice = 'Intento rechazado descartado. Corrige el carrito antes de cobrar nuevamente.';
