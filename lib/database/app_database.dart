@@ -943,10 +943,11 @@ class AppDatabase extends _$AppDatabase {
 
         // ============================================================
         // MIGRACIÓN 33
-        // RECONSTRUCCIÓN LIMPIA DE RECETAS
+        // PRESERVACIÓN DE RECETAS EXISTENTES
         // ============================================================
-        // Elimina recetas antiguas/duplicadas y sus detalles.
-        // Los seeds actuales las recrearán después del upgrade.
+        // No borrar recetas ni detalles automáticamente: pueden contener
+        // fórmulas personalizadas. Cualquier limpieza requiere auditoría y
+        // una migración explícita que conserve las referencias válidas.
         // ============================================================
         if (from < 34) {
           // Preservamos las recetas y sus detalles existentes. Borrarlos
