@@ -949,8 +949,10 @@ class AppDatabase extends _$AppDatabase {
         // Los seeds actuales las recrearán después del upgrade.
         // ============================================================
         if (from < 34) {
-          await delete(recetaDetalle).go();
-          await delete(recetas).go();
+          // Preservamos las recetas y sus detalles existentes. Borrarlos
+          // todos durante una actualización puede destruir fórmulas
+          // personalizadas e historial operativo. Las correcciones de recetas
+          // deben aplicarse mediante una migración específica y no destructiva.
         }
 
         // ==========================================================
@@ -964,15 +966,9 @@ class AppDatabase extends _$AppDatabase {
         // ==========================================================
 
         if (from < 35) {
-          // Primero: todos los productos actuales pasan a
-          // inventario por producto.
-          await (update(productos)).write(
-            const ProductosCompanion(
-              tipoInventario: Value('producto'),
-            ),
-          );
-
-          // Segundo: restauramos como "receta" únicamente
+          // No sobrescribimos masivamente el tipo de inventario de todos
+          // los productos durante una actualización. Solo corregimos los
+          // códigos conocidos que requieren control por receta.
           // los productos que actualmente tienen receta.
           await (update(productos)
             ..where(
