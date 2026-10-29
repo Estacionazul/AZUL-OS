@@ -241,20 +241,10 @@ class AppDatabase extends _$AppDatabase {
                 ),
               );
             } else {
-              // Conservamos el costo existente para no inventar ni sobrescribir costos.
-              await (update(productos)
-                ..where(
-                      (p) => p.codigo.equals(codigo),
-                ))
-                  .write(
-                ProductosCompanion(
-                  nombre: Value(nombre),
-                  descripcion: Value(descripcion),
-                  categoriaId: Value(idCategoria),
-                  precioVenta: Value(precio),
-                  activo: const Value(true),
-                ),
-              );
+              // No sobrescribimos automáticamente nombre, categoría, precio,
+              // costo ni estado de productos existentes durante el arranque.
+              // Las correcciones comerciales deben hacerse mediante un cambio
+              // explícito y revisado, no como efecto colateral de una migración.
             }
           }
 
