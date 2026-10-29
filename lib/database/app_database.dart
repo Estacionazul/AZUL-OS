@@ -166,18 +166,19 @@ class AppDatabase extends _$AppDatabase {
       if (from < 32) {
         // ============================================================
         // MIGRACIÓN 32
-        // LIMPIEZA MAESTRA DEL CATÁLOGO ESTACIÓN AZUL
+        // ACTUALIZACIÓN DEL CATÁLOGO ESTACIÓN AZUL
         // ============================================================
         //
         // Objetivo:
-        // 1. Eliminar físicamente productos que NO pertenecen
-        //    al catálogo definitivo.
-        // 2. Conservar Espresso y Americano porque tienen ventas.
-        // 3. Recuperar productos que la migración 31 eliminó
-        //    por tener una lista incompleta.
-        // 4. Corregir nombres, precios y descripciones.
-        // 5. Crear GA019, GA020 y GA021.
-        // 6. No dejar productos antiguos como inactivos.
+        // 1. Crear o actualizar los productos conocidos de la carta.
+        // 2. Corregir nombres, precios y descripciones del catálogo definido.
+        // 3. Crear GA019, GA020 y GA021.
+        // 4. Preservar productos ajenos a la carta codificada: podrían
+        //    tener referencias históricas o ser productos personalizados.
+        // 5. No eliminar automáticamente productos ni movimientos históricos.
+        //
+        // Los cambios de catálogo siguen requiriendo revisión antes de
+        // ejecutar una migración sobre una base productiva.
         //
         // ============================================================
 
