@@ -65,5 +65,7 @@ jobs:
           cache: true
       - name: Resolve dependencies
         run: flutter pub get
-      - name: Build Windows debug app
+      - name: Build Windows debug app (modo local protegido)
         run: flutter build windows --debug
+      - name: Build Windows debug app (modo central multidispositivo)
+        run: flutter build windows --debug --dart-define=AZUL_CENTRAL_MODE=true
