@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { rateLimit } from "express-rate-limit";
+import { ipKeyGenerator, rateLimit } from "express-rate-limit";
 import { authenticate, login, logout } from "./auth.js";
 
 export const authRouter = Router();
@@ -10,6 +10,10 @@ authRouter.use(rateLimit({
   limit: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  // Usamos la IP que Express considera confiable con trust proxy desactivado.
+  // No confiamos en X-Forwarded-For arbitrario; ipKeyGenerator conserva el
+  // tratamiento seguro de rangos IPv6 del limitador.
+  keyGenerator: (req) => ipKeyGenerator(req.ip),
   message: { error: { code: "RATE_LIMITED", message: "Demasiados intentos. Intenta más tarde." } },
 }));
 
@@ -18,6 +22,9 @@ const loginLimiter = rateLimit({
   limit: 10,
   standardHeaders: "draft-8",
   legacyHeaders: false,
+  // Misma política que el limitador global: no confiar en cabeceras de proxy
+  // hasta que se configure explícitamente un proxy conocido.
+  keyGenerator: (req) => ipKeyGenerator(req.ip),
   message: { error: { code: "LOGIN_RATE_LIMIT", message: "Demasiados intentos. Espera 15 minutos y vuelve a intentarlo." } },
 });
 
