@@ -67,31 +67,10 @@ class RecetasSeed {
         productos[codigo] = producto.id;
       }
 
-      final idsPermitidos = productos.values.toList();
+      // Preservamos recetas fuera de esta lista: pueden ser personalizadas.
+      // La depuración del catálogo debe ser explícita y auditada.
 
-      // --------------------------------------------------------
-      // 2. Eliminar recetas que ya no pertenecen al catálogo
-      // --------------------------------------------------------
-
-      final recetasActuales = await db.select(db.recetas).get();
-
-      for (final receta in recetasActuales) {
-        if (!idsPermitidos.contains(receta.productoId)) {
-          await (db.delete(db.recetaDetalle)
-            ..where((d) => d.recetaId.equals(receta.id)))
-              .go();
-
-          await (db.delete(db.recetas)
-            ..where((r) => r.id.equals(receta.id)))
-              .go();
-        }
-      }
-
-      // --------------------------------------------------------
-      // 3. Crear o corregir las 19 recetas definitivas
-      // --------------------------------------------------------
-
-      for (final entrada in recetasDeseadas.entries) {
+            for (final entrada in recetasDeseadas.entries) {
         final codigo = entrada.key;
         final nombreCorrecto = entrada.value;
         final idProducto = productos[codigo]!;
@@ -110,12 +89,8 @@ class RecetasSeed {
             ),
           );
         } else if (receta.nombre != nombreCorrecto) {
-          // Si el nombre antiguo era incorrecto, también eliminamos
-          // sus detalles para que RecetaDetalleSeed los reconstruya.
-          await (db.delete(db.recetaDetalle)
-            ..where((d) => d.recetaId.equals(receta.id)))
-              .go();
-
+          // Corregimos el nombre sin eliminar detalles existentes.
+          // Las cantidades de una receta requieren revisión explícita.
           await (db.update(db.recetas)
             ..where((r) => r.id.equals(receta.id)))
               .write(
