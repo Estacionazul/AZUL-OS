@@ -4,11 +4,8 @@ import '../database/app_database.dart';
 
 class JugosSeed {
   static Future<void> cargar(AppDatabase db, int categoriaId) async {
-    final productos = await db.select(db.productos).get();
-
-    if (productos.any((p) => p.categoriaId == categoriaId)) {
-      return;
-    }
+    final productosExistentes = await db.select(db.productos).get();
+    final codigosExistentes = productosExistentes.map((p) => p.codigo).toSet();
 
     final lista = <ProductosCompanion>[
       // ==========================================================
@@ -106,8 +103,13 @@ class JugosSeed {
       ),
     ];
 
+    final faltantes = lista
+        .where((producto) => !codigosExistentes.contains(producto.codigo.value))
+        .toList();
+    if (faltantes.isEmpty) return;
+
     await db.batch((batch) {
-      batch.insertAll(db.productos, lista);
+      batch.insertAll(db.productos, faltantes);
     });
   }
 }
