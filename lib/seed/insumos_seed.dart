@@ -244,22 +244,8 @@ class InsumosSeed {
       emoji: "🍯",
     );
 
-    final insumo019 = await (db.select(
-      db.insumos,
-    )..where((i) => i.codigo.equals("INS019"))).getSingleOrNull();
-
-    if (insumo019 != null && insumo019.costoCompra == 0) {
-      await (db.update(
-        db.insumos,
-      )..where((i) => i.codigo.equals("INS019"))).write(
-        const InsumosCompanion(
-          nombre: Value("Jarabe de caramelo"),
-          stock: Value(1000.0),
-          stockMinimo: Value(100.0),
-          costoCompra: Value(0.105),
-        ),
-      );
-    }
+    // No restablecemos stock ni costo de INS019 durante el arranque.
+    // El stock existente solo debe cambiar mediante movimientos de inventario.
 
     await agregar(
       codigo: "INS020",
