@@ -13,7 +13,7 @@ authRouter.use(rateLimit({
   // Usamos la IP que Express considera confiable con trust proxy desactivado.
   // No confiamos en X-Forwarded-For arbitrario; ipKeyGenerator conserva el
   // tratamiento seguro de rangos IPv6 del limitador.
-  keyGenerator: (req) => ipKeyGenerator(req.ip),
+  keyGenerator: (req) => ipKeyGenerator(req.ip ?? req.socket.remoteAddress ?? "unknown"),
   message: { error: { code: "RATE_LIMITED", message: "Demasiados intentos. Intenta más tarde." } },
 }));
 
@@ -24,7 +24,7 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
   // Misma política que el limitador global: no confiar en cabeceras de proxy
   // hasta que se configure explícitamente un proxy conocido.
-  keyGenerator: (req) => ipKeyGenerator(req.ip),
+  keyGenerator: (req) => ipKeyGenerator(req.ip ?? req.socket.remoteAddress ?? "unknown"),
   message: { error: { code: "LOGIN_RATE_LIMIT", message: "Demasiados intentos. Espera 15 minutos y vuelve a intentarlo." } },
 });
 
