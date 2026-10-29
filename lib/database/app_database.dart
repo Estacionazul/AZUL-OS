@@ -226,9 +226,8 @@ class AppDatabase extends _$AppDatabase {
               ))
                 .getSingleOrNull();
 
-            final idCategoria = await categoriaId(categoria);
-
             if (existente == null) {
+              final idCategoria = await categoriaId(categoria);
               await into(productos).insert(
                 ProductosCompanion.insert(
                   codigo: codigo,
