@@ -88,17 +88,9 @@ class RecetasSeed {
               nombre: nombreCorrecto,
             ),
           );
-        } else if (receta.nombre != nombreCorrecto) {
-          // Corregimos el nombre sin eliminar detalles existentes.
-          // Las cantidades de una receta requieren revisión explícita.
-          await (db.update(db.recetas)
-            ..where((r) => r.id.equals(receta.id)))
-              .write(
-            RecetasCompanion(
-              nombre: Value(nombreCorrecto),
-            ),
-          );
         }
+        // Las recetas existentes, incluidos sus nombres, se preservan.
+        // Los cambios de nombre requieren una acción explícita del usuario.
       }
     });
 
