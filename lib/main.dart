@@ -18,6 +18,7 @@ import 'repositories/receta_detalle_repository.dart';
 import 'repositories/clientes_repository.dart';
 import 'repositories/insumo_repository.dart';
 import 'screens/auth/auth_gate.dart';
+import 'screens/auth/api_connection_screen.dart';
 
 import 'seed/datos_iniciales.dart';
 import 'pedidos/services/pedidos_service.dart';
@@ -49,6 +50,14 @@ import 'facturacion/repositories/resumenes_diarios_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Android uses the central API flow and must not open/seed local SQLite.
+  // Windows keeps the existing production POS unless central mode is explicitly enabled.
+  const centralMode = bool.fromEnvironment('AZUL_CENTRAL_MODE', defaultValue: false);
+  if (Platform.isAndroid || (Platform.isWindows && centralMode)) {
+    runApp(const AzulOSMobileApp());
+    return;
+  }
 
   final database = AppDatabase();
 
@@ -86,6 +95,26 @@ Future<void> main() async {
   }
 
   runApp(AzulOSApp(database: database, printerAdapter: printerAdapter));
+}
+
+/// API-only app for Android and explicitly enabled central mode on Windows.
+/// It does not initialize the local database, seeds, or local SUNAT services.
+class AzulOSMobileApp extends StatelessWidget {
+  const AzulOSMobileApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Provider<AzulApiClient>(
+      create: (_) => AzulApiClient(),
+      dispose: (_, client) => client.dispose(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'AZUL OS · Multidispositivo',
+        theme: AppTheme.lightTheme,
+        home: const ApiConnectionScreen(),
+      ),
+    );
+  }
 }
 
 class AzulOSApp extends StatelessWidget {
