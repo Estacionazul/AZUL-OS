@@ -16,20 +16,25 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.estacionazul.azul_os"
+        applicationId = "com.estacionazul.azul_os.staging"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionName = "${flutter.versionName}-staging"
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Staging only; never replace the production package.
             signingConfig = signingConfigs.getByName("debug")
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-staging"
         }
     }
 }
