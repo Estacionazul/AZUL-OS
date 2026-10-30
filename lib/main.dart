@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+
+import 'printer/printer_adapter.dart';
+import 'printer/no_printer_adapter.dart';
+
 import 'facturacion/config/sunat_config.dart';
 import 'facturacion/firma/certificado_service.dart';
 import 'facturacion/firma/firma_digital_service.dart';
@@ -16,6 +21,7 @@ import 'repositories/receta_detalle_repository.dart';
 import 'repositories/clientes_repository.dart';
 import 'repositories/insumo_repository.dart';
 import 'screens/auth/auth_gate.dart';
+import 'multidispositivo/azul_api_client.dart';
 
 import 'seed/datos_iniciales.dart';
 import 'pedidos/services/pedidos_service.dart';
@@ -52,43 +58,43 @@ Future<void> main() async {
 
   await DatosIniciales(database).cargar();
 
+    // ==========================================
+  // IMPRESORA SEGÚN PLATAFORMA
   // ==========================================
-  // IMPRESORA WINDOWS
-  // ==========================================
 
-  final printerAdapter = WindowsPrinterAdapter();
+  final PrinterAdapter printerAdapter;
 
-  print('');
-  print('==============================================');
-  print('        INICIALIZANDO IMPRESORA');
-  print('              AZUL OS');
-  print('==============================================');
+  if (Platform.isWindows) {
+    final windowsAdapter = WindowsPrinterAdapter();
+    printerAdapter = windowsAdapter;
 
-  final printers = await printerAdapter.discoverPrinters();
+    print('===== INICIALIZANDO IMPRESORA WINDOWS =====');
 
-  const nombreImpresora = 'POS-58-Series';
+    final printers = await windowsAdapter.discoverPrinters();
+    const nombreImpresora = 'POS-58-Series';
 
-  if (printers.contains(nombreImpresora)) {
-    await printerAdapter.selectPrinter(nombreImpresora);
-
-    print('');
-    print('✅ IMPRESORA AUTOMÁTICAMENTE SELECCIONADA');
-    print('\u{1F5A8}\u{FE0F} $nombreImpresora');
+    if (printers.contains(nombreImpresora)) {
+      await windowsAdapter.selectPrinter(nombreImpresora);
+      print('Impresora seleccionada: $nombreImpresora');
+    } else {
+      print('No se encontró la impresora: $nombreImpresora');
+    }
   } else {
-    print('');
-    print('⚠️ NO SE ENCONTRÓ LA IMPRESORA:');
-    print('\u{1F5A8}\u{FE0F} $nombreImpresora');
+    printerAdapter = const NoPrinterAdapter();
+    print('Impresión no configurada en esta plataforma.');
   }
 
-  print('==============================================');
-  print('');
-
-  runApp(AzulOSApp(database: database, printerAdapter: printerAdapter));
+  runApp(
+    AzulOSApp(
+      database: database,
+      printerAdapter: printerAdapter,
+    ),
+  );
 }
 
 class AzulOSApp extends StatelessWidget {
   final AppDatabase database;
-  final WindowsPrinterAdapter printerAdapter;
+  final PrinterAdapter printerAdapter;
 
   const AzulOSApp({
     super.key,
@@ -101,6 +107,10 @@ class AzulOSApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider.value(value: database),
+        Provider<AzulApiClient>(
+          create: (_) => AzulApiClient(),
+          dispose: (_, api) => api.dispose(),
+        ),
 
         Provider(create: (_) => ProductoRepository(database)),
 
@@ -234,11 +244,10 @@ Provider<FacturacionService>(
         // ==========================================
         // IMPRESORA
         // ==========================================
-        Provider<WindowsPrinterAdapter>.value(value: printerAdapter),
+        Provider<PrinterAdapter>.value(value: printerAdapter),
 
         Provider(
-          create: (context) =>
-              PrinterService(context.read<WindowsPrinterAdapter>()),
+         create: (context) => PrinterService(context.read<PrinterAdapter>()),
         ),
 
         Provider(create: (_) => const EscPosRenderer()),

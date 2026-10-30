@@ -81,16 +81,50 @@ class PedidoDetalleScreen extends StatelessWidget {
             ),
           ],
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(flex: 6, child: _ProductosPedidoPanel(pedido: pedido)),
-              const SizedBox(width: 20),
-              Expanded(flex: 4, child: _ResumenPedido(pedido: pedido)),
-            ],
-          ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final movil = constraints.maxWidth < 700;
+            if (movil) {
+              return DefaultTabController(
+                length: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    children: [
+                      const TabBar(
+                        labelColor: Color(0xFF0D47A1),
+                        tabs: [
+                          Tab(icon: Icon(Icons.shopping_bag_outlined), text: 'Productos'),
+                          Tab(icon: Icon(Icons.receipt_long_outlined), text: 'Pedido'),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            _ProductosPedidoPanel(pedido: pedido),
+                            _ResumenPedido(pedido: pedido),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 6, child: _ProductosPedidoPanel(pedido: pedido)),
+                  const SizedBox(width: 20),
+                  Expanded(flex: 4, child: _ResumenPedido(pedido: pedido)),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
@@ -289,21 +323,24 @@ class _ProductosPedidoPanelState extends State<_ProductosPedidoPanel> {
                             style: TextStyle(color: Colors.grey),
                           ),
                         )
-                      : GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 14,
-                            mainAxisSpacing: 14,
-                            childAspectRatio: 2.7,
-                          ),
-                          itemCount: productos.length,
-                          itemBuilder: (context, index) {
-                        final producto = productos[index];
-
-                            return _ProductoPedidoButton(
-                              producto: producto,
-                              onTap: () => _agregarProducto(context, producto),
+                      : LayoutBuilder(
+                          builder: (context, constraints) {
+                            final columnas = constraints.maxWidth < 420 ? 1 : 2;
+                            return GridView.builder(
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: columnas,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
+                                childAspectRatio: columnas == 1 ? 4.0 : 2.7,
+                              ),
+                              itemCount: productos.length,
+                              itemBuilder: (context, index) {
+                                final producto = productos[index];
+                                return _ProductoPedidoButton(
+                                  producto: producto,
+                                  onTap: () => _agregarProducto(context, producto),
+                                );
+                              },
                             );
                           },
                         )

@@ -4,6 +4,7 @@ import 'widgets/empresa_form.dart';
 import 'widgets/impresora_form.dart';
 import 'usuarios/usuarios_screen.dart';
 import 'facturacion/facturacion_screen.dart';
+import '../auth/api_connection_screen.dart';
 
 class ConfiguracionScreen extends StatelessWidget {
   const ConfiguracionScreen({super.key});
@@ -39,6 +40,26 @@ class ConfiguracionScreen extends StatelessWidget {
                     ),
                   );
                 },
+              ),
+
+              const SizedBox(height: 20),
+
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.devices),
+                  title: const Text('Conexión multidispositivo'),
+                  subtitle: const Text(
+                    'Configurar y comprobar la conexión con el servidor central',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ApiConnectionScreen(),
+                      ),
+                    );
+                  },
+                ),
               ),
 
               const SizedBox(height: 20),

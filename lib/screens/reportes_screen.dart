@@ -119,14 +119,14 @@ class _ReportesScreenState extends State<ReportesScreen> {
   double get _totalVendido {
     return _ventasFiltradas.fold<double>(
       0,
-          (total, venta) => total + venta.total,
+      (total, venta) => total + venta.total,
     );
   }
 
   double get _totalDescuentos {
     return _ventasFiltradas.fold<double>(
       0,
-          (total, venta) => total + venta.descuento,
+      (total, venta) => total + venta.descuento,
     );
   }
 
@@ -156,7 +156,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
     return _ventasFiltradas
         .where(
           (venta) => venta.metodoPago.toLowerCase() == metodo.toLowerCase(),
-    )
+        )
         .fold<double>(0, (total, venta) => total + venta.total);
   }
 
@@ -254,9 +254,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
         DoubleCellValue(_totalDescuentos),
       ]);
 
-      sheet.appendRow([
-        TextCellValue(''),
-      ]);
+      sheet.appendRow([TextCellValue('')]);
 
       sheet.appendRow([
         TextCellValue('Fecha'),
@@ -328,9 +326,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Excel generado correctamente en:\n${archivo.path}',
-          ),
+          content: Text('Excel generado correctamente en:\n${archivo.path}'),
           duration: const Duration(seconds: 5),
         ),
       );
@@ -338,9 +334,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('No se pudo exportar el Excel: $e'),
-        ),
+        SnackBar(content: Text('No se pudo exportar el Excel: $e')),
       );
     }
   }
@@ -364,7 +358,9 @@ class _ReportesScreenState extends State<ReportesScreen> {
             child: RefreshIndicator(
               onRefresh: _cargarReportes,
               child: ListView(
-                padding: const EdgeInsets.all(28),
+                padding: EdgeInsets.all(
+                  MediaQuery.sizeOf(context).width < 600 ? 12 : 28,
+                ),
                 children: [
                   _filtros(),
 
@@ -397,63 +393,88 @@ class _ReportesScreenState extends State<ReportesScreen> {
   // ==========================================================
 
   Widget _encabezado() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(28, 24, 28, 20),
-      color: Colors.white,
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: const Color(0xFF1557B0),
-              borderRadius: BorderRadius.circular(12),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final movil = constraints.maxWidth < 600;
+
+        final titulo = Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1557B0),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.bar_chart_rounded,
+                size: 26,
+                color: Colors.white,
+              ),
             ),
-            child: const Icon(
-              Icons.bar_chart_rounded,
-              size: 28,
-              color: Colors.white,
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Reportes',
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Resumen y análisis de las ventas de Estación Azul',
+                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                  ),
+                ],
+              ),
             ),
+          ],
+        );
+
+        final acciones = Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            FilledButton.icon(
+              onPressed: _exportarExcel,
+              icon: const Icon(Icons.table_view_rounded),
+              label: const Text('Exportar Excel'),
+            ),
+            IconButton(
+              tooltip: 'Actualizar',
+              onPressed: _cargarReportes,
+              icon: const Icon(Icons.refresh),
+            ),
+          ],
+        );
+
+        return Container(
+          padding: EdgeInsets.fromLTRB(
+            movil ? 12 : 28,
+            movil ? 16 : 24,
+            movil ? 12 : 28,
+            movil ? 14 : 20,
           ),
-
-          const SizedBox(width: 14),
-
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Reportes',
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          color: Colors.white,
+          child: movil
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [titulo, const SizedBox(height: 12), acciones],
+                )
+              : Row(
+                  children: [
+                    Expanded(child: titulo),
+                    const SizedBox(width: 16),
+                    acciones,
+                  ],
                 ),
-                SizedBox(height: 4),
-                Text(
-                  'Resumen y análisis de las ventas de Estación Azul',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-
-          FilledButton.icon(
-            onPressed: _exportarExcel,
-            icon: const Icon(Icons.table_view_rounded),
-            label: const Text('Exportar Excel'),
-          ),
-
-          const SizedBox(width: 8),
-
-          IconButton(
-            tooltip: 'Actualizar',
-            onPressed: _cargarReportes,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  // ==========================================================
   // FILTROS
   // ==========================================================
 
@@ -462,18 +483,17 @@ class _ReportesScreenState extends State<ReportesScreen> {
       elevation: 0,
       child: Padding(
         padding: const EdgeInsets.all(18),
-        child: Row(
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 12,
+          runSpacing: 8,
           children: [
             const Icon(Icons.filter_alt_outlined, color: Color(0xFF174D7A)),
-
-            const SizedBox(width: 12),
 
             const Text(
               'Periodo:',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-
-            const SizedBox(width: 14),
 
             DropdownButton<String>(
               value: _periodo,
@@ -505,42 +525,41 @@ class _ReportesScreenState extends State<ReportesScreen> {
   // ==========================================================
 
   Widget _resumen() {
-    return GridView.count(
-      crossAxisCount: 4,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisSpacing: 18,
-      mainAxisSpacing: 18,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final movil = constraints.maxWidth < 600;
 
-      // Altura fija para evitar overflow vertical
-      // en las tarjetas del resumen.
-      mainAxisExtent: 100,
-
-      children: [
-        _tarjetaResumen(
-          titulo: 'Ventas',
-          valor: _moneda(_totalVendido),
-          icono: Icons.attach_money_rounded,
-        ),
-
-        _tarjetaResumen(
-          titulo: 'Cantidad de ventas',
-          valor: '$_cantidadVentas',
-          icono: Icons.receipt_long_rounded,
-        ),
-
-        _tarjetaResumen(
-          titulo: 'Clientes',
-          valor: '$_cantidadClientes',
-          icono: Icons.people_alt_outlined,
-        ),
-
-        _tarjetaResumen(
-          titulo: 'Descuentos',
-          valor: _moneda(_totalDescuentos),
-          icono: Icons.local_offer_outlined,
-        ),
-      ],
+        return GridView.count(
+          crossAxisCount: movil ? 2 : 4,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: movil ? 10 : 18,
+          mainAxisSpacing: movil ? 10 : 18,
+          mainAxisExtent: movil ? 132 : 110,
+          children: [
+            _tarjetaResumen(
+              titulo: 'Ventas',
+              valor: _moneda(_totalVendido),
+              icono: Icons.attach_money_rounded,
+            ),
+            _tarjetaResumen(
+              titulo: 'Cantidad de ventas',
+              valor: '$_cantidadVentas',
+              icono: Icons.receipt_long_rounded,
+            ),
+            _tarjetaResumen(
+              titulo: 'Clientes',
+              valor: '$_cantidadClientes',
+              icono: Icons.people_alt_outlined,
+            ),
+            _tarjetaResumen(
+              titulo: 'Descuentos',
+              valor: _moneda(_totalDescuentos),
+              icono: Icons.local_offer_outlined,
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -549,53 +568,82 @@ class _ReportesScreenState extends State<ReportesScreen> {
     required String valor,
     required IconData icono,
   }) {
+    final movil = MediaQuery.sizeOf(context).width < 600;
+
     return Card(
       elevation: 1,
       child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8F1F8),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icono, color: const Color(0xFF174D7A)),
-            ),
-
-            const SizedBox(width: 14),
-
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+        padding: EdgeInsets.all(movil ? 10 : 18),
+        child: movil
+            ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Icon(icono, color: const Color(0xFF174D7A), size: 22),
+                  const SizedBox(height: 8),
                   Text(
                     titulo,
-                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
-                  const SizedBox(height: 5),
-                  Text(
-                    valor,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(height: 4),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      valor,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F1F8),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icono, color: const Color(0xFF174D7A)),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          titulo,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            valor,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
-
-  // ==========================================================
-  // MÉTODOS DE PAGO
-  // ==========================================================
 
   Widget _pagos() {
     return Card(
@@ -618,48 +666,38 @@ class _ReportesScreenState extends State<ReportesScreen> {
 
             const SizedBox(height: 20),
 
-            Row(
-              children: [
-                Expanded(
-                  child: _pago(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final columnas = constraints.maxWidth < 600 ? 2 : 5;
+                final metodos = <Widget>[
+                  _pago(
                     'Efectivo',
                     _totalPorMetodo('Efectivo'),
                     Icons.payments,
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _pago(
-                    'Yape',
-                    _totalPorMetodo('Yape'),
-                    Icons.phone_android,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _pago(
-                    'Plin',
-                    _totalPorMetodo('Plin'),
-                    Icons.phone_iphone,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _pago(
+                  _pago('Yape', _totalPorMetodo('Yape'), Icons.phone_android),
+                  _pago('Plin', _totalPorMetodo('Plin'), Icons.phone_iphone),
+                  _pago(
                     'Tarjeta',
                     _totalPorMetodo('Tarjeta'),
                     Icons.credit_card,
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _pago(
+                  _pago(
                     'Transferencia',
                     _totalPorMetodo('Transferencia'),
                     Icons.account_balance,
                   ),
-                ),
-              ],
+                ];
+                return GridView.count(
+                  crossAxisCount: columnas,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: constraints.maxWidth < 600 ? 1.45 : 1.1,
+                  children: metodos,
+                );
+              },
             ),
           ],
         ),

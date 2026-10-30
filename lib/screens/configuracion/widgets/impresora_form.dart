@@ -26,13 +26,15 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
   bool _guardando = false;
   bool _conectada = false;
 
-  late final WindowsPrinterAdapter _printerAdapter;
+  WindowsPrinterAdapter? _printerAdapter;
 
   @override
   void initState() {
     super.initState();
 
-    _printerAdapter = WindowsPrinterAdapter();
+    if (Platform.isWindows) {
+  _printerAdapter = WindowsPrinterAdapter();
+ }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _cargarConfiguracion();
@@ -97,8 +99,12 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
       print('======================================');
       print('===== DETECTANDO IMPRESORAS WINDOWS =====');
       print('======================================');
+      final adapter = _printerAdapter;
+      if (adapter == null) {
+       return;
+     }
 
-      final impresorasDetectadas = await _printerAdapter.discoverPrinters();
+      final impresorasDetectadas = await adapter.discoverPrinters();
 
       print('Impresoras detectadas originalmente:');
       print(impresorasDetectadas);
@@ -234,11 +240,20 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
   // ============================================================
 
   Future<void> _seleccionarImpresoraInternamente(String nombre) async {
+  final adapter = _printerAdapter;
+if (adapter == null) {
+  if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('La impresión no está configurada en este dispositivo.'),
+      ),
+    );
+  }
+  return;
+}
     try {
-      await _printerAdapter.selectPrinter(nombre);
-
-      final conectada = await _printerAdapter.isConnected();
-
+      await adapter.selectPrinter(nombre);
+      final conectada = await adapter.isConnected();
       if (!mounted) {
         return;
       }
@@ -348,10 +363,13 @@ class _ImpresoraFormState extends State<ImpresoraForm> {
   // ============================================================
 
   @override
-  void dispose() {
-    _printerAdapter.disconnect();
-    super.dispose();
+void dispose() {
+  final adapter = _printerAdapter;
+  if (adapter != null) {
+    adapter.disconnect();
   }
+  super.dispose();
+}
 
   // ============================================================
   // INTERFAZ
