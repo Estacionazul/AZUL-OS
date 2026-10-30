@@ -25,26 +25,32 @@ class MainActivity : FlutterActivity() {
                     ) {
                         result.error("INVALID_HOST", "El nombre del servidor no es válido.", null)
                     } else {
-                        try {
-                            val addresses = InetAddress.getAllByName(host)
-                                .mapNotNull { it.hostAddress }
-                                .distinct()
-                            if (addresses.isEmpty()) {
-                                result.error(
-                                    "DNS_NO_ADDRESSES",
-                                    "Android no devolvió direcciones para el servidor.",
-                                    null,
-                                )
-                            } else {
-                                result.success(addresses)
+                        Thread {
+                            try {
+                                val addresses = InetAddress.getAllByName(host)
+                                    .mapNotNull { it.hostAddress }
+                                    .distinct()
+                                runOnUiThread {
+                                    if (addresses.isEmpty()) {
+                                        result.error(
+                                            "DNS_NO_ADDRESSES",
+                                            "Android no devolvió direcciones para el servidor.",
+                                            null,
+                                        )
+                                    } else {
+                                        result.success(addresses)
+                                    }
+                                }
+                            } catch (error: Exception) {
+                                runOnUiThread {
+                                    result.error(
+                                        "DNS_LOOKUP_FAILED",
+                                        error.message ?: "No se pudo resolver el servidor.",
+                                        null,
+                                    )
+                                }
                             }
-                        } catch (error: Exception) {
-                            result.error(
-                                "DNS_LOOKUP_FAILED",
-                                error.message ?: "No se pudo resolver el servidor.",
-                                null,
-                            )
-                        }
+                        }.start()
                     }
                 }
                 else -> result.notImplemented()
