@@ -157,19 +157,11 @@ class DatosIniciales {
       'BEB007',
     };
 
-    // Primero: todo el catálogo queda como producto.
-    await db.update(db.productos).write(
-      const ProductosCompanion(
-        tipoInventario: Value('producto'),
-      ),
-    );
-
-    // Segundo: únicamente los productos con receta real
-    // quedan como tipo receta.
+    // No normalizamos masivamente todo el catálogo en cada arranque:
+    // eso sobrescribía el tipo de inventario de productos personalizados.
+    // Solo marcamos como receta los códigos conocidos con receta real.
     await (db.update(db.productos)
-      ..where(
-            (p) => p.codigo.isIn(productosConReceta),
-      ))
+      ..where((p) => p.codigo.isIn(productosConReceta)))
         .write(
       const ProductosCompanion(
         tipoInventario: Value('receta'),

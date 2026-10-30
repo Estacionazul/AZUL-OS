@@ -166,18 +166,19 @@ class AppDatabase extends _$AppDatabase {
       if (from < 32) {
         // ============================================================
         // MIGRACIÓN 32
-        // LIMPIEZA MAESTRA DEL CATÁLOGO ESTACIÓN AZUL
+        // ACTUALIZACIÓN DEL CATÁLOGO ESTACIÓN AZUL
         // ============================================================
         //
         // Objetivo:
-        // 1. Eliminar físicamente productos que NO pertenecen
-        //    al catálogo definitivo.
-        // 2. Conservar Espresso y Americano porque tienen ventas.
-        // 3. Recuperar productos que la migración 31 eliminó
-        //    por tener una lista incompleta.
-        // 4. Corregir nombres, precios y descripciones.
-        // 5. Crear GA019, GA020 y GA021.
-        // 6. No dejar productos antiguos como inactivos.
+        // 1. Crear o actualizar los productos conocidos de la carta.
+        // 2. Corregir nombres, precios y descripciones del catálogo definido.
+        // 3. Crear GA019, GA020 y GA021.
+        // 4. Preservar productos ajenos a la carta codificada: podrían
+        //    tener referencias históricas o ser productos personalizados.
+        // 5. No eliminar automáticamente productos ni movimientos históricos.
+        //
+        // Los cambios de catálogo siguen requiriendo revisión antes de
+        // ejecutar una migración sobre una base productiva.
         //
         // ============================================================
 
@@ -186,212 +187,13 @@ class AppDatabase extends _$AppDatabase {
           // CATÁLOGO DEFINITIVO
           // ==========================================================
 
-          const productosCarta = <String>{
-            // -------------------------
-            // CAFÉS
-            // -------------------------
-            'CAF001',
-            'CAF002',
-            'CAF003',
-            'CAF004',
-            'CAF005',
-            'CAF006',
-            'CAF007',
-            'CAF008',
-            'CAF009',
+          // SEGURIDAD DE DATOS:
+          // No eliminamos productos fuera de la carta actual durante una
+          // migración automática. Pueden existir referencias históricas en
+          // ventas, pedidos, recetas o movimientos de inventario. La depuración
+          // del catálogo debe ser un proceso explícito y auditado, no parte
+          // del arranque de la aplicación.
 
-            // -------------------------
-            // JUGOS
-            // -------------------------
-            'JUG001',
-            'JUG002',
-            'JUG003',
-            'JUG004',
-            'JUG005',
-            'JUG006',
-            'JUG007',
-            'JUG008',
-            'JUG009',
-            'JUG010',
-
-            // -------------------------
-            // BEBIDAS FRÍAS
-            // -------------------------
-            'BEB001',
-            'BEB002',
-            'BEB003',
-            'BEB004',
-            'BEB005',
-            'BEB006',
-            'BEB007',
-            'BEB008',
-            'BEB009',
-            'BEB010',
-            'BEB011',
-            'BEB012',
-
-            // -------------------------
-            // SNACKS
-            // -------------------------
-            'SNK001',
-            'SNK002',
-            'SNK003',
-            'SNK004',
-            'SNK005',
-            'SNK006',
-            'SNK007',
-            'SNK008',
-            'SNK009',
-            'SNK010',
-
-            // -------------------------
-            // HAMBURGUESAS
-            // -------------------------
-            'HAM001',
-            'HAM002',
-            'HAM003',
-
-            // -------------------------
-            // POSTRES
-            // -------------------------
-            'POS001',
-            'POS002',
-            'POS003',
-            'POS004',
-            'POS005',
-            'POS006',
-            'POS007',
-            'POS008',
-            'POS009',
-            'POS010',
-            'POS011',
-            'POS012',
-            'POS013',
-            'POS014',
-            'POS015',
-            'POS016',
-
-            // -------------------------
-            // COMBOS
-            // -------------------------
-            'COM001',
-            'COM002',
-            'COM003',
-            'COM004',
-            'COM005',
-
-            // -------------------------
-            // GASEOSAS Y AGUAS
-            // -------------------------
-            'GA001',
-            'GA002',
-            'GA003',
-            'GA004',
-            'GA005',
-            'GA006',
-            'GA007',
-            'GA008',
-            'GA009',
-            'GA010',
-            'GA011',
-            'GA012',
-            'GA013',
-            'GA014',
-            'GA015',
-            'GA016',
-            'GA017',
-            'GA018',
-            'GA019',
-            'GA020',
-            'GA021',
-          };
-
-          // ==========================================================
-          // 1. BUSCAR PRODUCTOS QUE NO PERTENECEN A LA CARTA
-          // ==========================================================
-
-          final productosEliminar = await (select(productos)
-            ..where((p) => p.codigo.isNotIn(productosCarta)))
-              .get();
-
-          final idsEliminar = productosEliminar
-              .map((producto) => producto.id)
-              .toList();
-
-          // ==========================================================
-          // 2. PROTEGER PRODUCTOS CON VENTAS
-          // ==========================================================
-
-          if (idsEliminar.isNotEmpty) {
-            final ventasProtegidas = await (select(detalleVentas)
-              ..where((d) => d.productoId.isIn(idsEliminar)))
-                .get();
-
-            if (ventasProtegidas.isNotEmpty) {
-              throw StateError(
-                'No se puede completar la limpieza del catálogo. '
-                    'Existen ventas históricas asociadas a productos '
-                    'que se intentan eliminar.',
-              );
-            }
-
-            // ========================================================
-            // 3. ELIMINAR DETALLES DE RECETAS
-            // ========================================================
-
-            final recetasEliminar = await (select(recetas)
-              ..where((r) => r.productoId.isIn(idsEliminar)))
-                .get();
-
-            final idsRecetasEliminar =
-            recetasEliminar.map((receta) => receta.id).toList();
-
-            if (idsRecetasEliminar.isNotEmpty) {
-              await (delete(recetaDetalle)
-                ..where(
-                      (d) => d.recetaId.isIn(idsRecetasEliminar),
-                ))
-                  .go();
-
-              await (delete(recetas)
-                ..where(
-                      (r) => r.id.isIn(idsRecetasEliminar),
-                ))
-                  .go();
-            }
-
-            // ========================================================
-            // 4. ELIMINAR DETALLES DE PEDIDOS
-            // ========================================================
-
-            await (delete(pedidoDetalles)
-              ..where(
-                    (p) => p.productoId.isIn(idsEliminar),
-              ))
-                .go();
-
-            // ========================================================
-            // 5. ELIMINAR MOVIMIENTOS DE INVENTARIO
-            // ========================================================
-
-            await (delete(movimientosInventario)
-              ..where(
-                    (m) => m.productoId.isIn(idsEliminar),
-              ))
-                .go();
-
-            // ========================================================
-            // 6. ELIMINACIÓN FÍSICA DE PRODUCTOS
-            // ========================================================
-
-            await (delete(productos)
-              ..where(
-                    (p) => p.id.isIn(idsEliminar),
-              ))
-                .go();
-          }
-
-          // ==========================================================
           // FUNCIÓN PARA OBTENER CATEGORÍA
           // ==========================================================
 
@@ -424,9 +226,8 @@ class AppDatabase extends _$AppDatabase {
               ))
                 .getSingleOrNull();
 
-            final idCategoria = await categoriaId(categoria);
-
             if (existente == null) {
+              final idCategoria = await categoriaId(categoria);
               await into(productos).insert(
                 ProductosCompanion.insert(
                   codigo: codigo,
@@ -439,20 +240,10 @@ class AppDatabase extends _$AppDatabase {
                 ),
               );
             } else {
-              // Conservamos el costo existente para no inventar ni sobrescribir costos.
-              await (update(productos)
-                ..where(
-                      (p) => p.codigo.equals(codigo),
-                ))
-                  .write(
-                ProductosCompanion(
-                  nombre: Value(nombre),
-                  descripcion: Value(descripcion),
-                  categoriaId: Value(idCategoria),
-                  precioVenta: Value(precio),
-                  activo: const Value(true),
-                ),
-              );
+              // No sobrescribimos automáticamente nombre, categoría, precio,
+              // costo ni estado de productos existentes durante el arranque.
+              // Las correcciones comerciales deben hacerse mediante un cambio
+              // explícito y revisado, no como efecto colateral de una migración.
             }
           }
 
@@ -1151,14 +942,17 @@ class AppDatabase extends _$AppDatabase {
 
         // ============================================================
         // MIGRACIÓN 33
-        // RECONSTRUCCIÓN LIMPIA DE RECETAS
+        // PRESERVACIÓN DE RECETAS EXISTENTES
         // ============================================================
-        // Elimina recetas antiguas/duplicadas y sus detalles.
-        // Los seeds actuales las recrearán después del upgrade.
+        // No borrar recetas ni detalles automáticamente: pueden contener
+        // fórmulas personalizadas. Cualquier limpieza requiere auditoría y
+        // una migración explícita que conserve las referencias válidas.
         // ============================================================
         if (from < 34) {
-          await delete(recetaDetalle).go();
-          await delete(recetas).go();
+          // Preservamos las recetas y sus detalles existentes. Borrarlos
+          // todos durante una actualización puede destruir fórmulas
+          // personalizadas e historial operativo. Las correcciones de recetas
+          // deben aplicarse mediante una migración específica y no destructiva.
         }
 
         // ==========================================================
@@ -1172,15 +966,9 @@ class AppDatabase extends _$AppDatabase {
         // ==========================================================
 
         if (from < 35) {
-          // Primero: todos los productos actuales pasan a
-          // inventario por producto.
-          await (update(productos)).write(
-            const ProductosCompanion(
-              tipoInventario: Value('producto'),
-            ),
-          );
-
-          // Segundo: restauramos como "receta" únicamente
+          // No sobrescribimos masivamente el tipo de inventario de todos
+          // los productos durante una actualización. Solo corregimos los
+          // códigos conocidos que requieren control por receta.
           // los productos que actualmente tienen receta.
           await (update(productos)
             ..where(

@@ -4,16 +4,23 @@ import '../database/app_database.dart';
 
 class RecetaDetalleSeed {
   static Future<void> cargar(AppDatabase db) async {
+    // Solo sembramos fórmulas predeterminadas para recetas que estaban vacías
+    // al iniciar esta operación. Las fórmulas existentes se consideran
+    // configuración del negocio y no se sobrescriben ni completan a ciegas.
+    final detallesIniciales = await db.select(db.recetaDetalle).get();
+    final recetasConDetallesIniciales =
+        detallesIniciales.map((detalle) => detalle.recetaId).toSet();
+
     // ==========================================================
     // BUSCAR RECETA
     // ==========================================================
 
-    Future<int> recetaId(String nombre) async {
+    Future<int?> recetaId(String nombre) async {
       final receta = await (db.select(
         db.recetas,
-      )..where((r) => r.nombre.equals(nombre))).getSingle();
+      )..where((r) => r.nombre.equals(nombre))).getSingleOrNull();
 
-      return receta.id;
+      return receta?.id;
     }
 
     // ==========================================================
@@ -40,6 +47,10 @@ class RecetaDetalleSeed {
       required int orden,
     }) async {
       final idReceta = await recetaId(receta);
+      if (idReceta == null || recetasConDetallesIniciales.contains(idReceta)) {
+        return;
+      }
+
       final idInsumo = await insumoId(insumo);
 
       final existente = await (db.select(
@@ -51,15 +62,6 @@ class RecetaDetalleSeed {
       )).getSingleOrNull();
 
       if (existente != null) {
-        await (db.update(db.recetaDetalle)
-          ..where((d) => d.id.equals(existente.id)))
-            .write(
-          RecetaDetalleCompanion(
-            cantidad: Value(cantidad),
-            unidad: Value(unidad),
-            orden: Value(orden),
-          ),
-        );
         return;
       }
 
