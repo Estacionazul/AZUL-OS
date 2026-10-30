@@ -23,7 +23,7 @@ catalogRouter.get("/products", authenticate, requirePermission("Productos"), asy
   try {
     const [items, total] = await Promise.all([
       pool.query(
-        `SELECT p.id, p.codigo, p.codigo_barras, p.nombre, p.descripcion,
+        `SELECT p.id, p.codigo, p.codigo AS code, p.codigo_barras, p.nombre, p.nombre AS name, p.descripcion,
                 p.categoria_id AS "categoryId", c.nombre AS "categoryName",
                 p.costo, p.precio_venta AS "salePrice", p.stock_minimo AS "minimumStock",
                 p.tipo_inventario AS "inventoryType", p.tipo_afectacion_igv AS "igvAffectation",
