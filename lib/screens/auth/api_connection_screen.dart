@@ -22,6 +22,11 @@ class _ApiConnectionScreenState extends State<ApiConnectionScreen> {
   bool _success = false;
   bool _allowLocalHttp = false;
 
+  // Dirección HTTPS del Tailscale Serve verificada desde el equipo Windows.
+  // Se usa solo como valor inicial cuando este dispositivo aún no guardó una URL.
+  static const _defaultApiBaseUrl =
+      'https://desktop-grftleb.tail507e39.ts.net';
+
   @override
   void initState() {
     super.initState();
@@ -30,7 +35,11 @@ class _ApiConnectionScreenState extends State<ApiConnectionScreen> {
 
   Future<void> _load() async {
     final api = context.read<AzulApiClient>();
-    _urlController.text = await api.baseUrl ?? '';
+    final savedBaseUrl = await api.baseUrl;
+    _urlController.text =
+        (savedBaseUrl == null || savedBaseUrl.trim().isEmpty)
+            ? _defaultApiBaseUrl
+            : savedBaseUrl;
     _establishmentController.text = await api.establishmentId ?? '';
     _deviceController.text = await api.deviceId ?? '';
     if (mounted) setState(() => _loading = false);
@@ -125,7 +134,7 @@ class _ApiConnectionScreenState extends State<ApiConnectionScreen> {
                               keyboardType: TextInputType.url,
                               decoration: const InputDecoration(
                                 labelText: 'URL base de la API',
-                                hintText: 'https://api.tudominio.pe',
+                                hintText: 'https://desktop-grftleb.tail507e39.ts.net',
                               ),
                               validator: (value) => _required(value, 'la URL de la API'),
                             ),
