@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/services.dart';
 
 class AzulApiException implements Exception {
   final int statusCode;
@@ -29,6 +30,43 @@ class AzulApiClient {
         _http = httpClient ?? HttpClient() {
     _http.connectionTimeout = const Duration(seconds: 10);
     _http.idleTimeout = const Duration(seconds: 20);
+
+    // Android resuelve los nombres mediante su resolvedor nativo. HttpClient
+    // conserva la URI original y realiza TLS contra el hostname original.
+    if (Platform.isAndroid) {
+      _http.connectionFactory = (uri, proxyHost, proxyPort) async {
+        if (proxyHost != null && proxyPort != null) {
+          return Socket.startConnect(proxyHost, proxyPort);
+        }
+
+        try {
+          final resolved = await const MethodChannel(
+            'com.estacionazul.azul_os/dns',
+          ).invokeMethod<List<dynamic>>(
+            'resolveHost',
+            <String, Object?>{'host': uri.host},
+          ).timeout(const Duration(seconds: 5));
+
+          final addresses = (resolved ?? const <dynamic>[])
+              .whereType<String>()
+              .map(InternetAddress.tryParse)
+              .whereType<InternetAddress>()
+              .toList()
+            ..sort((a, b) {
+              if (a.type == b.type) return 0;
+              return a.type == InternetAddressType.IPv4 ? -1 : 1;
+            });
+
+          if (addresses.isNotEmpty) {
+            return Socket.startConnect(addresses.first, uri.port);
+          }
+        } catch (_) {
+          // Si la consulta nativa falla, se conserva el resolvedor estándar.
+        }
+
+        return Socket.startConnect(uri.host, uri.port);
+      };
+    }
   }
 
   static const _baseUrlKey = 'azul.api.base_url';
